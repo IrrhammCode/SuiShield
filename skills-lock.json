@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "tatum": {
+      "source": "tatumio/tatum-integration-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "a6b25358064331205da0962489c174edca269432d201b8aef756fb8119a75ffa"
+    }
+  }
+}
