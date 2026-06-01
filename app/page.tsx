@@ -84,7 +84,7 @@ export default function LandingPage() {
           </p>
 
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Link
               href="/analyze"
               className="inline-flex items-center gap-3 text-lg py-5 px-10 rounded-2xl bg-white text-black font-black hover:bg-white/90 transition-all"
@@ -99,6 +99,55 @@ export default function LandingPage() {
               <GitBranch className="w-5 h-5" />
               Trust Graph
             </Link>
+          </div>
+
+          {/* Live Demo Card */}
+          <div className="max-w-md mx-auto">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 text-left">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[10px] text-white/30 font-bold uppercase tracking-[0.15em]">Live Analysis</span>
+              </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div>
+                    <div className="text-green-400 font-display font-black text-sm">SAFE</div>
+                    <div className="text-white/20 text-[10px]">Low Risk</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-display font-black text-white">82</span>
+                  <span className="text-white/20 text-sm">/100</span>
+                </div>
+              </div>
+              <div className="w-full h-1 bg-white/5 rounded-full mb-4">
+                <div className="h-full w-[82%] bg-green-400 rounded-full" />
+              </div>
+              <div className="space-y-1.5 mb-4">
+                <div className="flex items-center gap-2 text-xs text-green-400/80">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>Active since Jan 2024</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-green-400/80">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>1,247 transactions</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-yellow-400/80">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>2 flagged counterparties</span>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                <span className="text-[10px] text-white/15 font-mono">0x7a8b...3c4d</span>
+                <div className="flex items-center gap-1 text-[10px] text-white/15">
+                  <Database className="w-3 h-3" />
+                  <span>Stored on Walrus</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
