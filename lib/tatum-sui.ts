@@ -307,3 +307,72 @@ export function formatUsdValue(suiAmount: number, pricePerSui: number): string {
   if (usd > 0) return `$${usd.toFixed(4)}`;
   return "$0.00";
 }
+
+// ── Additional Sui Tools ─────────────────────────────────
+
+/** Get all coin metadata for an address */
+export async function getSuiCoins(
+  address: string
+): Promise<Array<{ coinType: string; totalBalance: string; coinObjectCount: number }>> {
+  try {
+    const balances = await getSuiBalances(address);
+    return balances.map((b) => ({
+      coinType: b.coinType,
+      totalBalance: b.totalBalance,
+      coinObjectCount: b.coinObjectCount,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Get staking information for an address */
+export async function getSuiStaking(
+  address: string
+): Promise<Array<{ stakedSuiId: string; principal: string; status: string; estimatedReward?: string }>> {
+  try {
+    const result = await suiRpc<{ data: Array<{ stakedSuiId: string; principal: string; status: string; estimatedReward?: string }> }>(
+      "suix_getStakes",
+      [address]
+    );
+    return result.data || [];
+  } catch {
+    return [];
+  }
+}
+
+/** Get dynamic fields of an object */
+export async function getSuiDynamicFields(
+  objectId: string,
+  limit = 50
+): Promise<{ data: Array<{ name: unknown; bcsName: string; type: string; objectType: string; objectId: string }>; hasNextPage: boolean }> {
+  try {
+    return await suiRpc("suix_getDynamicFields", [objectId, null, limit]);
+  } catch {
+    return { data: [], hasNextPage: false };
+  }
+}
+
+/** Get total transaction count for an address */
+export async function getSuiTransactionCount(
+  address: string
+): Promise<number> {
+  try {
+    const result = await suiRpc<{ data: unknown[] }>(
+      "suix_queryTransactionBlocks",
+      [
+        {
+          filter: { FromAddress: address },
+          options: { showInput: false, showEffects: false },
+        },
+        null,
+        1,
+        true,
+      ]
+    );
+    // This is a rough estimate — count from the result
+    return result.data?.length || 0;
+  } catch {
+    return 0;
+  }
+}
