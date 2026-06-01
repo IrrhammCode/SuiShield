@@ -628,8 +628,15 @@ What would you like to know?`,
 
   return (
     <div className="flex flex-col h-screen" style={{ background: "var(--bg-base)" }}>
+      {/* Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 grid-bg opacity-20" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-cyan-500/5 blur-[120px] rounded-full" />
+        <div className="absolute top-[50%] -right-[10%] w-[500px] h-[500px] bg-magenta-500/4 blur-[120px] rounded-full" />
+      </div>
+
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 glass-bright z-10">
+      <div className="relative z-10 flex items-center justify-between px-5 py-3.5 border-b border-white/5 glass-bright z-10">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-1.5 text-[#525880] hover:text-white transition-colors text-sm">
             <ChevronLeft className="w-4 h-4" />
