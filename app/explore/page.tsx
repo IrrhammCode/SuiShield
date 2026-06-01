@@ -369,6 +369,13 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+      {/* Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 grid-bg opacity-20" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-cyan-500/5 blur-[120px] rounded-full" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-magenta-500/4 blur-[120px] rounded-full" />
+      </div>
+
       {/* Header */}
       <div className="border-b border-white/5 glass-bright sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

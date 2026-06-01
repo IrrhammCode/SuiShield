@@ -3,13 +3,13 @@
 
 // Testnet first for hackathon development
 const WALRUS_PUBLISHER_URLS = [
-  "https://publisher.walrus.space",
   "https://publisher.walrus-testnet.walrus.space",
+  "https://publisher.walrus.space",
 ];
 
 const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
   "https://aggregator.walrus-testnet.walrus.space",
+  "https://aggregator.walrus.space",
 ];
 
 // ── Hash Utility ─────────────────────────────────────────
