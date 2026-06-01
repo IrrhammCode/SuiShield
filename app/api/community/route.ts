@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import {
   submitScamReport,
   voteOnReport,
@@ -7,6 +7,7 @@ import {
   getRecentReports,
   REPORT_CATEGORIES,
 } from "@/lib/community";
+import { apiError, apiSuccess, isValidSuiAddress } from "@/lib/api-utils";
 
 // GET — Get reports for address or recent reports
 export async function GET(req: NextRequest) {
@@ -16,26 +17,26 @@ export async function GET(req: NextRequest) {
     const action = searchParams.get("action");
 
     if (action === "categories") {
-      return NextResponse.json({ categories: REPORT_CATEGORIES });
+      return apiSuccess({ categories: REPORT_CATEGORIES });
     }
 
     if (action === "recent") {
       const limit = parseInt(searchParams.get("limit") || "20");
-      return NextResponse.json({ reports: getRecentReports(limit) });
+      return apiSuccess({ reports: getRecentReports(limit) });
     }
 
     if (address) {
+      if (!isValidSuiAddress(address)) {
+        return apiError("Invalid Sui address format", 400);
+      }
       const reports = getReportsForAddress(address);
       const risk = getCommunityRiskScore(address);
-      return NextResponse.json({ reports, risk });
+      return apiSuccess({ reports, risk });
     }
 
-    return NextResponse.json({ error: "Address or action required" }, { status: 400 });
+    return apiError("Address or action required", 400);
   } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return apiError(error instanceof Error ? error.message : "Failed to fetch reports", 500);
   }
 }
 
@@ -48,26 +49,29 @@ export async function POST(req: NextRequest) {
     if (action === "report") {
       const { address, chain, reportedBy, reason, category, evidence } = body;
       if (!address || !reason || !category) {
-        return NextResponse.json({ error: "address, reason, and category required" }, { status: 400 });
+        return apiError("address, reason, and category required", 400);
+      }
+      if (!isValidSuiAddress(address)) {
+        return apiError("Invalid Sui address format", 400);
       }
       const report = await submitScamReport({ address, chain, reportedBy, reason, category, evidence });
-      return NextResponse.json({ success: true, report });
+      return apiSuccess({ success: true, report });
     }
 
     if (action === "vote") {
       const { reportId, voter, vote, reason } = body;
       if (!reportId || !voter || !vote) {
-        return NextResponse.json({ error: "reportId, voter, and vote required" }, { status: 400 });
+        return apiError("reportId, voter, and vote required", 400);
+      }
+      if (!["verify", "dispute"].includes(vote)) {
+        return apiError("vote must be 'verify' or 'dispute'", 400);
       }
       const result = voteOnReport(reportId, voter, vote, reason);
-      return NextResponse.json(result);
+      return apiSuccess(result);
     }
 
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    return apiError("Unknown action. Use 'report' or 'vote'", 400);
   } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return apiError(error instanceof Error ? error.message : "Failed to process request", 500);
   }
 }
