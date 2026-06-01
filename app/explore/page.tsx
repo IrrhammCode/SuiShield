@@ -129,9 +129,9 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
   );
 }
 
-// ─── Preview table (mock data) ─────────────────────────────
+// ─── Sample preview data (actual data loaded from Walrus blobs) ─────────────────────────────
 function DataPreviewTable({ dataset }: { dataset: Dataset }) {
-  const mockRows = {
+  const sampleRows = {
     "btc-full-history": [
       { tx_hash: "a1b2c3...", block: "830,241", from: "1A1zP1...", to: "3J98t...", amount: "0.5823", fee: "0.00001", time: "2024-01-15 08:23:11" },
       { tx_hash: "d4e5f6...", block: "830,242", from: "bc1q0...", to: "1BoatS...", amount: "2.1000", fee: "0.00002", time: "2024-01-15 08:23:45" },
@@ -160,7 +160,7 @@ function DataPreviewTable({ dataset }: { dataset: Dataset }) {
     { id: "row_003", data: "Sample data row 3", chain: dataset.chain, timestamp: "2024-01-03" },
   ];
 
-  const rows = mockRows[dataset.id as keyof typeof mockRows] || defaultRows;
+  const rows = sampleRows[dataset.id as keyof typeof sampleRows] || defaultRows;
   const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
 
   return (

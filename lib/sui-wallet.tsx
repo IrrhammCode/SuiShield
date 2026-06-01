@@ -147,7 +147,8 @@ export function SuiConnectButton() {
 // ConnectModal wrapper
 export function SuiConnectModal({ trigger }: { trigger: ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const [ConnectModalComp, setConnectModalComp] = useState<ComponentType<{ trigger: ReactNode }> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [ConnectModalComp, setConnectModalComp] = useState<any>(null);
 
   useEffect(() => {
     import("@mysten/dapp-kit").then((mod) => {

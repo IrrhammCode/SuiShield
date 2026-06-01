@@ -1,15 +1,26 @@
 // Walrus Write Integration — store analysis results on-chain
 // Docs: https://docs.walrus.site/
 
+// Testnet first for hackathon development
 const WALRUS_PUBLISHER_URLS = [
-  "https://publisher.walrus.space",
   "https://publisher.walrus-testnet.walrus.space",
+  "https://publisher.walrus.space",
 ];
 
 const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
   "https://aggregator.walrus-testnet.walrus.space",
+  "https://aggregator.walrus.space",
 ];
+
+// ── Hash Utility ─────────────────────────────────────────
+
+async function sha256(data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hash = await crypto.subtle.digest("SHA-256", encoder.encode(data));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 // ── Types ────────────────────────────────────────────────
 
@@ -33,6 +44,11 @@ export interface WalletAnalysisRecord {
   analysis: string;
   agentSteps: string[];
   analyzedBy: string; // connected wallet that requested analysis
+  // Proof chain fields
+  inputHash: string;   // SHA-256 of the prompt + tool context
+  outputHash: string;  // SHA-256 of the raw LLM response
+  model: string;       // "llama-3.3-70b-versatile"
+  proofVersion: string; // "1.0"
 }
 
 export interface StoredAnalysis {
@@ -126,7 +142,7 @@ export async function readAnalysisFromWalrus(
 
 // ── Helper: Create analysis record ───────────────────────
 
-export function createAnalysisRecord(params: {
+export async function createAnalysisRecord(params: {
   address: string;
   chain: string;
   riskScore: number;
@@ -136,7 +152,16 @@ export function createAnalysisRecord(params: {
   analysis: string;
   agentSteps: string[];
   analyzedBy: string;
-}): WalletAnalysisRecord {
+  inputContext?: string; // prompt + tool context for hashing
+  outputContent?: string; // raw LLM output for hashing
+}): Promise<WalletAnalysisRecord> {
+  const inputHash = params.inputContext
+    ? await sha256(params.inputContext)
+    : await sha256(`${params.address}:${params.chain}:${params.analysis}`);
+  const outputHash = params.outputContent
+    ? await sha256(params.outputContent)
+    : await sha256(params.analysis);
+
   return {
     version: "1.0",
     type: "wallet-analysis",
@@ -150,6 +175,10 @@ export function createAnalysisRecord(params: {
     analysis: params.analysis,
     agentSteps: params.agentSteps,
     analyzedBy: params.analyzedBy,
+    inputHash,
+    outputHash,
+    model: "llama-3.3-70b-versatile",
+    proofVersion: "1.0",
   };
 }
 

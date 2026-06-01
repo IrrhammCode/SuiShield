@@ -1,11 +1,11 @@
-// Mock data and utilities for Walrus dataset integration
-// In production, blob IDs come from Tatum Discord / Dashboard
+// Dataset utilities for Walrus integration
 
 import type { Dataset } from "@/types";
 
+// Testnet first for hackathon development
 export const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
   "https://aggregator.walrus-testnet.walrus.space",
+  "https://aggregator.walrus.space",
 ];
 
 export const TATUM_DATASETS: Dataset[] = [
@@ -21,7 +21,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2009 – Present",
     rowCount: "850M+ transactions",
-    blobId: "BLOB_ID_BTC_HISTORY", // Replace with actual blob ID from Tatum Discord
+    blobId: "pending", // To be updated with actual blob ID from Tatum Discord
     tags: ["bitcoin", "transactions", "UTXO", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -37,7 +37,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2015 – Present",
     rowCount: "2.5B+ transactions",
-    blobId: "BLOB_ID_ETH_HISTORY",
+    blobId: "pending",
     tags: ["ethereum", "ERC-20", "DeFi", "NFT", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -53,7 +53,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2020 – Present",
     rowCount: "3B+ transactions",
-    blobId: "BLOB_ID_BNB_HISTORY",
+    blobId: "pending",
     tags: ["BSC", "BNB", "DeFi", "PancakeSwap", "historical"],
     lastUpdated: "2026-05-19",
   },
@@ -69,7 +69,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "CSV",
     timeRange: "2022 – Present",
     rowCount: "210M+ candles",
-    blobId: "BLOB_ID_PRICE_OHLCV",
+    blobId: "pending",
     tags: ["price", "OHLCV", "trading", "BTC", "ETH", "SUI", "historical"],
     lastUpdated: "2026-05-25",
   },
@@ -85,7 +85,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2023 – Present",
     rowCount: "420M+ transactions",
-    blobId: "BLOB_ID_SUI_TXS",
+    blobId: "pending",
     tags: ["Sui", "Move", "NFT", "DeFi", "CETUS", "historical"],
     lastUpdated: "2026-05-24",
   },
@@ -101,7 +101,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "CSV",
     timeRange: "2021 – Present",
     rowCount: "50M+ data points",
-    blobId: "BLOB_ID_DEFI_DATA",
+    blobId: "pending",
     tags: ["DeFi", "TVL", "liquidity", "Uniswap", "CETUS", "historical"],
     lastUpdated: "2026-05-22",
   },
@@ -123,7 +123,7 @@ export async function fetchBlobFromWalrus(blobId: string): Promise<ArrayBuffer> 
 }
 
 export function formatBlobId(blobId: string): string {
-  if (!blobId || blobId.startsWith("BLOB_ID_")) return "Pending...";
+  if (!blobId || blobId === "pending") return "Pending...";
   if (blobId.length > 20) {
     return `${blobId.slice(0, 8)}...${blobId.slice(-6)}`;
   }

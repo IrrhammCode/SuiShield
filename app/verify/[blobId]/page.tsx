@@ -17,6 +17,8 @@ import {
   Brain,
   Copy,
   Check,
+  Link2,
+  Hash,
 } from "lucide-react";
 
 interface AnalysisRecord {
@@ -32,6 +34,11 @@ interface AnalysisRecord {
   analysis: string;
   agentSteps: string[];
   analyzedBy: string;
+  // Proof chain fields
+  inputHash?: string;
+  outputHash?: string;
+  model?: string;
+  proofVersion?: string;
 }
 
 function RiskBadge({ level, score }: { level: string; score: number }) {
@@ -168,6 +175,40 @@ export default function VerifyPage() {
                 </span>
               </div>
             </div>
+
+            {/* Proof Chain */}
+            {record.inputHash && (
+              <div className="card p-5 border-purple-500/20 bg-purple-500/5">
+                <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-purple-400" />
+                  Proof Chain
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                      <Hash className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] text-[#525880] mb-0.5">INPUT HASH (Prompt + Context)</div>
+                      <code className="font-mono text-xs text-purple-400 break-all">{record.inputHash}</code>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                      <Hash className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] text-[#525880] mb-0.5">OUTPUT HASH (LLM Response)</div>
+                      <code className="font-mono text-xs text-purple-400 break-all">{record.outputHash}</code>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-[#525880] pt-2 border-t border-white/5">
+                    <span>Model: <span className="text-purple-400">{record.model}</span></span>
+                    <span>Proof: <span className="text-purple-400">v{record.proofVersion}</span></span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Wallet Summary */}
             <div className="card p-5">

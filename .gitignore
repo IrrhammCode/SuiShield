@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude / agent directories
+.claude/
+.agents/
+
+# move build directory
+move/build/
+
+# local memory cache
+suishield-memory.json
+

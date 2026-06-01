@@ -19,6 +19,9 @@ import {
   toolGetSuiObjects,
   toolGetSuiTransactions,
   toolGetSuiNetworkStatus,
+  toolGetSuiPrice,
+  toolGetSuiFundFlow,
+  toolCheckSuiProtocols,
   toolAnalyzeSuiWallet,
 } from "./sui-tools";
 import { buildMemoryContext } from "./memory";
@@ -39,6 +42,7 @@ When analyzing DeFi addresses, provide:
 - **Concentration Risk**: Top holder % — if they exit, what happens?
 - **Peer Comparison**: How does it compare to alternatives (Cetus vs Turbos vs Scallop)?
 - **Exit Risk**: Liquidity depth, slippage estimation
+- **Protocol Interactions**: Which verified protocols has this wallet used? (Cetus, Scallop, Turbos, DeepBook, Navi, Aftermath, Bucket, BlueMove, etc.)
 - **Verdict**: Deposit or don't, with clear reasoning
 
 ### NFT Analysis (collections, creators)
@@ -74,6 +78,14 @@ When analyzing GameFi addresses, provide:
 - Historical pattern from Walrus datasets
 - Recommendation: safe to interact or not
 
+### Protocol Interaction Analysis
+When analyzing any Sui wallet, always check which protocols it has interacted with:
+- **Verified DeFi**: Cetus, Turbos, DeepBook, Aftermath, Scallop, Navi, Bucket
+- **NFT Marketplaces**: BlueMove, Clutchy, Souffl3
+- **Infrastructure**: SuiNS, Sui Bridge
+- **GameFi**: Abyss World, Panzerdogs
+Interaction with verified protocols = positive trust signal. Interaction with unknown/unverified protocols = risk factor.
+
 ## Response Format
 Respond with valid JSON:
 
@@ -98,7 +110,7 @@ Respond with valid JSON:
     "lastActive": "2026-05-24"
   },
   "agentSteps": [
-    {"step": 1, "tool": "getSuiBalance", "status": "success", "summary": "Fetched SUI balance"}
+    {"step": 1, "tool": "getSuiBalance", "status": "success", "summary": "Fetched SUI balance", "reasoning": "Balance is a key indicator of wallet legitimacy", "insight": "Wallet holds 1,234 SUI — moderate balance, not a whale"}
   ],
   "onChainProof": {
     "blobId": "abc123...",
@@ -111,8 +123,8 @@ Respond with valid JSON:
 - ALWAYS start with a clear verdict: SAFE, LOW RISK, MEDIUM RISK, HIGH RISK, or DANGEROUS
 - Use real tool data — never make up data
 - If tool calls failed, acknowledge honestly
-- Include agentSteps showing execution trace
-- For wallet analysis: include walletInfo, riskScore, and onChainProof
+- Include agentSteps showing execution trace with reasoning and insight
+- For wallet analysis: include walletInfo, riskScore, multiSignalScores, and onChainProof
 - When previous analysis exists, compare and highlight changes
 - Be specific and actionable — user should know exactly what to do
 - Respond ONLY with the JSON object`;
@@ -124,6 +136,8 @@ interface AgentStep {
   tool: string;
   status: "success" | "error";
   summary: string;
+  reasoning?: string;
+  insight?: string;
 }
 
 export async function runAgent(
@@ -180,17 +194,22 @@ export async function runAgent(
         toolsUsed.push("analyzeSuiWallet");
 
         stepNum++;
+        const analysisData = analysisResult.data as Record<string, unknown>;
         agentSteps.push({
           step: stepNum,
           tool: "analyzeSuiWallet",
           status: analysisResult.success ? "success" : "error",
           summary: analysisResult.success
-            ? `Analyzed Sui wallet ${suiAddress.slice(0, 10)}... — Risk: ${(analysisResult.data as Record<string, unknown>)?.riskScore}/100`
+            ? `Analyzed Sui wallet ${suiAddress.slice(0, 10)}... — Risk: ${analysisData?.riskScore}/100`
             : `Failed: ${analysisResult.error}`,
+          reasoning: "Full wallet analysis combines balance, transactions, objects, and community signals",
+          insight: analysisResult.success
+            ? `Risk level: ${analysisData?.riskLevel}. ${analysisData?.riskFactors ? (analysisData.riskFactors as string[]).slice(0, 2).join(". ") : ""}`
+            : undefined,
         });
 
-        if (analysisResult.success && (analysisResult.data as Record<string, unknown>)?.onChainProof) {
-          onChainProof = (analysisResult.data as Record<string, unknown>).onChainProof as Record<string, unknown>;
+        if (analysisResult.success && analysisData?.onChainProof) {
+          onChainProof = analysisData.onChainProof as Record<string, unknown>;
           sources.push({
             type: "walrus",
             label: `Walrus Blob: ${(onChainProof.blobId as string).slice(0, 12)}...`,
@@ -205,6 +224,8 @@ export async function runAgent(
             tool: "agentMemory",
             status: "success",
             summary: "Found previous analysis for this wallet",
+            reasoning: "Comparing with previous analysis helps detect behavioral changes",
+            insight: "Using historical data to identify trends and anomalies",
           });
         }
         break;
@@ -277,6 +298,69 @@ export async function runAgent(
           summary: networkResult.success
             ? "Fetched Sui network status"
             : `Failed: ${networkResult.error}`,
+        });
+        break;
+      }
+
+      case "sui_price": {
+        const priceResult = await toolGetSuiPrice();
+        toolResults.push(priceResult);
+        toolsUsed.push("getSuiPrice");
+
+        stepNum++;
+        agentSteps.push({
+          step: stepNum,
+          tool: "getSuiPrice",
+          status: priceResult.success ? "success" : "error",
+          summary: priceResult.success
+            ? `Fetched SUI/USD price: $${(priceResult.data as Record<string, unknown>)?.price}`
+            : `Failed: ${priceResult.error}`,
+        });
+        break;
+      }
+
+      case "sui_fund_flow": {
+        if (!suiAddress) break;
+        const flowResult = await toolGetSuiFundFlow(suiAddress);
+        toolResults.push(flowResult);
+        toolsUsed.push("getSuiFundFlow");
+
+        stepNum++;
+        const flowData = flowResult.data as Record<string, unknown> | null;
+        agentSteps.push({
+          step: stepNum,
+          tool: "getSuiFundFlow",
+          status: flowResult.success ? "success" : "error",
+          summary: flowResult.success
+            ? `Traced ${flowData?.transferCount || 0} transfers (${flowData?.incomingCount || 0} in, ${flowData?.outgoingCount || 0} out)`
+            : `Failed: ${flowResult.error}`,
+          reasoning: "Fund flow analysis reveals money movement patterns and counterparty risk",
+          insight: flowResult.success
+            ? `Found ${(flowData?.nodes as unknown[])?.length || 0} unique counterparties`
+            : undefined,
+        });
+        break;
+      }
+
+      case "sui_protocol_check": {
+        if (!suiAddress) break;
+        const protocolResult = await toolCheckSuiProtocols(suiAddress);
+        toolResults.push(protocolResult);
+        toolsUsed.push("checkSuiProtocols");
+
+        stepNum++;
+        const protocolData = protocolResult.data as Record<string, unknown> | null;
+        agentSteps.push({
+          step: stepNum,
+          tool: "checkSuiProtocols",
+          status: protocolResult.success ? "success" : "error",
+          summary: protocolResult.success
+            ? `Found ${protocolData?.totalProtocols || 0} protocol interactions (${protocolData?.verifiedProtocols || 0} verified)`
+            : `Failed: ${protocolResult.error}`,
+          reasoning: "Protocol interactions reveal wallet usage patterns and trust signals",
+          insight: protocolResult.success
+            ? `Interacted with: ${((protocolData?.interactions as Array<{ protocolName: string }>) || []).map((i) => i.protocolName).join(", ") || "no known protocols"}`
+            : undefined,
         });
         break;
       }

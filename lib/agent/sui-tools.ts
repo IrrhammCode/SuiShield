@@ -6,9 +6,18 @@ import {
   getSuiTransactionBlocks,
   getSuiLatestCheckpoint,
   getSuiProtocolConfig,
+  getSuiPrice,
   formatSuiBalance,
+  formatUsdValue,
   mistToSui,
 } from "@/lib/tatum-sui";
+import {
+  analyzeProtocolInteractions,
+  getProtocolByPackageId,
+  getVerifiedProtocols,
+  getProtocolsByType,
+  type ProtocolAnalysis,
+} from "@/lib/sui-protocols";
 import { saveAnalysis, buildMemoryContext, getPreviousAnalysis } from "./memory";
 import type { ToolResult } from "./tools";
 
@@ -181,6 +190,106 @@ export async function toolGetSuiNetworkStatus(): Promise<ToolResult> {
   }
 }
 
+export async function toolGetSuiPrice(): Promise<ToolResult> {
+  const start = Date.now();
+  try {
+    const price = await getSuiPrice();
+
+    return {
+      tool: "getSuiPrice",
+      success: true,
+      data: {
+        symbol: price.symbol,
+        basePair: price.basePair,
+        price: price.price,
+        timestamp: price.timestamp,
+      },
+      duration: Date.now() - start,
+    };
+  } catch (e: unknown) {
+    return {
+      tool: "getSuiPrice",
+      success: false,
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+      duration: Date.now() - start,
+    };
+  }
+}
+
+export async function toolGetSuiFundFlow(address: string, depth = 1): Promise<ToolResult> {
+  const start = Date.now();
+  try {
+    // Get recent transactions to trace fund flow
+    const txResult = await toolGetSuiTransactions(address, 20);
+    if (!txResult.success) throw new Error(txResult.error || "Failed to fetch transactions");
+
+    const txs = txResult.data as { transactions: Array<{ digest: string; effects?: { balanceChanges?: Array<{ owner?: { AddressOwner?: string }; coinType: string; amount: string }> } }> };
+    const nodes: Array<{ id: string; label: string; type: "target" | "counterparty" | "self" }> = [
+      { id: address, label: `${address.slice(0, 6)}...${address.slice(-4)}`, type: "target" },
+    ];
+    const links: Array<{ source: string; target: string; value: number; type: string }> = [];
+    const seen = new Set<string>();
+
+    for (const tx of txs.transactions || []) {
+      const changes = tx.effects?.balanceChanges || [];
+      for (const change of changes) {
+        const counterparty = change.owner?.AddressOwner;
+        if (!counterparty || counterparty === address) continue;
+
+        const amount = Math.abs(Number(change.amount)) / 1_000_000_000; // Convert MIST to SUI
+        if (amount < 0.01) continue; // Skip dust
+
+        const isIncoming = Number(change.amount) > 0;
+        const source = isIncoming ? counterparty : address;
+        const target = isIncoming ? address : counterparty;
+
+        if (!seen.has(counterparty)) {
+          seen.add(counterparty);
+          nodes.push({
+            id: counterparty,
+            label: `${counterparty.slice(0, 6)}...${counterparty.slice(-4)}`,
+            type: "counterparty",
+          });
+        }
+
+        links.push({
+          source,
+          target,
+          value: Math.round(amount * 100) / 100,
+          type: isIncoming ? "incoming" : "outgoing",
+        });
+      }
+    }
+
+    // If depth > 1, we could recursively trace (simplified for hackathon)
+    const summary = `Fund flow for ${address.slice(0, 10)}...: ${links.length} transfers found, ${links.filter(l => l.type === "incoming").length} incoming, ${links.filter(l => l.type === "outgoing").length} outgoing`;
+
+    return {
+      tool: "getSuiFundFlow",
+      success: true,
+      data: {
+        address,
+        nodes,
+        links,
+        summary,
+        transferCount: links.length,
+        incomingCount: links.filter(l => l.type === "incoming").length,
+        outgoingCount: links.filter(l => l.type === "outgoing").length,
+      },
+      duration: Date.now() - start,
+    };
+  } catch (e: unknown) {
+    return {
+      tool: "getSuiFundFlow",
+      success: false,
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+      duration: Date.now() - start,
+    };
+  }
+}
+
 // ── Composite: Full Sui Wallet Analysis ──────────────────
 
 export async function toolAnalyzeSuiWallet(
@@ -201,7 +310,7 @@ export async function toolAnalyzeSuiWallet(
       toolGetSuiTransactions(address, 20),
     ]);
 
-    // Calculate risk score based on patterns
+    // Calculate multi-signal trust score
     interface BalanceData { totalBalance: string; formattedBalance: string }
     interface ObjectsData { objectCount: number; objectTypes: Record<string, number> }
     interface TxsData { transactionCount: number; transactions: unknown[] }
@@ -210,51 +319,98 @@ export async function toolAnalyzeSuiWallet(
     const objects = objectsResult.success ? (objectsResult.data as ObjectsData) : null;
     const txs = txResult.success ? (txResult.data as TxsData) : null;
 
-    let riskScore = 50; // baseline
     const riskFactors: string[] = [];
 
-    // Balance-based risk
+    // ── Signal 1: On-chain Activity Score ─────────────────
+    let onChainScore = 50;
+    if (txs) {
+      if (txs.transactionCount === 0) {
+        onChainScore += 20;
+        riskFactors.push("No transaction history");
+      } else if (txs.transactionCount > 100) {
+        onChainScore -= 15;
+        riskFactors.push("Active transaction history (100+ txs)");
+      } else if (txs.transactionCount > 10) {
+        onChainScore -= 5;
+      }
+    }
+    if (objects) {
+      const diversity = Object.keys(objects.objectTypes || {}).length;
+      if (diversity > 3) onChainScore -= 5; // Diverse interactions = safer
+      if (objects.objectCount > 1000) riskFactors.push("Very high object count");
+    }
+    onChainScore = Math.max(0, Math.min(100, onChainScore));
+
+    // ── Signal 2: Wallet Maturity Score ───────────────────
+    let maturityScore = 50;
+    if (txs && txs.transactions.length > 0) {
+      // Estimate age from transaction count (approximation)
+      const estimatedAgeDays = Math.min(txs.transactionCount * 2, 730);
+      maturityScore -= Math.min(estimatedAgeDays / 10, 30); // Older = safer
+      if (estimatedAgeDays < 7) {
+        maturityScore += 20;
+        riskFactors.push("Very new wallet (< 1 week)");
+      }
+    } else {
+      maturityScore += 15;
+      riskFactors.push("No transaction history to estimate age");
+    }
+    maturityScore = Math.max(0, Math.min(100, maturityScore));
+
+    // ── Signal 3: Balance Health Score ────────────────────
+    let balanceScore = 50;
     if (balance) {
       const suiAmount = mistToSui(balance.totalBalance);
       if (suiAmount === 0) {
-        riskScore += 10;
+        balanceScore += 20;
         riskFactors.push("Zero balance");
-      }
-      if (suiAmount > 100000) {
-        riskScore -= 10;
+      } else if (suiAmount > 0 && suiAmount < 1000000) {
+        balanceScore -= 10; // Reasonable balance = safer
+      } else if (suiAmount > 100000) {
         riskFactors.push("High balance (whale)");
       }
     }
+    balanceScore = Math.max(0, Math.min(100, balanceScore));
 
-    // Transaction-based risk
-    if (txs) {
-      if (txs.transactionCount === 0) {
-        riskScore += 15;
-        riskFactors.push("No transaction history");
-      }
-      if (txs.transactionCount > 100) {
-        riskScore -= 10;
-        riskFactors.push("Active transaction history");
-      }
-    }
-
-    // Object-based risk
-    if (objects) {
-      if (objects.objectCount > 1000) {
-        riskFactors.push("Very high object count");
-      }
-    }
-
-    // Previous analysis comparison
+    // ── Signal 4: Community Score (from reports) ──────────
+    let communityScore = 50;
     if (previousAnalysis) {
       const prevScore = previousAnalysis.record.riskScore;
-      const scoreDiff = Math.abs(riskScore - prevScore);
+      const scoreDiff = Math.abs(50 - prevScore);
       if (scoreDiff > 20) {
-        riskFactors.push(`Risk score changed significantly (${prevScore} → ${riskScore})`);
+        riskFactors.push(`Previous analysis showed ${prevScore > 70 ? "high" : "low"} risk`);
+        communityScore = prevScore; // Use previous as baseline
       }
     }
 
-    riskScore = Math.max(0, Math.min(100, riskScore));
+    // ── Signal 5: Protocol Interaction Score ──────────────
+    let protocolScore = 50;
+    let protocolAnalysis: ProtocolAnalysis | null = null;
+    if (txs && txs.transactions.length > 0) {
+      protocolAnalysis = analyzeProtocolInteractions(
+        txs.transactions as Parameters<typeof analyzeProtocolInteractions>[0]
+      );
+      protocolScore = protocolAnalysis.protocolScore;
+      riskFactors.push(...protocolAnalysis.riskFactors);
+
+      if (protocolAnalysis.totalProtocols > 0) {
+        const verifiedNames = protocolAnalysis.interactions
+          .filter((i) => i.riskLevel === "low")
+          .map((i) => i.protocolName);
+        if (verifiedNames.length > 0) {
+          riskFactors.push(`Verified protocol interactions: ${verifiedNames.join(", ")}`);
+        }
+      }
+    }
+
+    // ── Composite Score (weighted average) ────────────────
+    const riskScore = Math.round(
+      onChainScore * 0.25 +
+      maturityScore * 0.2 +
+      balanceScore * 0.2 +
+      communityScore * 0.15 +
+      protocolScore * 0.2
+    );
 
     const riskLevel =
       riskScore < 25 ? "safe" :
@@ -298,6 +454,22 @@ export async function toolAnalyzeSuiWallet(
         riskScore,
         riskLevel,
         riskFactors,
+        multiSignalScores: {
+          onChain: onChainScore,
+          maturity: maturityScore,
+          balance: balanceScore,
+          community: communityScore,
+          protocol: protocolScore,
+        },
+        protocolAnalysis: protocolAnalysis
+          ? {
+              totalProtocols: protocolAnalysis.totalProtocols,
+              verifiedProtocols: protocolAnalysis.verifiedProtocols,
+              unverifiedProtocols: protocolAnalysis.unverifiedProtocols,
+              interactions: protocolAnalysis.interactions,
+              protocolScore: protocolAnalysis.protocolScore,
+            }
+          : null,
         balance: balance?.formattedBalance || "0 SUI",
         objectCount: objects?.objectCount || 0,
         transactionCount: txs?.transactionCount || 0,
@@ -330,6 +502,49 @@ export async function toolAnalyzeSuiWallet(
   }
 }
 
+export async function toolCheckSuiProtocols(address: string): Promise<ToolResult> {
+  const start = Date.now();
+  try {
+    const txResult = await toolGetSuiTransactions(address, 50);
+    if (!txResult.success) throw new Error(txResult.error || "Failed to fetch transactions");
+
+    const txs = txResult.data as { transactions: unknown[] };
+    const protocolAnalysis = analyzeProtocolInteractions(
+      txs.transactions as Parameters<typeof analyzeProtocolInteractions>[0]
+    );
+
+    // Get all known protocols for reference
+    const allProtocols = getVerifiedProtocols();
+    const dexProtocols = getProtocolsByType("dex");
+    const lendingProtocols = getProtocolsByType("lending");
+    const nftProtocols = getProtocolsByType("nft");
+
+    return {
+      tool: "checkSuiProtocols",
+      success: true,
+      data: {
+        address,
+        ...protocolAnalysis,
+        knownProtocols: {
+          total: allProtocols.length,
+          dex: dexProtocols.map((p) => p.name),
+          lending: lendingProtocols.map((p) => p.name),
+          nft: nftProtocols.map((p) => p.name),
+        },
+      },
+      duration: Date.now() - start,
+    };
+  } catch (e: unknown) {
+    return {
+      tool: "checkSuiProtocols",
+      success: false,
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+      duration: Date.now() - start,
+    };
+  }
+}
+
 // ── Intent Detection for Sui ─────────────────────────────
 
 export type SuiIntent =
@@ -338,6 +553,9 @@ export type SuiIntent =
   | "sui_transactions"
   | "sui_wallet_analysis"
   | "sui_network"
+  | "sui_price"
+  | "sui_fund_flow"
+  | "sui_protocol_check"
   | "general";
 
 export function detectSuiIntent(message: string): SuiIntent {
@@ -364,6 +582,18 @@ export function detectSuiIntent(message: string): SuiIntent {
 
   if (hasSuiAddress) {
     return "sui_wallet_analysis"; // default for Sui address queries
+  }
+
+  if (lower.includes("sui") && (lower.includes("price") || lower.includes("cost") || lower.includes("value") || lower.includes("worth"))) {
+    return "sui_price";
+  }
+
+  if (hasSuiAddress && (lower.includes("fund") || lower.includes("flow") || lower.includes("trace") || lower.includes("transfer") || lower.includes("money"))) {
+    return "sui_fund_flow";
+  }
+
+  if (hasSuiAddress && (lower.includes("protocol") || lower.includes("defi") || lower.includes("cetus") || lower.includes("scallop") || lower.includes("turbos") || lower.includes("swap") || lower.includes("lending") || lower.includes("nft"))) {
+    return "sui_protocol_check";
   }
 
   if (lower.includes("sui") && (lower.includes("network") || lower.includes("status") || lower.includes("checkpoint"))) {

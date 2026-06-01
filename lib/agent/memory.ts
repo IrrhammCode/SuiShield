@@ -9,6 +9,9 @@ import {
   type StoredAnalysis,
 } from "@/lib/walrus-write";
 
+import { getMapping, setMapping } from "@/lib/agent/store";
+
+
 // ── In-memory cache (for current session) ────────────────
 // Also stores blob IDs for lookup
 const analysisCache = new Map<string, StoredAnalysis>();
@@ -26,7 +29,7 @@ export async function saveAnalysis(params: {
   agentSteps: string[];
   analyzedBy: string;
 }): Promise<StoredAnalysis> {
-  const record = createAnalysisRecord(params);
+  const record = await createAnalysisRecord(params);
 
   // Store on Walrus
   const result = await storeAnalysisOnWalrus(record);
@@ -40,6 +43,9 @@ export async function saveAnalysis(params: {
   // Cache locally
   const cacheKey = `${params.chain}:${params.address.toLowerCase()}`;
   analysisCache.set(cacheKey, stored);
+
+  // Persist to disk
+  await setMapping(cacheKey, stored);
 
   return stored;
 }
@@ -57,8 +63,14 @@ export async function getPreviousAnalysis(
     return analysisCache.get(cacheKey) || null;
   }
 
-  // TODO: In production, we'd maintain an index of address → blobId mappings
-  // For now, we rely on the in-memory cache
+  // Check persistent store
+  const persistentRecord = await getMapping(cacheKey);
+  if (persistentRecord) {
+    // Repopulate cache
+    analysisCache.set(cacheKey, persistentRecord);
+    return persistentRecord;
+  }
+
   return null;
 }
 

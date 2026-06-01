@@ -249,3 +249,58 @@ export function formatSuiBalance(mist: string | number): string {
   if (sui > 0) return `${sui.toFixed(9)} SUI`;
   return "0 SUI";
 }
+
+// ── SUI Price via Tatum ──────────────────────────────────
+
+export interface SuiPrice {
+  symbol: string;
+  basePair: string;
+  price: number;
+  timestamp: string;
+}
+
+/** Get current SUI/USD price via Tatum rates API */
+export async function getSuiPrice(): Promise<SuiPrice> {
+  // Use Tatum's public rate endpoint (no API key needed for rates)
+  const response = await fetch(
+    `https://api.tatum.io/v4/data/rate/symbol?symbol=SUI&basePair=USD`,
+    {
+      headers: TATUM_API_KEY ? { "x-api-key": TATUM_API_KEY } : {},
+    }
+  );
+
+  if (!response.ok) {
+    // Fallback to CoinGecko if Tatum fails
+    const cgResponse = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=sui&vs_currencies=usd"
+    );
+    if (cgResponse.ok) {
+      const cgData = await cgResponse.json();
+      return {
+        symbol: "SUI",
+        basePair: "USD",
+        price: cgData.sui?.usd || 0,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    throw new Error("Failed to fetch SUI price");
+  }
+
+  const data = await response.json();
+  return {
+    symbol: "SUI",
+    basePair: "USD",
+    price: parseFloat(data.value || data.rate || "0"),
+    timestamp: new Date().toISOString(),
+  };
+}
+
+/** Format USD value from SUI amount and price */
+export function formatUsdValue(suiAmount: number, pricePerSui: number): string {
+  const usd = suiAmount * pricePerSui;
+  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(2)}M`;
+  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(2)}K`;
+  if (usd >= 1) return `$${usd.toFixed(2)}`;
+  if (usd > 0) return `$${usd.toFixed(4)}`;
+  return "$0.00";
+}
