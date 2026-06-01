@@ -33,6 +33,13 @@ import {
   AnimatedCounter,
   MagneticBtn,
 } from "@/components/Advanced3D";
+import {
+  InteractiveMesh,
+  GlowLines,
+  DepthLayers,
+  FloatingRing,
+  GradientBorder,
+} from "@/components/GlowEffects";
 import ScrollReveal, { Stagger } from "@/components/ScrollAnimations";
 
 // ─── Navbar ───────────────────────────────────────────────
@@ -168,10 +175,17 @@ export default function LandingPage() {
     <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--bg-base)" }}>
       <Navbar />
 
-      {/* Background layers */}
-      <ParticleCanvas particleCount={50} colors={["#00E5FF", "#FF007A", "#66F5FF"]} connectDistance={100} mouseRadius={150} />
+      {/* Background layers — Multi-depth 3D */}
+      <InteractiveMesh />
+      <GlowLines />
+      <DepthLayers />
       <PerspectiveGrid />
       <GradientMesh />
+
+      {/* Floating 3D Rings */}
+      <FloatingRing size={400} color="#00E5FF" className="top-[5%] left-[5%]" />
+      <FloatingRing size={300} color="#FF007A" className="top-[35%] right-[5%]" />
+      <FloatingRing size={250} color="#66F5FF" className="bottom-[15%] left-[15%]" />
 
       {/* Floating Orbs — Parallax */}
       <ParallaxLayer speed={0.3}>
@@ -198,7 +212,11 @@ export default function LandingPage() {
           {/* 3D Rotating Shield */}
           <ScrollReveal direction="scale" delay={100}>
             <div className="flex justify-center mb-8">
-              <RotatingShield size={200} />
+              <GradientBorder>
+                <div className="p-8">
+                  <RotatingShield size={200} />
+                </div>
+              </GradientBorder>
             </div>
           </ScrollReveal>
 
