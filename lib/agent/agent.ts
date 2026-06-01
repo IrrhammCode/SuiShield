@@ -211,6 +211,45 @@ export async function runAgent(
             insight: "Using historical data to identify trends and anomalies",
           });
         }
+
+        // MCP Security Check
+        try {
+          const { mcpCheckMaliciousAddress } = await import("@/lib/tatum-mcp");
+          const maliciousResult = await mcpCheckMaliciousAddress(suiAddress, "sui-testnet");
+          stepNum++;
+          agentSteps.push({
+            step: stepNum,
+            tool: "mcpCheckMaliciousAddress",
+            status: "success",
+            summary: maliciousResult.isMalicious
+              ? `WARNING: Address flagged as malicious (${maliciousResult.category || "unknown"})`
+              : "Address not in malicious database",
+            reasoning: "Tatum MCP security check cross-references known malicious addresses",
+            insight: maliciousResult.isMalicious
+              ? `This address is flagged: ${maliciousResult.description || "confirmed threat"}`
+              : "No known threats detected for this address",
+          });
+        } catch (e) {
+          // MCP check optional
+        }
+
+        // Exchange Rate
+        try {
+          const { mcpGetExchangeRate } = await import("@/lib/tatum-mcp");
+          const rate = await mcpGetExchangeRate("SUI", "USD");
+          stepNum++;
+          agentSteps.push({
+            step: stepNum,
+            tool: "mcpGetExchangeRate",
+            status: "success",
+            summary: `SUI/USD: $${rate.rate.toFixed(4)}`,
+            reasoning: "Exchange rate needed to calculate USD value of holdings",
+            insight: `Current SUI price: $${rate.rate.toFixed(4)}`,
+          });
+        } catch (e) {
+          // Rate check optional
+        }
+
         break;
       }
 
