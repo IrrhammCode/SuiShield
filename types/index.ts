@@ -78,6 +78,8 @@ export interface AgentStep {
   tool: string;
   status: "success" | "error";
   summary: string;
+  reasoning?: string;
+  insight?: string;
 }
 
 export interface AgentResponse {
