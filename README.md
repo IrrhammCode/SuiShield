@@ -202,3 +202,4 @@ MIT
 **Built with ⚡ Tatum + ⬡ Walrus + ◎ Sui**
 
 *Check Before You Approve*
+
