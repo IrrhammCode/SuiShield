@@ -50,3 +50,5 @@ move/build/
 # local memory cache
 suishield-memory.json
 
+.env.local  
+.env 

@@ -4,8 +4,8 @@ import type { Dataset } from "@/types";
 
 // Testnet first for hackathon development
 export const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus-testnet.walrus.space",
   "https://aggregator.walrus.space",
+  "https://aggregator.walrus-testnet.walrus.space",
 ];
 
 export const TATUM_DATASETS: Dataset[] = [
