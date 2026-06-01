@@ -18,6 +18,12 @@ import {
   getProtocolsByType,
   type ProtocolAnalysis,
 } from "@/lib/sui-protocols";
+import {
+  mcpCheckMaliciousAddress,
+  mcpGetExchangeRate,
+  mcpGetWalletPortfolio,
+  mcpGetTransactionHistory,
+} from "@/lib/tatum-mcp";
 import { saveAnalysis, buildMemoryContext, getPreviousAnalysis } from "./memory";
 import type { ToolResult } from "./tools";
 
@@ -303,11 +309,13 @@ export async function toolAnalyzeSuiWallet(
     const memoryContext = buildMemoryContext("sui", address);
     const previousAnalysis = await getPreviousAnalysis("sui", address);
 
-    // Fetch all data in parallel
-    const [balanceResult, objectsResult, txResult] = await Promise.all([
+    // Fetch all data in parallel — Tatum Sui RPC + MCP tools
+    const [balanceResult, objectsResult, txResult, maliciousCheck, exchangeRate] = await Promise.all([
       toolGetSuiBalance(address),
       toolGetSuiObjects(address, 50),
       toolGetSuiTransactions(address, 20),
+      mcpCheckMaliciousAddress(address, "sui-testnet").catch(() => null),
+      mcpGetExchangeRate("SUI", "USD").catch(() => null),
     ]);
 
     // Calculate multi-signal trust score
@@ -403,13 +411,26 @@ export async function toolAnalyzeSuiWallet(
       }
     }
 
+    // ── Signal 6: Tatum MCP Security Check ────────────────
+    let mcpSecurityScore = 50;
+    if (maliciousCheck) {
+      if (maliciousCheck.isMalicious) {
+        mcpSecurityScore = 95;
+        riskFactors.push(`Tatum MCP flagged as malicious: ${maliciousCheck.category || "unknown"}`);
+      } else {
+        mcpSecurityScore = 10;
+        riskFactors.push("Tatum MCP: address not in malicious database");
+      }
+    }
+
     // ── Composite Score (weighted average) ────────────────
     const riskScore = Math.round(
-      onChainScore * 0.25 +
-      maturityScore * 0.2 +
-      balanceScore * 0.2 +
-      communityScore * 0.15 +
-      protocolScore * 0.2
+      onChainScore * 0.2 +
+      maturityScore * 0.15 +
+      balanceScore * 0.15 +
+      communityScore * 0.1 +
+      protocolScore * 0.15 +
+      mcpSecurityScore * 0.25 // MCP security gets highest weight
     );
 
     const riskLevel =
@@ -460,6 +481,11 @@ export async function toolAnalyzeSuiWallet(
           balance: balanceScore,
           community: communityScore,
           protocol: protocolScore,
+          mcpSecurity: mcpSecurityScore,
+        },
+        mcpData: {
+          maliciousCheck: maliciousCheck || null,
+          exchangeRate: exchangeRate || null,
         },
         protocolAnalysis: protocolAnalysis
           ? {
