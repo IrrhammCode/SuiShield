@@ -46,7 +46,7 @@ export interface FlowGraph {
 }
 
 export interface SuspiciousPattern {
-  type: "mixer" | "funnel" | "scatter" | "circular" | "sybil" | "rapid_drain";
+  type: "mixer" | "funnel" | "scatter" | "circular" | "sybil" | "rapid_drain" | "dusting" | "peel_chain";
   severity: "low" | "medium" | "high" | "critical";
   description: string;
   addresses: string[];
@@ -338,6 +338,94 @@ function detectSuspiciousPatterns(
     }
   }
 
+  // Pattern 5: Dusting — small amounts sent to many addresses
+  const dustThreshold = 0.1; // 0.1 SUI
+  const senderDustCounts = new Map<string, { count: number; recipients: Set<string> }>();
+  for (const edge of edges) {
+    const amount = parseFloat(edge.amount || "0");
+    if (amount < dustThreshold && amount > 0) {
+      const entry = senderDustCounts.get(edge.from) || { count: 0, recipients: new Set() };
+      entry.count++;
+      entry.recipients.add(edge.to);
+      senderDustCounts.set(edge.from, entry);
+    }
+  }
+
+  for (const [address, data] of senderDustCounts) {
+    if (data.recipients.size >= 5) {
+      patterns.push({
+        type: "dusting",
+        severity: "medium",
+        description: `Address ${address.slice(0, 10)}... sent dust (< ${dustThreshold} SUI) to ${data.recipients.size} addresses — potential dusting attack or airdrop scam`,
+        addresses: [address],
+        confidence: 55,
+      });
+    }
+  }
+
+  // Pattern 6: Peel Chain — sequential A→B→C→D with decreasing amounts
+  const peelAdjacency = new Map<string, Set<string>>();
+  for (const edge of edges) {
+    if (!peelAdjacency.has(edge.from)) peelAdjacency.set(edge.from, new Set());
+    peelAdjacency.get(edge.from)!.add(edge.to);
+  }
+
+  for (const node of nodes) {
+    const neighbors = peelAdjacency.get(node.address);
+    if (!neighbors || neighbors.size !== 1) continue;
+    
+    let current = node.address;
+    let chainLength = 0;
+    const visited = new Set<string>();
+    
+    while (current && !visited.has(current)) {
+      visited.add(current);
+      const next = peelAdjacency.get(current);
+      if (!next || next.size !== 1) break;
+      const nextAddr = Array.from(next)[0];
+      if (visited.has(nextAddr)) break;
+      current = nextAddr;
+      chainLength++;
+    }
+    
+    if (chainLength >= 4) {
+      patterns.push({
+        type: "peel_chain",
+        severity: "high",
+        description: `Peel chain detected starting from ${node.address.slice(0, 10)}... — ${chainLength} sequential transfers, potential money laundering`,
+        addresses: [node.address],
+        confidence: 75,
+      });
+    }
+  }
+
+  // Pattern 7: Sybil — multiple addresses funded from same source
+  const fundingSource = new Map<string, Set<string>>();
+  for (const edge of edges) {
+    if (!fundingSource.has(edge.to)) fundingSource.set(edge.to, new Set());
+    fundingSource.get(edge.to)!.add(edge.from);
+  }
+
+  const reverseFunding = new Map<string, Set<string>>();
+  for (const [recipient, senders] of fundingSource) {
+    for (const sender of senders) {
+      if (!reverseFunding.has(sender)) reverseFunding.set(sender, new Set());
+      reverseFunding.get(sender)!.add(recipient);
+    }
+  }
+
+  for (const [source, recipients] of reverseFunding) {
+    if (recipients.size >= 3) {
+      patterns.push({
+        type: "sybil",
+        severity: "high",
+        description: `Address ${source.slice(0, 10)}... funded ${recipients.size} different addresses — potential Sybil attack or airdrop farming`,
+        addresses: [source, ...Array.from(recipients).slice(0, 3)],
+        confidence: 65,
+      });
+    }
+  }
+
   // Deduplicate
   const seen = new Set<string>();
   return patterns.filter((p) => {
@@ -435,6 +523,73 @@ export async function analyzeBehavior(
     description: maxSui > 100000
       ? `Largest transfer: ${maxSui.toLocaleString()} SUI — whale activity`
       : `Largest transfer: ${maxSui.toLocaleString()} SUI`,
+  });
+
+  // Pattern 4: Counterparty concentration — too many txs with same address
+  const counterpartyTxCounts = new Map<string, number>();
+  for (const tx of transactions) {
+    if (!tx.balanceChanges) continue;
+    for (const change of tx.balanceChanges) {
+      const other = change.owner?.AddressOwner;
+      if (!other || other === address) continue;
+      counterpartyTxCounts.set(other, (counterpartyTxCounts.get(other) || 0) + 1);
+    }
+  }
+  
+  const maxConcentration = Math.max(...Array.from(counterpartyTxCounts.values()), 0);
+  const concentratedCounterparty = Array.from(counterpartyTxCounts.entries()).find(([, v]) => v === maxConcentration);
+  
+  patterns.push({
+    type: "counterparty_concentration",
+    detected: maxConcentration > 10,
+    confidence: 55,
+    description: maxConcentration > 10
+      ? `High concentration: ${maxConcentration} transactions with ${concentratedCounterparty?.[0]?.slice(0, 10)}... — potential bot or coordinated activity`
+      : `Max concentration: ${maxConcentration} txs with single counterparty`,
+  });
+
+  // Pattern 5: Rapid succession — many transactions in short time
+  let rapidCount = 0;
+  const timestamps = transactions
+    .map((tx) => tx.timestampMs ? Number(tx.timestampMs) : 0)
+    .filter((t) => t > 0)
+    .sort();
+  
+  for (let i = 1; i < timestamps.length; i++) {
+    if (timestamps[i] - timestamps[i - 1] < 5000) { // Less than 5 seconds apart
+      rapidCount++;
+    }
+  }
+  
+  patterns.push({
+    type: "rapid_succession",
+    detected: rapidCount > 5,
+    confidence: 60,
+    description: rapidCount > 5
+      ? `${rapidCount} transactions within 5 seconds of each other — potential bot activity`
+      : `${rapidCount} rapid transactions (normal)`,
+  });
+
+  // Pattern 6: Suspicious round numbers
+  let roundNumberCount = 0;
+  for (const tx of transactions) {
+    if (!tx.balanceChanges) continue;
+    for (const change of tx.balanceChanges) {
+      const amount = Math.abs(parseInt(change.amount || "0"));
+      const sui = amount / 1e9;
+      if (sui > 0 && sui === Math.round(sui)) {
+        roundNumberCount++;
+      }
+    }
+  }
+  
+  patterns.push({
+    type: "round_numbers",
+    detected: roundNumberCount > 5 && roundNumberCount > transactions.length * 0.5,
+    confidence: 40,
+    description: roundNumberCount > 5 && roundNumberCount > transactions.length * 0.5
+      ? `${roundNumberCount} transfers with exact round numbers — potential automated/scripted activity`
+      : `${roundNumberCount} round number transfers (normal)`,
   });
 
   // Calculate risk adjustment
