@@ -94,11 +94,11 @@ function Step({ num, title, description }: { num: number; title: string; descrip
 }
 
 // ─── Tech Pill ───────────────────────────────────────────
-function TechPill({ label, sub, color, icon }: { label: string; sub: string; color: string; icon: string }) {
+function TechPill({ label, sub, color, icon }: { label: string; sub: string; color: string; icon: React.ReactNode }) {
   return (
     <Floating3DCard className="flex flex-col items-center gap-2 p-4 rounded-2xl" glowColor="rgba(0,229,255,0.1)">
       <div className="text-2xl mb-1">{icon}</div>
-      <div className={`font-display font-semibold text-sm ${color}`}>{label}</div>
+      <div className={`font-display font-bold text-sm ${color}`}>{label}</div>
       <div className="text-[#525880] text-xs text-center">{sub}</div>
     </Floating3DCard>
   );
@@ -189,7 +189,7 @@ export default function LandingPage() {
 
           {/* Headline — 3D Tilt */}
           <TiltText className="mb-8" intensity={3}>
-            <h1 className="font-display font-extrabold text-[44px] md:text-[72px] leading-[1.05] tracking-[-0.03em]">
+            <h1 className="font-display font-black text-[44px] md:text-[72px] leading-[1.05] tracking-[-0.03em]">
               <span className="text-gradient-premium">Check Before</span>
               <br />
               <span className="text-white">You Approve</span>
@@ -403,10 +403,10 @@ export default function LandingPage() {
               <p className="text-[#525880] text-sm">Enterprise-grade infrastructure, decentralized storage</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <TechPill label="Tatum" sub="Sui RPC & Data APIs" color="text-cyan-400" icon="⚡" />
-              <TechPill label="Walrus" sub="Decentralized Storage" color="text-magenta-400" icon="⬡" />
-              <TechPill label="Sui" sub="Move Smart Contracts" color="text-blue-400" icon="◎" />
-              <TechPill label="Groq" sub="AI Agent (Llama 3.3)" color="text-orange-400" icon="🧠" />
+              <TechPill label="Tatum" sub="Sui RPC & Data APIs" color="text-cyan-400" icon={<Zap className="w-6 h-6" />} />
+              <TechPill label="Walrus" sub="Decentralized Storage" color="text-magenta-400" icon={<Database className="w-6 h-6" />} />
+              <TechPill label="Sui" sub="Move Smart Contracts" color="text-blue-400" icon={<Globe className="w-6 h-6" />} />
+              <TechPill label="Groq" sub="AI Agent (Llama 3.3)" color="text-orange-400" icon={<Activity className="w-6 h-6" />} />
             </div>
           </div>
         </ScrollReveal>

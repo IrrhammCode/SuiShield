@@ -22,8 +22,14 @@ import {
   Info,
   ChevronDown,
   User,
-  LogOut,
   Globe,
+  Search,
+  ArrowRight,
+  Eye,
+  GitBranch,
+  Bell,
+  AlertTriangle,
+  CheckCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -41,46 +47,41 @@ import {
 import type { Message, MessageMetadata, DataSource, WalletInfo, AgentStep } from "@/types";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { useWalletAuth } from "@/context/WalletAuthContext";
+import Floating3DCard from "@/components/Floating3D";
 
 // ─── Agent Steps Visualizer ──────────────────────────────
 function AgentStepsVisualizer({ steps }: { steps: AgentStep[] }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="card p-3 border-purple-500/20 bg-purple-500/5">
+    <div className="card-premium p-4">
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex items-center justify-between w-full text-xs"
       >
-        <div className="flex items-center gap-2 text-purple-400 font-medium">
-          <Zap className="w-3.5 h-3.5" />
-          Agent executed {steps.length} tool{steps.length !== 1 ? "s" : ""}
+        <div className="flex items-center gap-2 text-cyan-400 font-semibold">
+          <Zap className="w-4 h-4" />
+          Agent executed {steps.length} step{steps.length !== 1 ? "s" : ""}
         </div>
-        <ChevronDown
-          className={`w-3.5 h-3.5 text-[#525880] transition-transform ${
-            expanded ? "rotate-180" : ""
-          }`}
-        />
+        <span className="text-[#525880] text-[10px]">{expanded ? "▲ COLLAPSE" : "▼ EXPAND"}</span>
       </button>
       {expanded && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-4 space-y-3">
           {steps.map((step) => (
-            <div
-              key={step.step}
-              className="flex items-start gap-2 text-xs"
-            >
-              <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
-                  step.status === "success"
-                    ? "bg-teal-500/20 text-teal-400 border border-teal-500/30"
-                    : "bg-red-500/20 text-red-400 border border-red-500/30"
-                }`}
-              >
+            <div key={step.step} className="flex items-start gap-3 text-xs">
+              <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
+                step.status === "success"
+                  ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25"
+                  : "bg-red-500/15 text-red-400 border border-red-500/25"
+              }`}>
                 {step.step}
               </div>
-              <div>
-                <span className="font-mono text-[#8B93C4]">{step.tool}</span>
-                <div className="text-[#525880] mt-0.5">{step.summary}</div>
+              <div className="flex-1">
+                <span className="font-mono text-cyan-300 text-[11px]">{step.tool}</span>
+                <div className="text-[#8B93C4] mt-0.5 leading-relaxed">{step.summary}</div>
+                {step.reasoning && (
+                  <div className="text-[#525880] text-[10px] mt-1 italic">{step.reasoning}</div>
+                )}
               </div>
             </div>
           ))}
@@ -92,20 +93,20 @@ function AgentStepsVisualizer({ steps }: { steps: AgentStep[] }) {
 
 // ─── Source Badge ─────────────────────────────────────────
 function SourceBadge({ source }: { source: DataSource }) {
-  const configs: Record<string, { label: string; color: string; icon: string }> = {
-    walrus: { label: "Walrus", color: "text-teal-400 border-teal-500/30 bg-teal-500/10", icon: "⬡" },
-    "tatum-rpc": { label: "Tatum RPC", color: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10", icon: "⚡" },
-    "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-blue-400 border-blue-500/30 bg-blue-500/10", icon: "🔷" },
-    "tatum-api": { label: "Tatum API", color: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10", icon: "📡" },
-    "tatum-mcp": { label: "Tatum MCP", color: "text-blue-400 border-blue-500/30 bg-blue-500/10", icon: "🤖" },
-    "walrus-dataset": { label: "Walrus Dataset", color: "text-magenta-400 border-magenta-500/30 bg-magenta-500/10", icon: "📊" },
-    agent: { label: "Agent", color: "text-orange-400 border-orange-500/30 bg-orange-500/10", icon: "🤖" },
+  const configs: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+    walrus: { label: "Walrus", color: "text-magenta-400 border-magenta-500/30 bg-magenta-500/10", icon: <Database className="w-3 h-3" /> },
+    "tatum-rpc": { label: "Tatum RPC", color: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10", icon: <Zap className="w-3 h-3" /> },
+    "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-blue-400 border-blue-500/30 bg-blue-500/10", icon: <Zap className="w-3 h-3" /> },
+    "tatum-api": { label: "Tatum API", color: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10", icon: <Database className="w-3 h-3" /> },
+    "tatum-mcp": { label: "Tatum MCP", color: "text-blue-400 border-blue-500/30 bg-blue-500/10", icon: <Brain className="w-3 h-3" /> },
+    "walrus-dataset": { label: "Walrus Dataset", color: "text-magenta-400 border-magenta-500/30 bg-magenta-500/10", icon: <Database className="w-3 h-3" /> },
+    agent: { label: "Agent", color: "text-orange-400 border-orange-500/30 bg-orange-500/10", icon: <Brain className="w-3 h-3" /> },
   };
   const config = configs[source.type] || configs["tatum-api"];
 
   return (
     <div className={`inline-flex items-center gap-1.5 text-xs border rounded-lg px-2 py-1 font-mono ${config.color}`}>
-      <span>{config.icon}</span>
+      {config.icon}
       <span>{source.label || config.label}</span>
     </div>
   );
@@ -130,7 +131,7 @@ function RiskMeter({ score }: { score: number }) {
     <div className="bg-[#1A1D2E] rounded-2xl p-4 border border-white/5">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[#8B93C4] text-xs font-medium">Risk Score</span>
-        <span className="font-bold text-lg" style={{ color: getColor() }}>
+        <span className="font-display font-bold text-lg" style={{ color: getColor() }}>
           {score}/100
         </span>
       </div>
@@ -195,7 +196,7 @@ function WalletOverviewCard({ address }: { address: string }) {
   };
 
   return (
-    <div className="card p-4 space-y-4 h-full">
+    <div className="card-premium p-4 space-y-4 h-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
@@ -209,7 +210,7 @@ function WalletOverviewCard({ address }: { address: string }) {
           </div>
         </div>
         <button onClick={copyAddress} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
-          {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5 text-[#525880]" />}
+          {copied ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5 text-[#525880]" />}
         </button>
       </div>
 
@@ -220,7 +221,6 @@ function WalletOverviewCard({ address }: { address: string }) {
       ) : walletInfo ? (
         <>
           <RiskMeter score={walletInfo.riskScore} />
-
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Balance", value: walletInfo.balance || "—", icon: <Wallet className="w-3 h-3" /> },
@@ -257,7 +257,7 @@ function ChartRenderer({ chart }: { chart: NonNullable<MessageMetadata["charts"]
   };
 
   return (
-    <div className="card p-4">
+    <div className="card-premium p-4">
       <div className="text-sm font-medium text-[#8B93C4] mb-3 flex items-center gap-2">
         <BarChart3 className="w-4 h-4 text-cyan-400" />
         {chart.title}
@@ -275,13 +275,7 @@ function ChartRenderer({ chart }: { chart: NonNullable<MessageMetadata["charts"]
             <XAxis dataKey={chart.xKey} tick={{ fill: "#525880", fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#525880", fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Area
-              type="monotone"
-              dataKey={typeof chart.yKey === "string" ? chart.yKey : chart.yKey[0]}
-              stroke="#00E5FF"
-              strokeWidth={2}
-              fill="url(#areaGradDash)"
-            />
+            <Area type="monotone" dataKey={typeof chart.yKey === "string" ? chart.yKey : chart.yKey[0]} stroke="#00E5FF" strokeWidth={2} fill="url(#areaGradDash)" />
           </AreaChart>
         ) : chart.type === "bar" ? (
           <BarChart data={chart.data}>
@@ -326,9 +320,7 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
         return (
           <div key={i} className="flex gap-2 text-[#8B93C4] text-sm">
             <span className="text-cyan-400 mt-0.5">›</span>
-            <span dangerouslySetInnerHTML={{
-              __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>')
-            }} />
+            <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>') }} />
           </div>
         );
       }
@@ -338,8 +330,7 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
       if (line === "") return <div key={i} className="h-2" />;
       return (
         <div key={i} className="text-[#B0B8E0] text-sm leading-relaxed" dangerouslySetInnerHTML={{
-          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>')
-            .replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-teal-300">$1</code>')
+          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-cyan-300">$1</code>')
         }} />
       );
     });
@@ -348,11 +339,11 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end gap-3 animate-slide-up">
-        <div className="bg-[#FF007A]/10 border border-[#FF007A]/20 rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[80%]">
+        <div className="chat-bubble-user px-5 py-3.5 max-w-[80%] mt-1">
           <p className="text-white text-[15px] leading-relaxed">{message.content}</p>
         </div>
-        <div className="w-8 h-8 rounded-full border border-[#FF007A]/40 flex items-center justify-center flex-shrink-0 bg-[#FF007A]/10">
-          <User className="w-4 h-4 text-[#FF007A]" />
+        <div className="w-10 h-10 rounded-full border border-[#FF007A]/40 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(255,0,122,0.3)] bg-[#FF007A]/10 mt-1">
+          <User className="w-5 h-5 text-[#FF007A]" />
         </div>
       </div>
     );
@@ -360,50 +351,30 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
 
   return (
     <div className="flex gap-3 animate-slide-up">
-      <div className="w-8 h-8 rounded-full border border-[#00E5FF]/40 flex items-center justify-center flex-shrink-0 bg-[#00E5FF]/10">
-        <img src="/logo.png" alt="SuiShield Logo" className="w-5 h-5 object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
+      <div className="w-10 h-10 rounded-full border border-[#00E5FF]/40 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.4)] bg-[#00E5FF]/10 mt-1">
+        <img src="/logo.png" alt="SuiShield" className="w-6 h-6 object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
       </div>
-
       <div className="flex-1 max-w-[90%] space-y-3">
-        <div className="bg-[#1A1D2E]/60 border border-white/5 rounded-2xl rounded-tl-sm px-5 py-4 space-y-1.5">
+        <div className="chat-bubble-ai px-5 py-4 space-y-1.5">
           {renderContent(message.content)}
         </div>
-
         {message.metadata?.charts?.map((chart, i) => (
           <ChartRenderer key={i} chart={chart} />
         ))}
-
-        {message.agentSteps && message.agentSteps.length > 0 && (
-          <AgentStepsVisualizer steps={message.agentSteps} />
+        {message.metadata?.walletInfo && (
+          <WalletOverviewCard address={message.metadata.walletInfo.address} />
         )}
-
-        {/* On-chain proof */}
-        {message.onChainProof && (
-          <div className="card p-3 border-magenta-500/20 bg-magenta-500/5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-magenta-400">⬡</span>
-                <span className="text-magenta-400 font-medium">Stored on Walrus</span>
-                <span className="font-mono text-[#525880]">
-                  {message.onChainProof.blobId.slice(0, 12)}...
-                </span>
-              </div>
-              <a
-                href={message.onChainProof.verificationUrl}
-                className="text-xs text-magenta-400 hover:text-magenta-300 transition-colors flex items-center gap-1"
-              >
-                Verify
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-          </div>
-        )}
-
         {message.metadata && (
           <div className="flex flex-wrap items-center gap-2">
             {message.metadata.sources?.map((src, i) => (
               <SourceBadge key={i} source={src} />
             ))}
+            {message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0 && (
+              <div className="text-xs text-[#525880] font-mono flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                {message.metadata.toolsUsed.join(", ")}
+              </div>
+            )}
             {message.metadata.executionTime && (
               <div className="text-xs text-[#525880] flex items-center gap-1 ml-auto">
                 <Clock className="w-3 h-3" />
@@ -411,7 +382,7 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
               </div>
             )}
             <button onClick={copyContent} className="p-1 rounded hover:bg-white/5 text-[#525880] hover:text-white transition-colors">
-              {copied ? <Check className="w-3 h-3 text-teal-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? <Check className="w-3 h-3 text-cyan-400" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         )}
@@ -424,19 +395,15 @@ function MessageBubble({ message }: { message: DashboardMessage }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3 animate-fade-in">
-      <div className="w-8 h-8 rounded-full border border-[#00E5FF]/40 flex items-center justify-center flex-shrink-0 bg-[#00E5FF]/10">
-        <img src="/logo.png" alt="SuiShield Logo" className="w-5 h-5 object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
+      <div className="w-10 h-10 rounded-full border border-[#00E5FF]/40 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.4)] bg-[#00E5FF]/10 mt-1">
+        <img src="/logo.png" alt="SuiShield" className="w-6 h-6 object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
       </div>
-      <div className="bg-[#1A1D2E]/60 border border-white/5 rounded-2xl rounded-tl-sm px-5 py-4 flex items-center gap-2">
+      <div className="chat-bubble-ai px-5 py-4 flex items-center gap-2">
         <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
-        <span className="text-[#525880] text-sm">Agent is thinking...</span>
+        <span className="text-[#525880] text-sm">Querying Walrus & Tatum...</span>
         <div className="flex gap-1 ml-2">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-typing-dot typing-dot"
-              style={{ animationDelay: `${i * 0.2}s` }}
-            />
+            <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-typing-dot typing-dot" style={{ animationDelay: `${i * 0.2}s` }} />
           ))}
         </div>
       </div>
@@ -444,41 +411,170 @@ function TypingIndicator() {
   );
 }
 
+// ─── Quick Action Card ────────────────────────────────────
+function QuickAction({ icon, title, description, href, color }: { icon: React.ReactNode; title: string; description: string; href: string; color: string }) {
+  return (
+    <Link href={href} className="group">
+      <Floating3DCard className="card-premium p-4 cursor-pointer h-full" glowColor="rgba(0,229,255,0.15)">
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+            {icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-bold text-white text-sm mb-0.5 group-hover:text-cyan-300 transition-colors">{title}</div>
+            <div className="text-[#525880] text-xs leading-relaxed">{description}</div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-[#525880] group-hover:text-cyan-400 transition-colors flex-shrink-0 mt-1" />
+        </div>
+      </Floating3DCard>
+    </Link>
+  );
+}
+
 // ─── Suggested Queries ────────────────────────────────────
 const SUGGESTED_QUERIES = [
-  { icon: <Shield className="w-4 h-4" />, text: "Analyze my Sui wallet" },
-  { icon: <Activity className="w-4 h-4" />, text: "Show my Sui objects and NFTs" },
-  { icon: <TrendingUp className="w-4 h-4" />, text: "What's the Sui network status?" },
-  { icon: <Zap className="w-4 h-4" />, text: "Check my recent Sui transactions" },
+  { icon: <Shield className="w-4 h-4" />, text: "Is wallet 0x742d35Cc... safe to interact with?", color: "border-orange-500/20 hover:border-orange-500/40" },
+  { icon: <TrendingUp className="w-4 h-4" />, text: "Show me SUI price history for 2026", color: "border-cyan-500/20 hover:border-cyan-500/40" },
+  { icon: <Activity className="w-4 h-4" />, text: "What was Ethereum's daily TPS in Q1 2025?", color: "border-blue-500/20 hover:border-blue-500/40" },
+  { icon: <Database className="w-4 h-4" />, text: "Top DeFi protocols on Sui by TVL", color: "border-magenta-500/20 hover:border-magenta-500/40" },
+  { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-red-500/20 hover:border-red-500/40" },
+  { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-yellow-500/20 hover:border-yellow-500/40" },
 ];
+
+// ─── Sidebar ──────────────────────────────────────────────
+function Sidebar() {
+  const [expanded, setExpanded] = useState<string | null>("tools");
+
+  const sections = [
+    {
+      id: "tools",
+      title: "Active Tatum Tools",
+      icon: <Zap className="w-4 h-4 text-cyan-400" />,
+      content: (
+        <div className="space-y-1.5">
+          {[
+            "check_malicious_address",
+            "get_transaction_history",
+            "get_wallet_portfolio",
+            "get_exchange_rate",
+            "gateway_execute_rpc",
+            "get_block_by_time",
+          ].map((tool) => (
+            <div key={tool} className="flex items-center gap-2 text-xs">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse-glow" />
+              <span className="font-mono text-[#8B93C4]">{tool}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "walrus",
+      title: "Walrus Data Sources",
+      icon: <Database className="w-4 h-4 text-magenta-400" />,
+      content: (
+        <div className="space-y-2">
+          {[
+            { name: "Sui Transactions", size: "80GB", status: "live" },
+            { name: "BTC History", size: "4TB", status: "live" },
+            { name: "ETH History", size: "5TB", status: "live" },
+            { name: "Price OHLCV", size: "500GB", status: "live" },
+          ].map((ds) => (
+            <div key={ds.name} className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-magenta-400" />
+                <span className="text-[#8B93C4]">{ds.name}</span>
+              </div>
+              <span className="text-[#525880] font-mono">{ds.size}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "network",
+      title: "Network Status",
+      icon: <Activity className="w-4 h-4 text-green-400" />,
+      content: (
+        <div className="space-y-2">
+          {[
+            { label: "Tatum RPC", status: "Online", color: "text-cyan-400" },
+            { label: "Walrus Aggregator", status: "Online", color: "text-magenta-400" },
+            { label: "Sui Testnet", status: "Online", color: "text-blue-400" },
+            { label: "MCP Server", status: "Ready", color: "text-orange-400" },
+          ].map(({ label, status, color }) => (
+            <div key={label} className="flex items-center justify-between text-xs">
+              <span className="text-[#525880]">{label}</span>
+              <span className={`font-medium ${color} flex items-center gap-1`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                {status}
+              </span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="w-72 flex-shrink-0 border-l border-white/5 p-4 space-y-3 overflow-y-auto scroll-area hidden lg:block">
+      {/* Walrus proof banner */}
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/8 to-magenta-500/5 border border-cyan-500/10 text-xs text-cyan-400 mb-4">
+        <Database className="w-3.5 h-3.5" />
+        <span>Data verified on Walrus</span>
+      </div>
+
+      {sections.map((section, idx) => (
+        <div key={section.id} className={`p-4 rounded-2xl backdrop-blur-xl bg-[#080A14]/60 border ${idx === 0 ? 'border-cyan-500/15 shadow-[0_0_20px_rgba(0,229,255,0.08)]' : 'border-magenta-500/15 shadow-[0_0_20px_rgba(255,0,122,0.08)]'}`}>
+          <button
+            className="w-full flex items-center justify-between text-sm font-bold text-white mb-2"
+            onClick={() => setExpanded(expanded === section.id ? null : section.id)}
+          >
+            <div className="flex items-center gap-2">
+              {section.icon}
+              {section.title}
+            </div>
+            <ChevronDown className={`w-4 h-4 text-[#525880] transition-transform ${expanded === section.id ? "rotate-180" : ""}`} />
+          </button>
+          {expanded === section.id && section.content}
+        </div>
+      ))}
+
+      {/* Info */}
+      <div className="card-premium p-3">
+        <div className="flex gap-2 text-xs text-[#8B93C4]">
+          <Info className="w-3 h-3 text-cyan-400 flex-shrink-0 mt-0.5" />
+          <span>Queries for data older than 3 days are automatically routed to Walrus blobs, bypassing the Sui RPC pruning limit.</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Dashboard Page ───────────────────────────────────────
 export default function DashboardPage() {
-  const { address, isConnected } = useWalletAuth();
+  const { address: walletAddress } = useWalletAuth();
   const [messages, setMessages] = useState<DashboardMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: `Welcome to **SuiShield** — Check Before You Approve!
+      content: `Welcome to SuiShield Dashboard.
 
-I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walrus decentralized storage**.
+I'm your AI-powered blockchain analytics assistant. I can help you with:
 
-**What I can do:**
-- **Analyze Sui wallets** — risk scoring, object analysis, transaction patterns
-- **Store on-chain proof** — every analysis stored permanently on Walrus
-- **Recall previous analyses** — agent memory across sessions
-- **Verify results** — anyone can verify from the blockchain
+- **Wallet Security** — check if an address is safe or malicious
+- **Historical Data** — query months/years of blockchain history via Walrus
+- **Price Analytics** — 4 years of crypto price data in 1-minute resolution
+- **On-chain Trends** — TPS, TVL, active addresses, transaction volumes
 
-**Try these:**
-- Paste a Sui address to analyze
-- "What's the Sui network status?"
-- "Check balance of 0x..."`,
+I use Tatum's MCP server with 59 specialized blockchain tools and fetch historical data directly from Walrus decentralized storage.
+
+What would you like to know?`,
       timestamp: new Date(),
       metadata: {
         sources: [
-          { type: "agent", label: "SuiShield Agent" },
-          { type: "tatum-rpc", label: "Tatum RPC" },
-          { type: "walrus", label: "Walrus Storage" },
+          { type: "tatum-mcp", label: "Tatum MCP Server" },
+          { type: "walrus", label: "11TB Historical Dataset" },
         ],
         toolsUsed: [],
       },
@@ -493,17 +589,10 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Redirect if not connected
-  useEffect(() => {
-    if (!isConnected) {
-      window.location.href = "/";
-    }
-  }, [isConnected]);
-
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
+    const userMessage: DashboardMessage = {
       id: Date.now().toString(),
       role: "user",
       content: input.trim(),
@@ -515,19 +604,14 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
     setIsLoading(true);
 
     try {
-      const history = messages.slice(-10).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-
+      const history = messages.slice(-10).map((m) => ({ role: m.role, content: m.content }));
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input.trim(), history, walletAddress: address }),
+        body: JSON.stringify({ message: input.trim(), history, walletAddress }),
       });
 
       if (!res.ok) throw new Error(`API error: ${res.status}`);
-
       const data = await res.json();
 
       const aiMessage: DashboardMessage = {
@@ -549,10 +633,10 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error: unknown) {
-      const errorMessage: Message = {
+      const errorMessage: DashboardMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Error: ${error instanceof Error ? error.message : String(error)}. Make sure GROQ_API_KEY is set in .env.local.`,
+        content: `Error: ${error instanceof Error ? error.message : String(error)}. Please check GROQ_API_KEY in .env.local.`,
         timestamp: new Date(),
         metadata: { sources: [], toolsUsed: [] },
       };
@@ -560,7 +644,7 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, address]);
+  }, [input, isLoading, messages, walletAddress]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -569,48 +653,110 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
     }
   };
 
+  const handleSuggestion = (text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="flex flex-col h-screen" style={{ background: "var(--bg-base)" }}>
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 grid-bg opacity-30" />
+        <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] bg-cyan-500/5 blur-[120px] rounded-full" />
         <div className="absolute top-[60%] -right-[10%] w-[500px] h-[500px] bg-magenta-500/4 blur-[120px] rounded-full" />
       </div>
 
       {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-5 py-3 border-b border-white/5 glass-bright z-10">
+      <div className="relative z-10 flex items-center justify-between px-5 py-3 border-b border-white/5 glass-bright">
         <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-1.5 text-[#525880] hover:text-white transition-colors text-sm">
+            <ChevronLeft className="w-4 h-4" />
+            Home
+          </Link>
+          <div className="w-px h-4 bg-white/10" />
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 flex items-center justify-center">
-              <img src="/logo.png" alt="SuiShield Logo" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]" />
+              <img src="/logo.png" alt="SuiShield" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]" />
             </div>
             <div>
-              <div className="text-white font-semibold text-sm leading-none">SuiShield</div>
-              <div className="text-[#525880] text-xs mt-0.5">Check Before You Approve</div>
+              <div className="text-white font-display font-bold text-sm leading-none">SuiShield</div>
+              <div className="text-[#525880] text-xs mt-0.5">Dashboard</div>
             </div>
           </div>
         </div>
-
         <div className="flex items-center gap-3">
-          {address && (
-            <div className="hidden md:flex items-center gap-2 text-xs">
-              <div className="w-1.5 h-1.5 rounded-full bg-magenta-400 animate-pulse" />
-              <span className="text-magenta-400 font-mono">
-                {address.slice(0, 6)}...{address.slice(-4)}
-              </span>
-            </div>
-          )}
           <ConnectWalletButton />
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-cyan-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span>Live</span>
+          </div>
         </div>
       </div>
 
       {/* Main area */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
+      <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* Chat area */}
         <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Quick Actions — shown when no user messages yet */}
+          {messages.length === 1 && (
+            <div className="px-5 pt-6 pb-2">
+              <div className="max-w-4xl mx-auto">
+                <div className="text-xs text-[#525880] mb-3 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                  Quick Actions
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <QuickAction
+                    icon={<Search className="w-5 h-5 text-cyan-400" />}
+                    title="Analyze Address"
+                    description="Check if a Sui address is safe before interacting"
+                    href="/analyze"
+                    color="bg-cyan-500/10 border border-cyan-500/20"
+                  />
+                  <QuickAction
+                    icon={<GitBranch className="w-5 h-5 text-magenta-400" />}
+                    title="Trust Graph"
+                    description="Trace fund flow and detect suspicious patterns"
+                    href="/trust-graph"
+                    color="bg-magenta-500/10 border border-magenta-500/20"
+                  />
+                  <QuickAction
+                    icon={<Bell className="w-5 h-5 text-orange-400" />}
+                    title="Monitor"
+                    description="Get alerts when flagged addresses move funds"
+                    href="/monitor"
+                    color="bg-orange-500/10 border border-orange-500/20"
+                  />
+                  <QuickAction
+                    icon={<Database className="w-5 h-5 text-blue-400" />}
+                    title="Explore Datasets"
+                    description="Browse 11TB+ of blockchain data on Walrus"
+                    href="/explore"
+                    color="bg-blue-500/10 border border-blue-500/20"
+                  />
+                  <QuickAction
+                    icon={<Eye className="w-5 h-5 text-green-400" />}
+                    title="Verify Proof"
+                    description="Verify an analysis proof stored on Walrus"
+                    href="/verify"
+                    color="bg-green-500/10 border border-green-500/20"
+                  />
+                  <QuickAction
+                    icon={<Activity className="w-5 h-5 text-purple-400" />}
+                    title="Network Status"
+                    description="Check Tatum RPC, Walrus, and Sui network health"
+                    href="/api/health"
+                    color="bg-purple-500/10 border border-purple-500/20"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Messages */}
           <div className="flex-1 overflow-y-auto scroll-area">
-            <div className="max-w-3xl mx-auto w-full px-5 py-6 space-y-5">
+            <div className="max-w-4xl mx-auto w-full px-5 py-6 space-y-6">
               {messages.map((msg) => (
                 <MessageBubble key={msg.id} message={msg} />
               ))}
@@ -621,20 +767,21 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
 
           {/* Suggested queries */}
           {messages.length === 1 && (
-            <div className="px-5 pb-3">
-              <div className="max-w-3xl mx-auto w-full">
-                <div className="grid grid-cols-2 gap-2">
-                  {SUGGESTED_QUERIES.map(({ icon, text }) => (
+            <div className="px-5 pb-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="text-xs text-[#525880] mb-3 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Brain className="w-3.5 h-3.5 text-cyan-400" />
+                  Try asking...
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {SUGGESTED_QUERIES.map(({ icon, text, color }) => (
                     <button
                       key={text}
-                      onClick={() => {
-                        setInput(text);
-                        inputRef.current?.focus();
-                      }}
-                      className="flex items-center gap-2.5 p-3 rounded-xl border border-white/5 text-left transition-all duration-200 group text-sm bg-[#1A1D2E]/40 hover:bg-[#1A1D2E]/80 hover:border-white/10"
+                      onClick={() => handleSuggestion(text)}
+                      className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 group text-sm ${color} bg-[#1A1D2E]/40 hover:bg-[#1A1D2E]/80 backdrop-blur-sm`}
                     >
-                      <span className="text-[#525880] group-hover:text-cyan-400 transition-colors">{icon}</span>
-                      <span className="text-[#8B93C4] group-hover:text-white transition-colors text-xs">{text}</span>
+                      <span className="text-[#525880] group-hover:text-cyan-400 transition-colors flex-shrink-0">{icon}</span>
+                      <span className="text-[#8B93C4] group-hover:text-white transition-colors leading-tight">{text}</span>
                     </button>
                   ))}
                 </div>
@@ -643,101 +790,44 @@ I'm a Sui blockchain intelligence agent powered by **Tatum Sui RPC** and **Walru
           )}
 
           {/* Input area */}
-          <div className="px-5 pb-5 pt-2">
-            <div className="relative max-w-3xl mx-auto flex items-end bg-[#1A1D2E]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-2">
+          <div className="px-5 pb-6 pt-2">
+            <div className="relative max-w-4xl mx-auto flex items-end bg-[#1A1D2E]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask the agent anything..."
-                className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none"
+                placeholder="Ask anything about blockchain data..."
+                className="flex-1 bg-transparent border-none text-white text-[15px] pl-5 pr-4 py-3 focus:outline-none resize-none"
                 rows={1}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className={`w-[38px] h-[38px] rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 mb-0.5 mr-0.5 ${
+                className={`w-[44px] h-[44px] rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 mb-0.5 mr-0.5 ${
                   input.trim() && !isLoading
-                    ? "bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] text-[#050505] shadow-[0_0_20px_rgba(0,229,255,0.5)] hover:shadow-[0_0_30px_rgba(0,229,255,0.8)]"
+                    ? "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-105"
                     : "bg-white/5 text-[#525880] cursor-not-allowed"
                 }`}
               >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </button>
             </div>
-            <div className="flex items-center justify-center mt-2 gap-3 text-[10px] text-[#525880]">
-              <span className="text-teal-400">⬡ Walrus</span>
-              <span>·</span>
-              <span className="text-purple-400">⚡ Tatum</span>
-              <span>·</span>
-              <span>Agent Mode</span>
+            <div className="flex items-center justify-between mt-2 px-1">
+              <div className="text-xs text-[#525880] flex items-center gap-2">
+                <span className="text-cyan-400 flex items-center gap-1"><Database className="w-3 h-3" /> Walrus</span>
+                <span>·</span>
+                <span className="text-cyan-400 flex items-center gap-1"><Zap className="w-3 h-3" /> Tatum MCP</span>
+                <span>·</span>
+                <span>Sui Testnet</span>
+              </div>
+              <div className="text-xs text-[#525880]">Enter to send</div>
             </div>
           </div>
         </div>
 
         {/* Sidebar */}
-        <div className="w-72 flex-shrink-0 border-l border-white/5 p-4 space-y-4 overflow-y-auto scroll-area hidden lg:block">
-          {address && <WalletOverviewCard address={address} />}
-
-          {/* Agent Status */}
-          <div className="card p-4 border-cyan-500/20 bg-cyan-500/5">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-medium text-white">Agent Tools</span>
-            </div>
-            <div className="space-y-1.5">
-              {[
-                "getSuiBalance",
-                "getSuiObjects",
-                "getSuiTransactions",
-                "analyzeSuiWallet",
-                "getSuiNetworkStatus",
-                "storeOnWalrus",
-              ].map((tool) => (
-                <div key={tool} className="flex items-center gap-2 text-xs">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta-400 animate-pulse-glow" />
-                  <span className="font-mono text-[#8B93C4]">{tool}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Data Sources */}
-          <div className="card p-4 border-magenta-500/20 bg-magenta-500/5">
-            <div className="flex items-center gap-2 mb-3">
-              <Database className="w-4 h-4 text-magenta-400" />
-              <span className="text-sm font-medium text-white">Data Sources</span>
-            </div>
-            <div className="space-y-2">
-              {[
-                { name: "Tatum Sui RPC", status: "Online" },
-                { name: "Walrus Publisher", status: "Online" },
-                { name: "Walrus Aggregator", status: "Online" },
-                { name: "Groq LLM", status: "Online" },
-              ].map(({ name, status }) => (
-                <div key={name} className="flex items-center justify-between text-xs">
-                  <span className="text-[#8B93C4]">{name}</span>
-                  <span className="text-magenta-400 font-medium flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-magenta-400 animate-pulse" />
-                    {status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card p-3 border-cyan-500/10 bg-cyan-500/5">
-            <div className="flex gap-2 text-xs text-[#8B93C4]">
-              <Info className="w-3 h-3 text-cyan-400 flex-shrink-0 mt-0.5" />
-              <span>Agent autonomously selects and executes blockchain tools based on your query intent.</span>
-            </div>
-          </div>
-        </div>
+        <Sidebar />
       </div>
     </div>
   );
