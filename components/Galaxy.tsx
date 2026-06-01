@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-// ─── Star Field — Canvas stars with parallax ─────────────
+// ─── Star Field — Beautiful star shapes with cross/diamond patterns ───
 
 export function StarField({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,22 +23,42 @@ export function StarField({ className = "" }: { className?: string }) {
       brightness: number;
       twinkleSpeed: number;
       twinkleOffset: number;
+      type: "dot" | "cross" | "diamond" | "glow";
+      rotation: number;
+      rotationSpeed: number;
+      color: string;
     }
+
+    const starColors = [
+      "rgba(255, 255, 255, ",
+      "rgba(200, 220, 255, ",
+      "rgba(255, 230, 200, ",
+      "rgba(200, 255, 255, ",
+      "rgba(220, 200, 255, ",
+    ];
 
     let stars: Star[] = [];
 
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      stars = Array.from({ length: 200 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.5 + 0.3,
-        speed: Math.random() * 0.3 + 0.05,
-        brightness: Math.random() * 0.7 + 0.3,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-        twinkleOffset: Math.random() * Math.PI * 2,
-      }));
+      stars = Array.from({ length: 180 }, () => {
+        const typeRand = Math.random();
+        const type = typeRand < 0.4 ? "dot" : typeRand < 0.65 ? "cross" : typeRand < 0.85 ? "diamond" : "glow";
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: type === "glow" ? Math.random() * 2 + 1.5 : type === "cross" ? Math.random() * 3 + 2 : Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.2 + 0.02,
+          brightness: Math.random() * 0.6 + 0.4,
+          twinkleSpeed: Math.random() * 0.015 + 0.003,
+          twinkleOffset: Math.random() * Math.PI * 2,
+          type,
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.002,
+          color: starColors[Math.floor(Math.random() * starColors.length)],
+        };
+      });
     };
 
     resize();
@@ -49,16 +69,140 @@ export function StarField({ className = "" }: { className?: string }) {
     };
     window.addEventListener("mousemove", handleMouse);
 
+    const drawCrossStar = (x: number, y: number, size: number, alpha: number, rotation: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+
+      // Main cross lines
+      const lineLen = size * 3;
+
+      // Horizontal line
+      const hGrad = ctx.createLinearGradient(-lineLen, 0, lineLen, 0);
+      hGrad.addColorStop(0, `rgba(255,255,255,0)`);
+      hGrad.addColorStop(0.3, `rgba(255,255,255,${alpha * 0.5})`);
+      hGrad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+      hGrad.addColorStop(0.7, `rgba(255,255,255,${alpha * 0.5})`);
+      hGrad.addColorStop(1, `rgba(255,255,255,0)`);
+
+      ctx.beginPath();
+      ctx.moveTo(-lineLen, 0);
+      ctx.lineTo(lineLen, 0);
+      ctx.strokeStyle = hGrad;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Vertical line
+      const vGrad = ctx.createLinearGradient(0, -lineLen, 0, lineLen);
+      vGrad.addColorStop(0, `rgba(255,255,255,0)`);
+      vGrad.addColorStop(0.3, `rgba(255,255,255,${alpha * 0.5})`);
+      vGrad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+      vGrad.addColorStop(0.7, `rgba(255,255,255,${alpha * 0.5})`);
+      vGrad.addColorStop(1, `rgba(255,255,255,0)`);
+
+      ctx.beginPath();
+      ctx.moveTo(0, -lineLen);
+      ctx.lineTo(0, lineLen);
+      ctx.strokeStyle = vGrad;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(0, 0, 1, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+
+      ctx.restore();
+    };
+
+    const drawDiamondStar = (x: number, y: number, size: number, alpha: number, rotation: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+
+      const s = size * 2;
+
+      // Diamond shape
+      ctx.beginPath();
+      ctx.moveTo(0, -s);
+      ctx.lineTo(s * 0.3, 0);
+      ctx.lineTo(0, s);
+      ctx.lineTo(-s * 0.3, 0);
+      ctx.closePath();
+
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, s);
+      grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.5, `rgba(200,220,255,${alpha * 0.4})`);
+      grad.addColorStop(1, `rgba(200,220,255,0)`);
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Center bright dot
+      ctx.beginPath();
+      ctx.arc(0, 0, 0.8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+
+      ctx.restore();
+    };
+
+    const drawGlowStar = (x: number, y: number, size: number, alpha: number) => {
+      // Outer glow
+      const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, size * 8);
+      outerGlow.addColorStop(0, `rgba(200,220,255,${alpha * 0.15})`);
+      outerGlow.addColorStop(0.5, `rgba(200,220,255,${alpha * 0.05})`);
+      outerGlow.addColorStop(1, "transparent");
+      ctx.beginPath();
+      ctx.arc(x, y, size * 8, 0, Math.PI * 2);
+      ctx.fillStyle = outerGlow;
+      ctx.fill();
+
+      // Inner glow
+      const innerGlow = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
+      innerGlow.addColorStop(0, `rgba(255,255,255,${alpha * 0.6})`);
+      innerGlow.addColorStop(0.3, `rgba(200,220,255,${alpha * 0.3})`);
+      innerGlow.addColorStop(1, "transparent");
+      ctx.beginPath();
+      ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+      ctx.fillStyle = innerGlow;
+      ctx.fill();
+
+      // Core
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+
+      // Cross rays
+      const rayLen = size * 5;
+      for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 2) {
+        const rayGrad = ctx.createLinearGradient(
+          x, y,
+          x + Math.cos(angle) * rayLen,
+          y + Math.sin(angle) * rayLen
+        );
+        rayGrad.addColorStop(0, `rgba(200,220,255,${alpha * 0.3})`);
+        rayGrad.addColorStop(1, "transparent");
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(angle) * rayLen, y + Math.sin(angle) * rayLen);
+        ctx.strokeStyle = rayGrad;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    };
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const mouse = mouseRef.current;
       const time = Date.now() * 0.001;
 
       for (const star of stars) {
-        // Parallax effect based on mouse
-        const parallaxX = (mouse.x - canvas.width / 2) * star.speed * 0.01;
-        const parallaxY = (mouse.y - canvas.height / 2) * star.speed * 0.01;
-
+        // Parallax
+        const parallaxX = (mouse.x - canvas.width / 2) * star.speed * 0.015;
+        const parallaxY = (mouse.y - canvas.height / 2) * star.speed * 0.015;
         const x = star.x + parallaxX;
         const y = star.y + parallaxY;
 
@@ -66,21 +210,27 @@ export function StarField({ className = "" }: { className?: string }) {
         const twinkle = Math.sin(time * star.twinkleSpeed * 10 + star.twinkleOffset) * 0.3 + 0.7;
         const alpha = star.brightness * twinkle;
 
-        // Draw star
-        ctx.beginPath();
-        ctx.arc(x, y, star.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.fill();
+        // Rotation
+        star.rotation += star.rotationSpeed;
 
-        // Glow for brighter stars
-        if (star.size > 1) {
-          const glow = ctx.createRadialGradient(x, y, 0, x, y, star.size * 4);
-          glow.addColorStop(0, `rgba(200, 220, 255, ${alpha * 0.3})`);
-          glow.addColorStop(1, "transparent");
-          ctx.beginPath();
-          ctx.arc(x, y, star.size * 4, 0, Math.PI * 2);
-          ctx.fillStyle = glow;
-          ctx.fill();
+        // Draw based on type
+        switch (star.type) {
+          case "cross":
+            drawCrossStar(x, y, star.size, alpha, star.rotation);
+            break;
+          case "diamond":
+            drawDiamondStar(x, y, star.size, alpha, star.rotation);
+            break;
+          case "glow":
+            drawGlowStar(x, y, star.size, alpha);
+            break;
+          default:
+            // Simple dot
+            ctx.beginPath();
+            ctx.arc(x, y, star.size, 0, Math.PI * 2);
+            ctx.fillStyle = star.color + alpha + ")";
+            ctx.fill();
+            break;
         }
       }
 
@@ -100,124 +250,6 @@ export function StarField({ className = "" }: { className?: string }) {
       ref={canvasRef}
       className={`fixed inset-0 z-0 ${className}`}
     />
-  );
-}
-
-// ─── Nebula — Colored cloud effects ──────────────────────
-
-export function Nebula({ className = "" }: { className?: string }) {
-  return (
-    <div className={`fixed inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {/* Deep blue nebula */}
-      <div
-        className="absolute"
-        style={{
-          width: "80vw",
-          height: "60vh",
-          top: "-10%",
-          left: "-20%",
-          background: "radial-gradient(ellipse at center, rgba(10, 20, 80, 0.4) 0%, rgba(5, 10, 40, 0.2) 40%, transparent 70%)",
-          filter: "blur(80px)",
-          animation: "float 25s ease-in-out infinite",
-        }}
-      />
-
-      {/* Purple nebula */}
-      <div
-        className="absolute"
-        style={{
-          width: "60vw",
-          height: "50vh",
-          top: "30%",
-          right: "-15%",
-          background: "radial-gradient(ellipse at center, rgba(80, 10, 120, 0.25) 0%, rgba(40, 5, 60, 0.1) 40%, transparent 70%)",
-          filter: "blur(60px)",
-          animation: "float 30s ease-in-out infinite reverse",
-        }}
-      />
-
-      {/* Teal nebula */}
-      <div
-        className="absolute"
-        style={{
-          width: "50vw",
-          height: "40vh",
-          bottom: "-5%",
-          left: "10%",
-          background: "radial-gradient(ellipse at center, rgba(0, 80, 100, 0.2) 0%, rgba(0, 40, 50, 0.1) 40%, transparent 70%)",
-          filter: "blur(70px)",
-          animation: "float 20s ease-in-out infinite",
-          animationDelay: "-8s",
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── Aurora — Northern lights effect ─────────────────────
-
-export function Aurora({ className = "" }: { className?: string }) {
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    let frame: number;
-    let angle = 0;
-    const animate = () => {
-      angle += 0.003;
-      setOffset(Math.sin(angle) * 20);
-      frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  return (
-    <div className={`fixed inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {/* Aurora band 1 — cyan */}
-      <div
-        className="absolute w-[120%]"
-        style={{
-          height: "200px",
-          top: "15%",
-          left: "-10%",
-          background: `linear-gradient(90deg, transparent 0%, rgba(0,229,255,0.06) 20%, rgba(0,229,255,0.12) 40%, rgba(0,229,255,0.06) 60%, transparent 100%)`,
-          filter: "blur(40px)",
-          transform: `translateY(${offset}px) skewX(-5deg)`,
-          transition: "transform 0.5s ease-out",
-          opacity: 0.6,
-        }}
-      />
-
-      {/* Aurora band 2 — magenta */}
-      <div
-        className="absolute w-[120%]"
-        style={{
-          height: "150px",
-          top: "20%",
-          left: "-10%",
-          background: `linear-gradient(90deg, transparent 0%, rgba(255,0,122,0.04) 30%, rgba(255,0,122,0.08) 50%, rgba(255,0,122,0.04) 70%, transparent 100%)`,
-          filter: "blur(50px)",
-          transform: `translateY(${offset * 0.7}px) skewX(3deg)`,
-          transition: "transform 0.5s ease-out",
-          opacity: 0.4,
-        }}
-      />
-
-      {/* Aurora band 3 — green/teal */}
-      <div
-        className="absolute w-[120%]"
-        style={{
-          height: "120px",
-          top: "25%",
-          left: "-10%",
-          background: `linear-gradient(90deg, transparent 0%, rgba(0,255,157,0.03) 25%, rgba(0,255,157,0.06) 45%, rgba(0,229,255,0.04) 65%, transparent 100%)`,
-          filter: "blur(45px)",
-          transform: `translateY(${offset * 1.2}px) skewX(-2deg)`,
-          transition: "transform 0.5s ease-out",
-          opacity: 0.3,
-        }}
-      />
-    </div>
   );
 }
 
@@ -257,50 +289,50 @@ export function ShootingStars({ className = "" }: { className?: string }) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const time = Date.now();
 
-      // Spawn new star occasionally
-      if (time - lastSpawn > 3000 + Math.random() * 5000) {
+      if (time - lastSpawn > 2000 + Math.random() * 4000) {
         lastSpawn = time;
         stars.push({
-          x: Math.random() * canvas.width * 0.8,
-          y: Math.random() * canvas.height * 0.3,
-          vx: 3 + Math.random() * 4,
-          vy: 1 + Math.random() * 2,
+          x: Math.random() * canvas.width * 0.7,
+          y: Math.random() * canvas.height * 0.25,
+          vx: 4 + Math.random() * 5,
+          vy: 1.5 + Math.random() * 2,
           life: 0,
-          maxLife: 40 + Math.random() * 30,
+          maxLife: 35 + Math.random() * 25,
           size: 1 + Math.random() * 1.5,
         });
       }
 
-      // Update and draw
       stars = stars.filter((s) => {
         s.x += s.vx;
         s.y += s.vy;
         s.life++;
-
         const progress = s.life / s.maxLife;
-        const alpha = progress < 0.2 ? progress * 5 : progress > 0.8 ? (1 - progress) * 5 : 1;
+        const alpha = progress < 0.15 ? progress * 6 : progress > 0.7 ? (1 - progress) * 3 : 1;
 
-        // Draw streak
+        // Streak
         const gradient = ctx.createLinearGradient(
-          s.x - s.vx * 8, s.y - s.vy * 8,
+          s.x - s.vx * 10, s.y - s.vy * 10,
           s.x, s.y
         );
         gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
-        gradient.addColorStop(1, `rgba(200, 220, 255, ${alpha * 0.8})`);
+        gradient.addColorStop(0.7, `rgba(200, 220, 255, ${alpha * 0.5})`);
+        gradient.addColorStop(1, `rgba(255, 255, 255, ${alpha})`);
 
         ctx.beginPath();
-        ctx.moveTo(s.x - s.vx * 8, s.y - s.vy * 8);
+        ctx.moveTo(s.x - s.vx * 10, s.y - s.vy * 10);
         ctx.lineTo(s.x, s.y);
         ctx.strokeStyle = gradient;
         ctx.lineWidth = s.size;
+        ctx.lineCap = "round";
         ctx.stroke();
 
-        // Head glow
-        const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 3);
-        glow.addColorStop(0, `rgba(200, 220, 255, ${alpha * 0.6})`);
+        // Head
+        const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 4);
+        glow.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+        glow.addColorStop(0.5, `rgba(200, 220, 255, ${alpha * 0.3})`);
         glow.addColorStop(1, "transparent");
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, s.size * 4, 0, Math.PI * 2);
         ctx.fillStyle = glow;
         ctx.fill();
 
@@ -322,145 +354,5 @@ export function ShootingStars({ className = "" }: { className?: string }) {
       ref={canvasRef}
       className={`fixed inset-0 z-0 pointer-events-none ${className}`}
     />
-  );
-}
-
-// ─── Cosmic Dust — subtle floating particles ─────────────
-
-export function CosmicDust({ className = "" }: { className?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const animRef = useRef<number>(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    interface Dust {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      size: number;
-      color: string;
-      alpha: number;
-    }
-
-    let dusts: Dust[] = [];
-    const colors = [
-      "rgba(0, 229, 255, ",
-      "rgba(255, 0, 122, ",
-      "rgba(100, 200, 255, ",
-      "rgba(255, 200, 100, ",
-    ];
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      dusts = Array.from({ length: 40 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 0.5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        alpha: Math.random() * 0.3 + 0.1,
-      }));
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const handleMouse = (e: MouseEvent) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-    };
-    window.addEventListener("mousemove", handleMouse);
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const mouse = mouseRef.current;
-
-      for (const d of dusts) {
-        // Mouse repel
-        const dx = d.x - mouse.x;
-        const dy = d.y - mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
-          const force = (150 - dist) / 150;
-          d.vx += (dx / dist) * force * 0.1;
-          d.vy += (dy / dist) * force * 0.1;
-        }
-
-        d.x += d.vx;
-        d.y += d.vy;
-        d.vx *= 0.98;
-        d.vy *= 0.98;
-
-        // Wrap
-        if (d.x < 0) d.x = canvas.width;
-        if (d.x > canvas.width) d.x = 0;
-        if (d.y < 0) d.y = canvas.height;
-        if (d.y > canvas.height) d.y = 0;
-
-        // Draw
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
-        ctx.fillStyle = d.color + d.alpha + ")";
-        ctx.fill();
-      }
-
-      animRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", handleMouse);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className={`fixed inset-0 z-0 pointer-events-none ${className}`}
-    />
-  );
-}
-
-// ─── Galaxy Center — bright core glow ────────────────────
-
-export function GalaxyCenter({ className = "" }: { className?: string }) {
-  return (
-    <div className={`fixed inset-0 pointer-events-none ${className}`}>
-      {/* Central glow */}
-      <div
-        className="absolute"
-        style={{
-          width: "100vw",
-          height: "100vh",
-          top: "0",
-          left: "0",
-          background: "radial-gradient(ellipse at 50% 30%, rgba(10, 20, 60, 0.3) 0%, rgba(5, 10, 30, 0.15) 30%, transparent 60%)",
-        }}
-      />
-
-      {/* Core bright spot */}
-      <div
-        className="absolute"
-        style={{
-          width: "300px",
-          height: "300px",
-          top: "20%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(150, 180, 255, 0.08) 0%, rgba(100, 140, 220, 0.04) 30%, transparent 60%)",
-          filter: "blur(40px)",
-          animation: "pulse-glow 6s ease-in-out infinite",
-        }}
-      />
-    </div>
   );
 }

@@ -22,7 +22,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { DualWalletButton } from "@/components/WalletConnect";
-import { StarField, Nebula, Aurora, ShootingStars, CosmicDust, GalaxyCenter } from "@/components/Galaxy";
+import { StarField, ShootingStars } from "@/components/Galaxy";
 import { HolographicCard, MagneticBtn, AnimatedCounter } from "@/components/Advanced3D";
 import ScrollReveal, { Stagger } from "@/components/ScrollAnimations";
 
@@ -159,13 +159,9 @@ export default function LandingPage() {
     <div className="relative min-h-screen overflow-hidden bg-black">
       <Navbar />
 
-      {/* Galaxy Background */}
+      {/* Star Field Background */}
       <StarField />
-      <Nebula />
-      <Aurora />
       <ShootingStars />
-      <CosmicDust />
-      <GalaxyCenter />
 
       {/* HERO */}
       <section className="relative pt-32 pb-20 z-10">
