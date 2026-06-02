@@ -1,9 +1,26 @@
 import { NextRequest } from "next/server";
 import { runAgent } from "@/lib/agent/agent";
 import { apiError, apiSuccess, withTimeout } from "@/lib/api-utils";
+import { rateLimiter, RATE_LIMITS, getClientId } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientId = getClientId(request);
+    const rateLimit = rateLimiter.check(
+      `chat:${clientId}`,
+      RATE_LIMITS.CHAT.maxRequests,
+      RATE_LIMITS.CHAT.windowMs
+    );
+
+    if (!rateLimit.allowed) {
+      return apiError(
+        "Rate limit exceeded. Please try again later.",
+        429,
+        { retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000) }
+      );
+    }
+
     const body = await request.json();
     const { message, history, walletAddress } = body;
 

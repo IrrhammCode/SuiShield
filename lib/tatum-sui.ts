@@ -4,6 +4,8 @@
 // Testnet: https://sui-testnet.gateway.tatum.io
 // Devnet: https://sui-devnet.gateway.tatum.io
 
+import { cache, CACHE_TTL, cacheKey } from "./cache";
+
 const TATUM_SUI_MAINNET = "https://sui-mainnet.gateway.tatum.io";
 const TATUM_SUI_TESTNET = "https://sui-testnet.gateway.tatum.io";
 const TATUM_API_KEY = process.env.TATUM_API_KEY;
@@ -142,7 +144,13 @@ export interface SuiCheckpoint {
 
 /** Get all coin balances for an address */
 export async function getSuiBalances(address: string): Promise<SuiBalance[]> {
-  return suiRpc<SuiBalance[]>("suix_getAllBalances", [address]);
+  const key = cacheKey("balances", address);
+  const cached = cache.get<SuiBalance[]>(key);
+  if (cached) return cached;
+
+  const result = await suiRpc<SuiBalance[]>("suix_getAllBalances", [address]);
+  cache.set(key, result, CACHE_TTL.BALANCE);
+  return result;
 }
 
 /** Get balance of a specific coin type */
@@ -162,12 +170,18 @@ export async function getSuiObjects(
   address: string,
   limit = 50
 ): Promise<{ data: SuiObject[]; hasNextPage: boolean; nextCursor: string | null }> {
-  return suiRpc("suix_getOwnedObjects", [
+  const key = cacheKey("objects", address, String(limit));
+  const cached = cache.get<{ data: SuiObject[]; hasNextPage: boolean; nextCursor: string | null }>(key);
+  if (cached) return cached;
+
+  const result = await suiRpc<{ data: SuiObject[]; hasNextPage: boolean; nextCursor: string | null }>("suix_getOwnedObjects", [
     address,
     { options: { showType: true, showContent: true, showOwner: true } },
     null,
     limit,
   ]);
+  cache.set(key, result, CACHE_TTL.OBJECTS);
+  return result;
 }
 
 /** Get transaction blocks for an address */
@@ -175,7 +189,11 @@ export async function getSuiTransactionBlocks(
   address: string,
   limit = 20
 ): Promise<{ data: SuiTransactionBlock[]; hasNextPage: boolean; nextCursor: string | null }> {
-  return suiRpc("suix_queryTransactionBlocks", [
+  const key = cacheKey("transactions", address, String(limit));
+  const cached = cache.get<{ data: SuiTransactionBlock[]; hasNextPage: boolean; nextCursor: string | null }>(key);
+  if (cached) return cached;
+
+  const result = await suiRpc<{ data: SuiTransactionBlock[]; hasNextPage: boolean; nextCursor: string | null }>("suix_queryTransactionBlocks", [
     {
       filter: { FromAddress: address },
       options: {
@@ -189,6 +207,8 @@ export async function getSuiTransactionBlocks(
     limit,
     true,
   ]);
+  cache.set(key, result, CACHE_TTL.TRANSACTIONS);
+  return result;
 }
 
 /** Get a specific transaction block by digest */

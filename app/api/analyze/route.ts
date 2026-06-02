@@ -1,9 +1,27 @@
 import { NextRequest } from "next/server";
 import { runAgent } from "@/lib/agent/agent";
 import { apiError, apiSuccess, isValidSuiAddress, withTimeout } from "@/lib/api-utils";
+import { rateLimiter, RATE_LIMITS, getClientId } from "@/lib/rate-limit";
+import { cache, CACHE_TTL, cacheKey } from "@/lib/cache";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const clientId = getClientId(req);
+    const rateLimit = rateLimiter.check(
+      `analyze:${clientId}`,
+      RATE_LIMITS.ANALYSIS.maxRequests,
+      RATE_LIMITS.ANALYSIS.windowMs
+    );
+
+    if (!rateLimit.allowed) {
+      return apiError(
+        "Rate limit exceeded. Please try again later.",
+        429,
+        { retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000) }
+      );
+    }
+
     const body = await req.json();
     const { address, walletAddress, mode, prompt } = body;
 
@@ -14,6 +32,13 @@ export async function POST(req: NextRequest) {
     // Validate address format
     if (!isValidSuiAddress(address)) {
       return apiError("Invalid Sui address format. Must start with 0x followed by 40-64 hex characters.", 400);
+    }
+
+    // Check cache for recent analysis
+    const cacheKeyStr = cacheKey("analysis", address, mode || "general");
+    const cachedAnalysis = cache.get<Record<string, unknown>>(cacheKeyStr);
+    if (cachedAnalysis) {
+      return apiSuccess(cachedAnalysis);
     }
 
     // Build analysis prompt based on mode
@@ -97,12 +122,15 @@ Be thorough and specific. Use real data from tools.`;
       60000 // 60 second timeout
     );
 
+    // Cache the result
+    cache.set(cacheKeyStr, response as unknown as Record<string, unknown>, CACHE_TTL.ANALYSIS);
+
     return apiSuccess(response as unknown as Record<string, unknown>);
   } catch (error: unknown) {
-    console.error("Analyze API error:", error);
+    console.error("Analysis API error:", error);
 
     if (error instanceof Error && error.message.includes("Timeout")) {
-      return apiError("Analysis timed out. The address may have too many transactions. Try again.", 504);
+      return apiError("Analysis timed out. The address may have too many transactions.", 504);
     }
 
     return apiError(
