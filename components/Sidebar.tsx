@@ -76,9 +76,9 @@ export function Sidebar() {
       <div className="p-3 border-t border-white/5">
         <div className="space-y-2">
           {[
-            { label: "Tatum RPC", status: "Online", color: "text-green-400" },
-            { label: "Walrus", status: "Connected", color: "text-green-400" },
-            { label: "Sui Testnet", status: "Live", color: "text-green-400" },
+            { label: "Tatum RPC", status: "Online", color: "text-cyan-400" },
+            { label: "Walrus", status: "Connected", color: "text-cyan-400" },
+            { label: "Sui Testnet", status: "Live", color: "text-cyan-400" },
           ].map(({ label, status, color }) => (
             <div key={label} className="flex items-center justify-between text-xs">
               <span className="text-white/20">{label}</span>

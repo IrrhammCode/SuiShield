@@ -11,10 +11,10 @@ interface TrustScoreCardProps {
 
 const levelConfig = {
   safe: { label: "SAFE", color: "#00FF9D", icon: CheckCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
-  low: { label: "LOW RISK", color: "#4DA6FF", icon: Shield, bg: "bg-blue-500/10", border: "border-blue-500/30" },
-  medium: { label: "MEDIUM RISK", color: "#FFB300", icon: AlertTriangle, bg: "bg-yellow-500/10", border: "border-yellow-500/30" },
-  high: { label: "HIGH RISK", color: "#FF6B00", icon: XCircle, bg: "bg-orange-500/10", border: "border-orange-500/30" },
-  critical: { label: "DANGEROUS", color: "#FF3366", icon: XCircle, bg: "bg-red-500/10", border: "border-red-500/30" },
+  low: { label: "LOW RISK", color: "#4DA6FF", icon: Shield, bg: "bg-cyan-500/10", border: "border-cyan-500/30" },
+  medium: { label: "MEDIUM RISK", color: "#FFB300", icon: AlertTriangle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
+  high: { label: "HIGH RISK", color: "#FF6B00", icon: XCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
+  critical: { label: "DANGEROUS", color: "#FF3366", icon: XCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
 };
 
 export function TrustScoreCard({ score, level, address, chain = "Sui" }: TrustScoreCardProps) {

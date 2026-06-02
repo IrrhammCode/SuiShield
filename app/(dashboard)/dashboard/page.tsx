@@ -25,9 +25,9 @@ function SourceBadge({ source }: { source: DataSource }) {
     "tatum-rpc": { label: "Tatum RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
     "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
     "tatum-api": { label: "Tatum API", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-mcp": { label: "Tatum MCP", color: "text-blue-400/70 border-blue-500/20 bg-blue-500/5", icon: <Brain className="w-3 h-3" /> },
+    "tatum-mcp": { label: "Tatum MCP", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Brain className="w-3 h-3" /> },
     "walrus-dataset": { label: "Walrus Dataset", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    agent: { label: "Agent", color: "text-orange-400/70 border-orange-500/20 bg-orange-500/5", icon: <Brain className="w-3 h-3" /> },
+    agent: { label: "Agent", color: "text-magenta-400/70 border-magenta-500/20 bg-magenta-500/5", icon: <Brain className="w-3 h-3" /> },
   };
   const config = configs[source.type] || configs["tatum-api"];
   return (
@@ -224,8 +224,8 @@ What would you like to know?`,
           <div className="text-[10px] text-white/20">Powered by Groq + Tatum + Walrus</div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-[10px] text-green-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[10px] text-cyan-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span className="font-medium">Online</span>
           </div>
         </div>

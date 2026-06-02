@@ -12,7 +12,7 @@ export function ConnectWalletButton() {
   return (
     <div className="flex items-center gap-3">
       {isConnected && (
-        <span className="text-sm text-gray-400 font-mono hidden sm:block">
+        <span className="text-sm text-white/40 font-mono hidden sm:block">
           {shortAddress}
         </span>
       )}

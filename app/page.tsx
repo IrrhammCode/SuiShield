@@ -69,7 +69,7 @@ export default function LandingPage() {
         {/* Top-right magenta glow */}
         <div className="absolute -top-[10%] -right-[15%] w-[600px] h-[600px] bg-gradient-to-bl from-magenta-500/15 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
         {/* Center subtle purple */}
-        <div className="absolute top-[40%] left-[30%] w-[500px] h-[500px] bg-gradient-to-r from-purple-500/10 via-transparent to-cyan-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[40%] left-[30%] w-[500px] h-[500px] bg-gradient-to-r from-magenta-500/10 via-transparent to-cyan-500/10 rounded-full blur-[100px]" />
         {/* Bottom cyan glow */}
         <div className="absolute -bottom-[10%] left-[20%] w-[600px] h-[600px] bg-gradient-to-t from-cyan-500/10 via-transparent to-transparent rounded-full blur-[120px]" />
         {/* Bottom-right magenta glow */}
@@ -127,37 +127,37 @@ export default function LandingPage() {
               
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-400 animate-pulse" />
                   <span className="text-[10px] text-white/30 font-bold uppercase tracking-[0.15em]">Live Analysis</span>
                 </div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/20 flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-cyan-400" />
                     </div>
                     <div>
-                      <div className="text-green-400 font-display font-black text-sm">SAFE</div>
+                      <div className="text-cyan-400 font-display font-black text-sm">SAFE</div>
                       <div className="text-white/20 text-[10px]">Low Risk</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-display font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">82</span>
+                    <span className="text-2xl font-display font-black bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent">82</span>
                     <span className="text-white/20 text-sm">/100</span>
                   </div>
                 </div>
                 <div className="w-full h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden">
-                  <div className="h-full w-[82%] bg-gradient-to-r from-green-400 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(0,255,157,0.5)]" />
+                  <div className="h-full w-[82%] bg-gradient-to-r from-cyan-400 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(0,255,157,0.5)]" />
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  <div className="flex items-center gap-2 text-xs text-green-400/80">
+                  <div className="flex items-center gap-2 text-xs text-cyan-400/80">
                     <CheckCircle className="w-3 h-3" />
                     <span>Active since Jan 2024</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-green-400/80">
+                  <div className="flex items-center gap-2 text-xs text-cyan-400/80">
                     <CheckCircle className="w-3 h-3" />
                     <span>1,247 transactions</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-yellow-400/80">
+                  <div className="flex items-center gap-2 text-xs text-magenta-400/80">
                     <AlertTriangle className="w-3 h-3" />
                     <span>2 flagged counterparties</span>
                   </div>
@@ -181,8 +181,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
             {[
               { value: "11TB+", label: "Blockchain Data", color: "from-cyan-400 to-cyan-300" },
-              { value: "4", label: "Chains", color: "from-magenta-400 to-pink-300" },
-              { value: "59", label: "AI Tools", color: "from-purple-400 to-violet-300" },
+              { value: "4", label: "Chains", color: "from-magenta-400 to-magenta-300" },
+              { value: "59", label: "AI Tools", color: "from-magenta-400 to-magenta-300" },
               { value: "∞", label: "Storage", color: "from-cyan-400 to-magenta-400" },
             ].map(({ value, label, color }) => (
               <div key={label} className="text-center group">
@@ -198,13 +198,13 @@ export default function LandingPage() {
       <section className="relative z-10 py-24">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-500/10 via-orange-500/10 to-yellow-500/10 border border-white/[0.06] text-xs text-white/30 font-bold uppercase tracking-[0.15em] mb-6">
-              <AlertTriangle className="w-3 h-3 text-orange-400" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-magenta-500/10 via-magenta-500/10 to-magenta-500/10 border border-white/[0.06] text-xs text-white/30 font-bold uppercase tracking-[0.15em] mb-6">
+              <AlertTriangle className="w-3 h-3 text-magenta-400" />
               The Problem
             </div>
             <h2 className="font-display font-black text-4xl md:text-5xl text-white tracking-tight">
               Every day, Sui users<br />
-              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">lose money</span>
+              <span className="bg-gradient-to-r from-magenta-400 via-magenta-400 to-magenta-400 bg-clip-text text-transparent">lose money</span>
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -214,8 +214,8 @@ export default function LandingPage() {
               { icon: <XCircle className="w-5 h-5" />, title: "Scam airdrops and phishing", desc: "DMs with malicious links that drain wallets" },
               { icon: <XCircle className="w-5 h-5" />, title: "Unknown counterparty risk", desc: "P2P trading with wallets that have dirty history" },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="group flex items-start gap-4 p-6 rounded-2xl border border-white/[0.04] bg-gradient-to-br from-white/[0.02] to-red-500/[0.02] hover:border-red-500/20 hover:from-red-500/[0.04] hover:to-transparent transition-all duration-300">
-                <div className="text-red-400/50 group-hover:text-red-400 transition-colors mt-0.5">{icon}</div>
+              <div key={title} className="group flex items-start gap-4 p-6 rounded-2xl border border-white/[0.04] bg-gradient-to-br from-white/[0.02] to-magenta-500/[0.02] hover:border-magenta-500/20 hover:from-magenta-500/[0.04] hover:to-transparent transition-all duration-300">
+                <div className="text-magenta-400/50 group-hover:text-magenta-400 transition-colors mt-0.5">{icon}</div>
                 <div>
                   <div className="text-sm font-bold text-white mb-1">{title}</div>
                   <div className="text-xs text-white/20 leading-relaxed">{desc}</div>
@@ -241,10 +241,10 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {[
-              { icon: <Zap className="w-5 h-5" />, title: "Real-time via Tatum", desc: "Balance, objects, transactions — live from Sui mainnet through Tatum enterprise infrastructure.", gradient: "from-cyan-500/10 to-blue-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
-              { icon: <Database className="w-5 h-5" />, title: "Historical via Walrus", desc: "Cross-reference with 11TB+ of blockchain history stored on Walrus decentralized storage.", gradient: "from-magenta-500/10 to-purple-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
-              { icon: <Lock className="w-5 h-5" />, title: "Verifiable Proof", desc: "Every analysis stored on Walrus — immutable, shareable, cryptographically verifiable.", gradient: "from-green-500/10 to-emerald-500/5", border: "hover:border-green-500/20", iconColor: "text-green-400" },
-              { icon: <GitBranch className="w-5 h-5" />, title: "Trust Graph", desc: "Trace fund flow patterns, detect suspicious clusters, visualize address relationships.", gradient: "from-purple-500/10 to-violet-500/5", border: "hover:border-purple-500/20", iconColor: "text-purple-400" },
+              { icon: <Zap className="w-5 h-5" />, title: "Real-time via Tatum", desc: "Balance, objects, transactions — live from Sui mainnet through Tatum enterprise infrastructure.", gradient: "from-cyan-500/10 to-cyan-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
+              { icon: <Database className="w-5 h-5" />, title: "Historical via Walrus", desc: "Cross-reference with 11TB+ of blockchain history stored on Walrus decentralized storage.", gradient: "from-magenta-500/10 to-magenta-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
+              { icon: <Lock className="w-5 h-5" />, title: "Verifiable Proof", desc: "Every analysis stored on Walrus — immutable, shareable, cryptographically verifiable.", gradient: "from-cyan-500/10 to-cyan-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
+              { icon: <GitBranch className="w-5 h-5" />, title: "Trust Graph", desc: "Trace fund flow patterns, detect suspicious clusters, visualize address relationships.", gradient: "from-magenta-500/10 to-magenta-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
             ].map(({ icon, title, desc, gradient, border, iconColor }) => (
               <div key={title} className={`group p-6 rounded-2xl border border-white/[0.04] bg-gradient-to-br ${gradient} ${border} transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(0,229,255,0.05)]`}>
                 <div className={`w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center ${iconColor} mb-4 group-hover:scale-110 transition-transform`}>
@@ -273,8 +273,8 @@ export default function LandingPage() {
           <div className="max-w-lg mx-auto space-y-10">
             {[
               { num: "01", title: "Paste any Sui address", desc: "Wallet, contract, token, or NFT collection.", color: "from-cyan-400 to-cyan-300" },
-              { num: "02", title: "AI analyzes everything", desc: "Tatum RPC data + Walrus history + multi-signal risk scoring.", color: "from-magenta-400 to-pink-300" },
-              { num: "03", title: "Get verdict + share proof", desc: "On-chain certificate stored on Walrus.", color: "from-purple-400 to-violet-300" },
+              { num: "02", title: "AI analyzes everything", desc: "Tatum RPC data + Walrus history + multi-signal risk scoring.", color: "from-magenta-400 to-magenta-300" },
+              { num: "03", title: "Get verdict + share proof", desc: "On-chain certificate stored on Walrus.", color: "from-magenta-400 to-magenta-300" },
             ].map(({ num, title, desc, color }) => (
               <div key={num} className="flex items-start gap-6 group">
                 <div className={`font-display font-black text-3xl bg-gradient-to-b ${color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 w-16 flex-shrink-0`}>
@@ -309,15 +309,15 @@ export default function LandingPage() {
               Use Cases
             </div>
             <h2 className="font-display font-black text-4xl md:text-5xl text-white tracking-tight">
-              Built for <span className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-purple-400 bg-clip-text text-transparent">everyone on Sui</span>
+              Built for <span className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-magenta-400 bg-clip-text text-transparent">everyone on Sui</span>
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {[
-              { icon: <TrendingUp className="w-5 h-5" />, title: "DeFi Farmers", question: "Is this yield safe?", gradient: "from-cyan-500/10 to-blue-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
-              { icon: <Globe className="w-5 h-5" />, title: "NFT Buyers", question: "Is this creator legit?", gradient: "from-magenta-500/10 to-pink-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
-              { icon: <Users className="w-5 h-5" />, title: "P2P Traders", question: "Is this wallet clean?", gradient: "from-purple-500/10 to-violet-500/5", border: "hover:border-purple-500/20", iconColor: "text-purple-400" },
-              { icon: <Shield className="w-5 h-5" />, title: "New Users", question: "Where do I start?", gradient: "from-green-500/10 to-emerald-500/5", border: "hover:border-green-500/20", iconColor: "text-green-400" },
+              { icon: <TrendingUp className="w-5 h-5" />, title: "DeFi Farmers", question: "Is this yield safe?", gradient: "from-cyan-500/10 to-cyan-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
+              { icon: <Globe className="w-5 h-5" />, title: "NFT Buyers", question: "Is this creator legit?", gradient: "from-magenta-500/10 to-magenta-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
+              { icon: <Users className="w-5 h-5" />, title: "P2P Traders", question: "Is this wallet clean?", gradient: "from-magenta-500/10 to-magenta-500/5", border: "hover:border-magenta-500/20", iconColor: "text-magenta-400" },
+              { icon: <Shield className="w-5 h-5" />, title: "New Users", question: "Where do I start?", gradient: "from-cyan-500/10 to-cyan-500/5", border: "hover:border-cyan-500/20", iconColor: "text-cyan-400" },
             ].map(({ icon, title, question, gradient, border, iconColor }) => (
               <Link key={title} href="/analyze" className="group block">
                 <div className={`p-6 rounded-2xl border border-white/[0.04] bg-gradient-to-br ${gradient} ${border} transition-all duration-300 hover:scale-[1.02]`}>
@@ -356,8 +356,8 @@ export default function LandingPage() {
                 {[
                   { label: "Tatum", sub: "Sui RPC & APIs", icon: <Zap className="w-6 h-6" />, color: "text-cyan-400", glow: "from-cyan-500/20" },
                   { label: "Walrus", sub: "Storage", icon: <Database className="w-6 h-6" />, color: "text-magenta-400", glow: "from-magenta-500/20" },
-                  { label: "Sui", sub: "Contracts", icon: <Globe className="w-6 h-6" />, color: "text-purple-400", glow: "from-purple-500/20" },
-                  { label: "Groq", sub: "AI Agent", icon: <Activity className="w-6 h-6" />, color: "text-green-400", glow: "from-green-500/20" },
+                  { label: "Sui", sub: "Contracts", icon: <Globe className="w-6 h-6" />, color: "text-magenta-400", glow: "from-magenta-500/20" },
+                  { label: "Groq", sub: "AI Agent", icon: <Activity className="w-6 h-6" />, color: "text-cyan-400", glow: "from-cyan-500/20" },
                 ].map(({ label, sub, icon, color, glow }) => (
                   <div key={label} className="flex flex-col items-center gap-3 text-center group">
                     <div className={`relative ${color} group-hover:scale-110 transition-transform duration-300`}>
@@ -410,7 +410,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-8 text-xs text-white/15">
             <a href="https://tatum.io" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors font-bold">Tatum</a>
             <a href="https://walrus.space" target="_blank" rel="noopener noreferrer" className="hover:text-magenta-400 transition-colors font-bold">Walrus</a>
-            <a href="https://sui.io" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors font-bold">Sui</a>
+            <a href="https://sui.io" target="_blank" rel="noopener noreferrer" className="hover:text-magenta-400 transition-colors font-bold">Sui</a>
           </div>
         </div>
       </footer>

@@ -49,7 +49,7 @@ const modeLabels: Record<AnalysisMode, { label: string; icon: string; prompt: st
     icon: "🤝",
     prompt: "Perform a P2P counterparty risk analysis on this address. Check wallet age, money flow pattern, scam database cross-reference, money mule detection, and network risk. Is it safe to transact?",
     color: "orange",
-    gradient: "from-orange-500/15 to-orange-500/5",
+    gradient: "from-magenta-500/15 to-magenta-500/5",
     glow: "shadow-[0_0_20px_rgba(255,179,0,0.15)]",
   },
   general: {
@@ -57,7 +57,7 @@ const modeLabels: Record<AnalysisMode, { label: string; icon: string; prompt: st
     icon: "🔍",
     prompt: "Perform a comprehensive trust analysis on this Sui address. Analyze balance, transactions, patterns, risk signals, and provide a trust score with clear verdict.",
     color: "blue",
-    gradient: "from-blue-500/15 to-blue-500/5",
+    gradient: "from-cyan-500/15 to-cyan-500/5",
     glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]",
   },
 };
@@ -154,7 +154,7 @@ function AgentStepsBar({ steps }: { steps: AgentStep[] }) {
                 className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
                   step.status === "success"
                     ? "bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 text-cyan-400 border border-cyan-500/25"
-                    : "bg-gradient-to-br from-red-500/20 to-red-500/10 text-red-400 border border-red-500/25"
+                    : "bg-gradient-to-br from-magenta-500/20 to-magenta-500/10 text-magenta-400 border border-magenta-500/25"
                 }`}
               >
                 {step.step}
@@ -220,7 +220,7 @@ function LoadingState() {
       <div className="flex items-center gap-4 text-[11px] text-white/30">
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> Tatum RPC</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-magenta-400 animate-pulse" /> Walrus</span>
-        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" /> AI Agent</span>
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-magenta-400 animate-pulse" /> AI Agent</span>
       </div>
     </div>
   );
@@ -296,7 +296,7 @@ export default function AnalyzePage() {
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
         <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-purple-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-magenta-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
@@ -355,9 +355,9 @@ export default function AnalyzePage() {
 
         {/* Error */}
         {error && (
-          <div className="relative rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/10 to-red-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
-            <p className="text-red-400 text-sm font-medium">{error}</p>
+          <div className="relative rounded-2xl border border-magenta-500/20 bg-gradient-to-br from-magenta-500/10 to-magenta-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
+            <p className="text-magenta-400 text-sm font-medium">{error}</p>
             <p className="text-white/20 text-xs mt-2">Make sure GROQ_API_KEY is set in .env.local</p>
           </div>
         )}
@@ -402,7 +402,7 @@ export default function AnalyzePage() {
             {/* Full Analysis */}
             <AnalysisSection
               title="Full Analysis"
-              icon={<Brain className="w-4 h-4 text-blue-400" />}
+              icon={<Brain className="w-4 h-4 text-cyan-400" />}
               accent="blue"
             >
               <div className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap">
@@ -423,7 +423,7 @@ export default function AnalyzePage() {
                   >
                     {src.type === "tatum-sui-rpc" && <span className="text-cyan-400">⚡</span>}
                     {src.type === "walrus" && <span className="text-magenta-400">⬡</span>}
-                    {src.type === "agent" && <span className="text-orange-400">🤖</span>}
+                    {src.type === "agent" && <span className="text-magenta-400">🤖</span>}
                     {src.label}
                   </span>
                 ))}
@@ -454,7 +454,7 @@ export default function AnalyzePage() {
                     </div>
                   </div>
                   {recorded ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
+                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium">
                       <CheckCircle className="w-4 h-4" />
                       Recorded
                     </div>
@@ -479,10 +479,10 @@ export default function AnalyzePage() {
                   )}
                 </div>
                 {!isConnected && (
-                  <p className="text-xs text-yellow-400/80 mt-3">Connect your Sui wallet to record on-chain</p>
+                  <p className="text-xs text-magenta-400/80 mt-3">Connect your Sui wallet to record on-chain</p>
                 )}
                 {recordError && (
-                  <p className="text-xs text-red-400 mt-3">{recordError}</p>
+                  <p className="text-xs text-magenta-400 mt-3">{recordError}</p>
                 )}
               </div>
             )}

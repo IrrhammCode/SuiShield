@@ -111,17 +111,17 @@ export default function MonitorPage() {
   };
 
   const getRiskColor = (score: number) => {
-    if (score < 25) return "text-green-400";
-    if (score < 50) return "text-yellow-400";
-    if (score < 75) return "text-orange-400";
-    return "text-red-400";
+    if (score < 25) return "text-cyan-400";
+    if (score < 50) return "text-magenta-400";
+    if (score < 75) return "text-magenta-400";
+    return "text-magenta-400";
   };
 
   const getRiskGradient = (score: number) => {
-    if (score < 25) return "from-green-500/15 to-green-500/5 border-green-500/20";
-    if (score < 50) return "from-yellow-500/15 to-yellow-500/5 border-yellow-500/20";
-    if (score < 75) return "from-orange-500/15 to-orange-500/5 border-orange-500/20";
-    return "from-red-500/15 to-red-500/5 border-red-500/20";
+    if (score < 25) return "from-cyan-500/15 to-cyan-500/5 border-cyan-500/20";
+    if (score < 50) return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
+    if (score < 75) return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
+    return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
   };
 
   return (
@@ -131,7 +131,7 @@ export default function MonitorPage() {
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
         <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-purple-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-magenta-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
@@ -170,12 +170,12 @@ export default function MonitorPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-5 py-8 space-y-6">
         {/* Page Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-magenta-500/10 to-orange-500/10 border border-white/[0.06] text-xs">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-magenta-500/10 to-magenta-500/10 border border-white/[0.06] text-xs">
             <Bell className="w-3 h-3 text-magenta-400" />
-            <span className="bg-gradient-to-r from-magenta-300 to-orange-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Real-time Monitoring</span>
+            <span className="bg-gradient-to-r from-magenta-300 to-magenta-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Real-time Monitoring</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-white tracking-tight">
-            Address <span className="bg-gradient-to-r from-magenta-400 to-orange-400 bg-clip-text text-transparent">Monitor</span>
+            Address <span className="bg-gradient-to-r from-magenta-400 to-magenta-400 bg-clip-text text-transparent">Monitor</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
             Monitor Sui addresses for suspicious activity. Get alerts when flagged addresses move funds.
@@ -191,7 +191,7 @@ export default function MonitorPage() {
                 <Database className="w-3.5 h-3.5 text-cyan-400" />
                 Tatum API
               </div>
-              <div className={`font-display font-bold text-lg ${status.tatumAvailable ? "text-green-400" : "text-yellow-400"}`}>
+              <div className={`font-display font-bold text-lg ${status.tatumAvailable ? "text-cyan-400" : "text-magenta-400"}`}>
                 {status.tatumAvailable ? "Connected" : "Local Only"}
               </div>
             </div>
@@ -205,10 +205,10 @@ export default function MonitorPage() {
                 {status.localMonitors}
               </div>
             </div>
-            <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-orange-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent" />
+            <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-magenta-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
               <div className="flex items-center gap-2 text-white/30 text-xs mb-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
+                <AlertTriangle className="w-3.5 h-3.5 text-magenta-400" />
                 Alerts
               </div>
               <div className="font-display font-bold text-lg text-white">
@@ -248,7 +248,7 @@ export default function MonitorPage() {
             </button>
           </div>
           {error && (
-            <p className="text-red-400 text-xs mt-2">{error}</p>
+            <p className="text-magenta-400 text-xs mt-2">{error}</p>
           )}
         </div>
 
@@ -307,7 +307,7 @@ export default function MonitorPage() {
                   </div>
                 </div>
                 {addr.lastAlert && (
-                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center gap-2 text-xs text-orange-400">
+                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center gap-2 text-xs text-magenta-400">
                     <AlertTriangle className="w-3 h-3" />
                     Last alert: {new Date(addr.lastAlert).toLocaleString()}
                   </div>

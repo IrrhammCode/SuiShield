@@ -33,9 +33,9 @@ const CHAIN_FILTERS = ["All", "Bitcoin", "Ethereum", "BNB Chain", "Sui", "Multi-
 // ─── Format badge ──────────────────────────────────────────
 function FormatBadge({ format }: { format: Dataset["format"] }) {
   const styles = {
-    Parquet: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-    CSV: "bg-teal-500/10 text-teal-400 border border-teal-500/20",
-    JSON: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
+    Parquet: "bg-magenta-500/10 text-magenta-400 border border-magenta-500/20",
+    CSV: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
+    JSON: "bg-magenta-500/10 text-magenta-400 border border-magenta-500/20",
   };
   return <span className={`badge ${styles[format]} text-xs`}>{format}</span>;
 }
@@ -74,7 +74,7 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
             {dataset.chainIcon}
           </div>
           <div>
-            <h3 className="font-display font-semibold text-white text-sm leading-tight group-hover:text-purple-300 transition-colors">
+            <h3 className="font-display font-semibold text-white text-sm leading-tight group-hover:text-magenta-300 transition-colors">
               {dataset.name}
             </h3>
             <div className="text-white/30 text-xs mt-0.5">{dataset.chain}</div>
@@ -115,14 +115,14 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
       {/* Walrus blob ID */}
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
         <div className="walrus-proof flex-1 mr-2">
-          <span className="text-teal-400">⬡</span>
+          <span className="text-cyan-400">⬡</span>
           <span className="truncate">Blob: {formatBlobId(dataset.blobId || "")}</span>
         </div>
         <button
           onClick={copyBlobId}
           className="p-2 rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-white"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
       </div>
     </div>
@@ -266,21 +266,21 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
           </div>
 
           {/* Walrus blob section */}
-          <div className="card p-4 border-teal-500/20 bg-teal-500/5">
+          <div className="card p-4 border-cyan-500/20 bg-cyan-500/5">
             <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-teal-400" />
+              <CheckCircle2 className="w-4 h-4 text-cyan-400" />
               <span className="text-white font-medium text-sm">Walrus Storage Verified</span>
               <span className="badge badge-teal text-xs ml-auto">Proof of Availability</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 font-mono text-sm text-teal-300 bg-teal-500/10 rounded-lg px-4 py-2.5 border border-teal-500/20 truncate">
+              <div className="flex-1 font-mono text-sm text-cyan-300 bg-cyan-500/10 rounded-lg px-4 py-2.5 border border-cyan-500/20 truncate">
                 Blob ID: {dataset.blobId || "Fetching from Walrus..."}
               </div>
               <button
                 onClick={copyBlobId}
-                className="p-2.5 rounded-lg border border-teal-500/20 bg-teal-500/10 hover:bg-teal-500/20 transition-colors"
+                className="p-2.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors"
               >
-                {copied ? <Check className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4 text-teal-400" />}
+                {copied ? <Check className="w-4 h-4 text-cyan-400" /> : <Copy className="w-4 h-4 text-cyan-400" />}
               </button>
             </div>
             {dataset.blobId && !dataset.blobId.startsWith("BLOB_ID_") && (
@@ -288,7 +288,7 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
                 href={getAggregatorUrl(dataset.blobId)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 mt-2 transition-colors"
               >
                 <ExternalLink className="w-3 h-3" />
                 View on Walrus Aggregator
@@ -297,12 +297,12 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
           </div>
 
           {/* Aggregator URL */}
-          <div className="card p-4 border-purple-500/20 bg-purple-500/5">
+          <div className="card p-4 border-magenta-500/20 bg-magenta-500/5">
             <div className="flex items-center gap-2 mb-3">
-              <Hash className="w-4 h-4 text-purple-400" />
+              <Hash className="w-4 h-4 text-magenta-400" />
               <span className="text-white font-medium text-sm">Fetch via HTTP</span>
             </div>
-            <div className="font-mono text-xs text-purple-300 bg-purple-500/10 rounded-lg px-4 py-3 border border-purple-500/20 break-all">
+            <div className="font-mono text-xs text-magenta-300 bg-magenta-500/10 rounded-lg px-4 py-3 border border-magenta-500/20 break-all">
               {`curl https://aggregator.walrus.space/v1/blobs/${dataset.blobId || "<BLOB_ID>"}`}
             </div>
           </div>
@@ -339,7 +339,7 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
               Query with AI
             </Link>
             <button className="btn-ghost flex items-center gap-2 text-sm px-4">
-              <Download className="w-4 h-4 text-teal-400" />
+              <Download className="w-4 h-4 text-cyan-400" />
               Export Sample
             </button>
           </div>
@@ -372,8 +372,8 @@ export default function ExplorePage() {
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-teal-500/15 via-teal-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-purple-500/10 via-purple-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
         <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-cyan-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
@@ -387,13 +387,13 @@ export default function ExplorePage() {
             </Link>
             <div className="w-px h-4 bg-white/10" />
             <div className="flex items-center gap-2">
-              <Database className="w-5 h-5 text-teal-400" />
+              <Database className="w-5 h-5 text-cyan-400" />
               <span className="font-display font-bold text-white">Dataset Explorer</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <ConnectWalletButton />
-            <Link href="/chat" className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-400 to-teal-500 text-black font-bold text-sm hover:from-teal-300 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] flex items-center gap-2">
+            <Link href="/chat" className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold text-sm hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] flex items-center gap-2">
               <Brain className="w-4 h-4" />
               Chat with Data
             </Link>
@@ -404,13 +404,13 @@ export default function ExplorePage() {
       <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Page title */}
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-500/10 to-purple-500/10 border border-white/[0.06] text-xs mb-4">
-            <CheckCircle2 className="w-3 h-3 text-teal-400" />
-            <span className="bg-gradient-to-r from-teal-300 to-purple-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Walrus Verified</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 border border-white/[0.06] text-xs mb-4">
+            <CheckCircle2 className="w-3 h-3 text-cyan-400" />
+            <span className="bg-gradient-to-r from-cyan-300 to-magenta-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Walrus Verified</span>
           </div>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-white mb-4 tracking-tight">
             Tatum Historical{" "}
-            <span className="bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-transparent">Datasets</span>
+            <span className="bg-gradient-to-r from-cyan-400 to-magenta-400 bg-clip-text text-transparent">Datasets</span>
           </h1>
           <p className="text-white/30 text-lg max-w-2xl">
             {totalSize} of verified blockchain history stored on Walrus decentralized storage.
@@ -421,10 +421,10 @@ export default function ExplorePage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: <HardDrive className="w-5 h-5 text-teal-400" />, value: "11+ TB", label: "Total Data", color: "border-teal-500/20 bg-teal-500/5" },
-            { icon: <Database className="w-5 h-5 text-purple-400" />, value: `${totalDatasets} Datasets`, label: "Available Now", color: "border-purple-500/20 bg-purple-500/5" },
-            { icon: <Globe className="w-5 h-5 text-blue-400" />, value: "4 Chains", label: "Bitcoin, ETH, BNB, Sui", color: "border-blue-500/20 bg-blue-500/5" },
-            { icon: <Zap className="w-5 h-5 text-yellow-400" />, value: "HTTP Access", label: "via Walrus Aggregator", color: "border-yellow-500/20 bg-yellow-500/5" },
+            { icon: <HardDrive className="w-5 h-5 text-cyan-400" />, value: "11+ TB", label: "Total Data", color: "border-cyan-500/20 bg-cyan-500/5" },
+            { icon: <Database className="w-5 h-5 text-magenta-400" />, value: `${totalDatasets} Datasets`, label: "Available Now", color: "border-magenta-500/20 bg-magenta-500/5" },
+            { icon: <Globe className="w-5 h-5 text-cyan-400" />, value: "4 Chains", label: "Bitcoin, ETH, BNB, Sui", color: "border-cyan-500/20 bg-cyan-500/5" },
+            { icon: <Zap className="w-5 h-5 text-magenta-400" />, value: "HTTP Access", label: "via Walrus Aggregator", color: "border-magenta-500/20 bg-magenta-500/5" },
           ].map(({ icon, value, label, color }) => (
             <div key={label} className={`card p-4 border ${color} flex items-center gap-3`}>
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">{icon}</div>
@@ -445,7 +445,7 @@ export default function ExplorePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search datasets by name, chain, or tag..."
-              className="w-full bg-black/40 border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500/40 transition-colors"
+              className="w-full bg-black/40 border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-magenta-500/40 transition-colors"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function ExplorePage() {
                   onClick={() => setFilter(chain)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                     filter === chain
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                      ? "bg-magenta-500/20 text-magenta-300 border border-magenta-500/30"
                       : "text-white/30 hover:text-white border border-transparent hover:border-white/10"
                   }`}
                 >
@@ -493,7 +493,7 @@ export default function ExplorePage() {
               <p className="text-white/40 mb-4">
                 No authentication required. No rate limiting. Just fetch directly from any Walrus aggregator.
               </p>
-              <div className="font-mono text-sm text-teal-300 bg-teal-500/10 rounded-xl px-5 py-3 border border-teal-500/20 inline-block">
+              <div className="font-mono text-sm text-cyan-300 bg-cyan-500/10 rounded-xl px-5 py-3 border border-cyan-500/20 inline-block">
                 GET https://aggregator.walrus.space/v1/blobs/{"<BLOB_ID>"}
               </div>
             </div>

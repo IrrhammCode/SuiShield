@@ -20,10 +20,10 @@ const levelIcons: Record<string, typeof CheckCircle> = {
 
 const levelColors: Record<string, string> = {
   safe: "text-magenta-400",
-  low: "text-blue-400",
-  medium: "text-yellow-400",
-  high: "text-orange-400",
-  critical: "text-red-400",
+  low: "text-cyan-400",
+  medium: "text-magenta-400",
+  high: "text-magenta-400",
+  critical: "text-magenta-400",
 };
 
 function loadScans(): ScanEntry[] {

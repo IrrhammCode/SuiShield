@@ -32,9 +32,9 @@ function SourceBadge({ source }: { source: DataSource }) {
     "tatum-rpc": { label: "Tatum RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
     "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
     "tatum-api": { label: "Tatum API", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-mcp": { label: "Tatum MCP", color: "text-blue-400/70 border-blue-500/20 bg-blue-500/5", icon: <Brain className="w-3 h-3" /> },
+    "tatum-mcp": { label: "Tatum MCP", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Brain className="w-3 h-3" /> },
     "walrus-dataset": { label: "Walrus Dataset", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    agent: { label: "Agent", color: "text-orange-400/70 border-orange-500/20 bg-orange-500/5", icon: <Brain className="w-3 h-3" /> },
+    agent: { label: "Agent", color: "text-magenta-400/70 border-magenta-500/20 bg-magenta-500/5", icon: <Brain className="w-3 h-3" /> },
   };
   const config = configs[source.type] || configs["tatum-api"];
   return (
@@ -139,12 +139,12 @@ function TypingIndicator() {
 
 // ─── Suggested Queries ────────────────────────────────────
 const SUGGESTED_QUERIES = [
-  { icon: <Shield className="w-4 h-4" />, text: "Is wallet 0x742d35Cc... safe to interact with?", color: "border-orange-500/20 hover:border-orange-500/40" },
+  { icon: <Shield className="w-4 h-4" />, text: "Is wallet 0x742d35Cc... safe to interact with?", color: "border-magenta-500/20 hover:border-magenta-500/40" },
   { icon: <TrendingUp className="w-4 h-4" />, text: "Show me SUI price history for 2026", color: "border-cyan-500/20 hover:border-cyan-500/40" },
-  { icon: <Activity className="w-4 h-4" />, text: "What was Ethereum's daily TPS in Q1 2025?", color: "border-blue-500/20 hover:border-blue-500/40" },
+  { icon: <Activity className="w-4 h-4" />, text: "What was Ethereum's daily TPS in Q1 2025?", color: "border-cyan-500/20 hover:border-cyan-500/40" },
   { icon: <Database className="w-4 h-4" />, text: "Top DeFi protocols on Sui by TVL", color: "border-magenta-500/20 hover:border-magenta-500/40" },
-  { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-red-500/20 hover:border-red-500/40" },
-  { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-yellow-500/20 hover:border-yellow-500/40" },
+  { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-magenta-500/20 hover:border-magenta-500/40" },
+  { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-magenta-500/20 hover:border-magenta-500/40" },
 ];
 
 // ─── Right Info Panel ─────────────────────────────────────
@@ -200,13 +200,13 @@ function InfoPanel() {
     {
       id: "network",
       title: "Network Status",
-      icon: <Activity className="w-4 h-4 text-green-400" />,
+      icon: <Activity className="w-4 h-4 text-cyan-400" />,
       content: (
         <div className="space-y-2">
           {[
-            { label: "Tatum RPC", status: "Online", color: "text-green-400" },
-            { label: "Walrus Aggregator", status: "Online", color: "text-green-400" },
-            { label: "Sui Mainnet", status: "Online", color: "text-green-400" },
+            { label: "Tatum RPC", status: "Online", color: "text-cyan-400" },
+            { label: "Walrus Aggregator", status: "Online", color: "text-cyan-400" },
+            { label: "Sui Mainnet", status: "Online", color: "text-cyan-400" },
             { label: "MCP Server", status: "Ready", color: "text-cyan-400" },
           ].map(({ label, status, color }) => (
             <div key={label} className="flex items-center justify-between text-xs">
@@ -384,8 +384,8 @@ What would you like to know?`,
 
         <div className="flex items-center gap-3">
           <ConnectWalletButton />
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-green-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-cyan-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span>Online</span>
           </div>
         </div>

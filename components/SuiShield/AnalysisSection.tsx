@@ -14,8 +14,8 @@ interface AnalysisSectionProps {
 const accentColors = {
   cyan: "border-cyan-500/20 bg-cyan-500/5",
   magenta: "border-magenta-500/20 bg-magenta-500/5",
-  blue: "border-blue-500/20 bg-blue-500/5",
-  orange: "border-orange-500/20 bg-orange-500/5",
+  blue: "border-cyan-500/20 bg-cyan-500/5",
+  orange: "border-magenta-500/20 bg-magenta-500/5",
 };
 
 export function AnalysisSection({ title, icon, children, defaultOpen = false, accent = "cyan" }: AnalysisSectionProps) {
