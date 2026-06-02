@@ -77,20 +77,20 @@ export default function LandingPage() {
       <section className="relative z-10 min-h-screen flex items-center justify-center px-8 pt-32 pb-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-xs text-white/30 mb-14 backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-white/20 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.08] bg-white/[0.03] text-sm text-white/40 mb-14 backdrop-blur-sm">
+            <div className="w-2.5 h-2.5 rounded-full bg-white/30 animate-pulse" />
             <span className="font-bold uppercase tracking-widest">Powered by Tatum + Walrus</span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-display font-black text-[70px] md:text-[90px] lg:text-[110px] leading-[0.85] tracking-[-0.04em] mb-12">
+          <h1 className="font-display font-black text-[80px] md:text-[120px] lg:text-[140px] leading-[0.85] tracking-[-0.04em] mb-12">
             <span className="text-white">Check</span>
             <br />
             <span className="text-white/30">Before You Approve</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-white/20 text-xl md:text-2xl max-w-xl mx-auto mb-16 leading-relaxed font-medium">
+          <p className="text-white/25 text-2xl md:text-3xl max-w-xl mx-auto mb-16 leading-relaxed font-bold">
             AI-powered trust analysis for every Sui interaction.
           </p>
 
@@ -98,16 +98,16 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/analyze"
-              className="group relative inline-flex items-center gap-3 text-lg py-5 px-10 rounded-2xl bg-white text-black font-black hover:bg-white/90 transition-all shadow-[0_0_40px_rgba(255,255,255,0.08)] hover:shadow-[0_0_60px_rgba(255,255,255,0.12)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group relative inline-flex items-center gap-3 text-xl py-6 px-12 rounded-2xl bg-white text-black font-black hover:bg-white/90 transition-all shadow-[0_0_40px_rgba(255,255,255,0.08)] hover:shadow-[0_0_60px_rgba(255,255,255,0.12)] hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-6 h-6" />
               Analyze Address
             </Link>
             <Link
               href="/trust-graph"
-              className="group inline-flex items-center gap-3 text-lg py-5 px-10 rounded-2xl bg-white/[0.03] text-white font-black border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.06] transition-all"
+              className="group inline-flex items-center gap-3 text-xl py-6 px-12 rounded-2xl bg-white/[0.03] text-white font-black border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.06] transition-all"
             >
-              <GitBranch className="w-5 h-5 text-white/30" />
+              <GitBranch className="w-6 h-6 text-white/30" />
               Trust Graph
             </Link>
           </div>
