@@ -49,9 +49,9 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
         <div
           className="absolute inset-0 rounded-3xl"
           style={{
-            background: "linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,0,122,0.1))",
-            border: "1px solid rgba(0,229,255,0.2)",
-            boxShadow: "0 0 80px rgba(0,229,255,0.15), inset 0 0 80px rgba(0,229,255,0.05)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 0 80px rgba(255,255,255,0.08), inset 0 0 80px rgba(255,255,255,0.03)",
             backfaceVisibility: "hidden",
             display: "flex",
             alignItems: "center",
@@ -61,7 +61,7 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
           <img
             src="/logo.png"
             alt="SuiShield"
-            className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(0,229,255,0.5)]"
+            className="w-24 h-24 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
           />
         </div>
 
@@ -69,9 +69,9 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
         <div
           className="absolute inset-0 rounded-3xl"
           style={{
-            background: "linear-gradient(135deg, rgba(255,0,122,0.15), rgba(0,229,255,0.1))",
-            border: "1px solid rgba(255,0,122,0.2)",
-            boxShadow: "0 0 80px rgba(255,0,122,0.15), inset 0 0 80px rgba(255,0,122,0.05)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 0 80px rgba(255,255,255,0.06), inset 0 0 80px rgba(255,255,255,0.02)",
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
             display: "flex",
@@ -81,7 +81,7 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
         >
           <div className="text-center">
             <div className="font-display font-black text-3xl text-white mb-2">SuiShield</div>
-            <div className="text-xs text-white/80">Check Before You Approve</div>
+            <div className="text-xs text-white/50">Check Before You Approve</div>
           </div>
         </div>
 
@@ -89,8 +89,8 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
         <div
           className="absolute inset-[-20px] rounded-[40px]"
           style={{
-            border: "1px solid rgba(0,229,255,0.1)",
-            boxShadow: "0 0 100px rgba(0,229,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            boxShadow: "0 0 100px rgba(255,255,255,0.06)",
             transform: "translateZ(-10px)",
           }}
         />
@@ -135,24 +135,9 @@ export function HolographicCard({ children, className = "" }: HolographicCardPro
         style={{
           opacity: isHovered ? 1 : 0,
           background: `
-            radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(0,229,255,0.15) 0%, transparent 50%),
-            radial-gradient(circle at ${100 - pos.x}% ${100 - pos.y}%, rgba(255,0,122,0.1) 0%, transparent 50%),
-            linear-gradient(${pos.x}deg, rgba(0,229,255,0.05) 0%, rgba(255,0,122,0.05) 50%, rgba(0,229,255,0.05) 100%)
+            radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at ${100 - pos.x}% ${100 - pos.y}%, rgba(255,255,255,0.05) 0%, transparent 50%)
           `,
-        }}
-      />
-
-      {/* Rainbow border on hover */}
-      <div
-        className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500"
-        style={{
-          opacity: isHovered ? 0.6 : 0,
-          background: `conic-gradient(from ${pos.x * 3.6}deg at ${pos.x}% ${pos.y}%, #00E5FF, #FF007A, #FFD700, #00FF9D, #00E5FF)`,
-          mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-          maskComposite: "exclude",
-          WebkitMaskComposite: "xor",
-          padding: "1px",
-          borderRadius: "inherit",
         }}
       />
 
@@ -206,7 +191,7 @@ export function GradientMesh({ className = "" }: { className?: string }) {
         style={{
           top: "-20%",
           left: "-10%",
-          background: "radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
           animation: "float 12s ease-in-out infinite",
           filter: "blur(60px)",
         }}
@@ -216,7 +201,7 @@ export function GradientMesh({ className = "" }: { className?: string }) {
         style={{
           top: "30%",
           right: "-15%",
-          background: "radial-gradient(circle, rgba(255,0,122,0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
           animation: "float 15s ease-in-out infinite reverse",
           filter: "blur(60px)",
         }}
@@ -226,7 +211,7 @@ export function GradientMesh({ className = "" }: { className?: string }) {
         style={{
           bottom: "-10%",
           left: "20%",
-          background: "radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%)",
           animation: "float 18s ease-in-out infinite",
           animationDelay: "-5s",
           filter: "blur(60px)",
@@ -269,8 +254,8 @@ export function PerspectiveGrid({ className = "" }: { className?: string }) {
             left: "-50%",
             transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
             backgroundImage: `
-              linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px)
+              linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
             `,
             backgroundSize: "60px 60px",
             transition: "transform 0.3s ease-out",
@@ -290,7 +275,7 @@ interface GlowOrbProps {
   delay?: number;
 }
 
-export function GlowOrb({ size = 200, color = "#00E5FF", className = "", delay = 0 }: GlowOrbProps) {
+export function GlowOrb({ size = 200, color = "#ffffff", className = "", delay = 0 }: GlowOrbProps) {
   return (
     <div
       className={`absolute pointer-events-none ${className}`}
@@ -298,7 +283,7 @@ export function GlowOrb({ size = 200, color = "#00E5FF", className = "", delay =
         width: size,
         height: size,
         borderRadius: "50%",
-        background: `radial-gradient(circle at 30% 30%, ${color}30, ${color}10, transparent 70%)`,
+        background: `radial-gradient(circle at 30% 30%, ${color}15, ${color}08, transparent 70%)`,
         filter: "blur(40px)",
         animation: `float ${8 + delay}s ease-in-out infinite`,
         animationDelay: `${delay}s`,
@@ -404,7 +389,7 @@ export function AnimatedCounter({ value, suffix = "", prefix = "", className = "
   );
 }
 
-// ─── Magnetic Button (Enhanced) ──────────────────────────
+// ─── Magnetic Button ─────────────────────────────────────
 
 interface MagneticBtnProps {
   children: React.ReactNode;
@@ -461,5 +446,141 @@ export function MagneticBtn({ children, className = "", strength = 0.3, onClick,
     >
       {children}
     </button>
+  );
+}
+
+// ─── 3D Floating Orbs Scene ──────────────────────────────
+
+export function FloatingOrbsScene({ className = "" }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const handleMouse = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+    window.addEventListener("mousemove", handleMouse);
+
+    // Create orbs
+    const orbs: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      opacity: number;
+      pulseSpeed: number;
+      pulseOffset: number;
+    }> = [];
+
+    for (let i = 0; i < 6; i++) {
+      orbs.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: 60 + Math.random() * 100,
+        opacity: 0.03 + Math.random() * 0.05,
+        pulseSpeed: 0.001 + Math.random() * 0.002,
+        pulseOffset: Math.random() * Math.PI * 2,
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      orbs.forEach((orb) => {
+        // Update position
+        orb.x += orb.vx;
+        orb.y += orb.vy;
+
+        // Bounce off edges
+        if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
+        if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
+        if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
+        if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
+
+        // Mouse influence
+        const dx = mouseX - orb.x;
+        const dy = mouseY - orb.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 200) {
+          orb.vx += dx * 0.00002;
+          orb.vy += dy * 0.00002;
+        }
+
+        // Damping
+        orb.vx *= 0.999;
+        orb.vy *= 0.999;
+
+        // Pulse opacity
+        const pulse = Math.sin(Date.now() * orb.pulseSpeed + orb.pulseOffset);
+        const currentOpacity = orb.opacity + pulse * 0.02;
+
+        // Draw orb
+        const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${currentOpacity})`);
+        gradient.addColorStop(0.5, `rgba(255, 255, 255, ${currentOpacity * 0.5})`);
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      });
+
+      // Draw connections
+      orbs.forEach((orb, i) => {
+        orbs.slice(i + 1).forEach((other) => {
+          const dx = orb.x - other.x;
+          const dy = orb.y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 300) {
+            const opacity = (1 - dist / 300) * 0.05;
+            ctx.beginPath();
+            ctx.moveTo(orb.x, orb.y);
+            ctx.lineTo(other.x, other.y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        });
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouse);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 pointer-events-none ${className}`}
+      style={{ width: "100%", height: "100%" }}
+    />
   );
 }
