@@ -114,10 +114,10 @@ export default function VerifyPage() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.04] to-white/[0.04] border border-white/[0.06] text-xs">
             <Shield className="w-3 h-3 text-white/80" />
-            <span className="bg-gradient-to-r from-cyan-300 to-cyan-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">On-Chain Verification</span>
+            <span className="text-white/50 font-bold uppercase tracking-widest">On-Chain Verification</span>
           </div>
           <h1 className="font-display font-black text-3xl text-white tracking-tight">
-            Verify Analysis <span className="bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent">Proof</span>
+            Verify Analysis <span className="text-white/50">Proof</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
             Enter a Walrus blob ID to verify an analysis proof stored on-chain.

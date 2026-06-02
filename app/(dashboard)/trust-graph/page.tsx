@@ -326,10 +326,10 @@ export default function TrustGraphPage() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.04] to-white/[0.04] border border-white/[0.06] text-xs">
             <GitBranch className="w-3 h-3 text-white/50" />
-            <span className="bg-gradient-to-r from-magenta-300 to-cyan-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Fund Flow Analysis</span>
+            <span className="text-white/50 font-bold uppercase tracking-widest">Fund Flow Analysis</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-white tracking-tight">
-            Trust <span className="bg-gradient-to-r from-magenta-400 to-cyan-400 bg-clip-text text-transparent">Graph</span>
+            Trust <span className="text-white/50">Graph</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
             Trace fund flow patterns, detect suspicious clusters, and visualize address relationships.

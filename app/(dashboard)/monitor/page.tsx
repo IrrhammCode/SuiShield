@@ -172,10 +172,10 @@ export default function MonitorPage() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.04] to-white/[0.04] border border-white/[0.06] text-xs">
             <Bell className="w-3 h-3 text-white/50" />
-            <span className="bg-gradient-to-r from-magenta-300 to-magenta-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Real-time Monitoring</span>
+            <span className="text-white/50 font-bold uppercase tracking-widest">Real-time Monitoring</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-white tracking-tight">
-            Address <span className="bg-gradient-to-r from-magenta-400 to-magenta-400 bg-clip-text text-transparent">Monitor</span>
+            Address <span className="text-white/50">Monitor</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
             Monitor Sui addresses for suspicious activity. Get alerts when flagged addresses move funds.
