@@ -7,7 +7,6 @@ import {
   Shield,
   CheckCircle,
   XCircle,
-  ExternalLink,
   Clock,
   Wallet,
   Activity,

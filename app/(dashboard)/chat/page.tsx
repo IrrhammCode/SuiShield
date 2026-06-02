@@ -12,18 +12,16 @@ import {
   ChevronLeft,
   Copy,
   Check,
-  ExternalLink,
   Zap,
   Search,
   Loader2,
   Globe,
   Clock,
-  Hash,
   Info,
   ChevronDown,
   User,
 } from "lucide-react";
-import type { Message, MessageMetadata, DataSource } from "@/types";
+import type { Message, DataSource } from "@/types";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { useWalletAuth } from "@/context/WalletAuthContext";
 
@@ -354,7 +352,7 @@ What would you like to know?`,
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages]);
+  }, [input, isLoading, messages, walletAddress]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

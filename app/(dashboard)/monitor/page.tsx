@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Shield,
   AlertTriangle,
-  CheckCircle,
   Bell,
   BellOff,
   Plus,
@@ -58,7 +57,10 @@ export default function MonitorPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const loadData = async () => {
+      await fetchData();
+    };
+    loadData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [fetchData]);

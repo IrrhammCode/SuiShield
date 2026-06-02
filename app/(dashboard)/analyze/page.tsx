@@ -266,7 +266,7 @@ export default function AnalyzePage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [mode]);
 
   const handleRecordOnSui = useCallback(async () => {
     if (!result?.onChainProof || !isConnected) return;

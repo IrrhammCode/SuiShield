@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  Shield,
   Search,
   Loader2,
   ChevronLeft,

@@ -13,10 +13,9 @@ import {
   Loader2,
   Clock,
   User,
-  Search,
   GitBranch,
 } from "lucide-react";
-import type { Message, MessageMetadata, DataSource } from "@/types";
+import type { Message, DataSource } from "@/types";
 import { useWalletAuth } from "@/context/WalletAuthContext";
 
 // ─── Source Badge ─────────────────────────────────────────
