@@ -33,15 +33,15 @@ const modeLabels: Record<AnalysisMode, { label: string; icon: string; prompt: st
     icon: "📊",
     prompt: "Perform a DeFi-focused trust analysis on this address. Check TVL trend, yield sustainability, concentration risk, protocol health, exit liquidity, and peer comparison with alternatives. Is it safe to deposit?",
     color: "cyan",
-    gradient: "from-cyan-500/15 to-cyan-500/5",
-    glow: "shadow-[0_0_20px_rgba(0,229,255,0.15)]",
+    gradient: "from-white/[0.06] to-white/[0.02]",
+    glow: "shadow-[0_0_20px_rgba(255,255,255,0.06)]",
   },
   nft: {
     label: "NFT",
     icon: "🎨",
     prompt: "Perform an NFT-focused trust analysis on this address. Check creator track record, collection health, wash trading detection, floor price manipulation, copycat detection, and metadata integrity. Is it safe to buy?",
     color: "magenta",
-    gradient: "from-magenta-500/15 to-magenta-500/5",
+    gradient: "from-white/[0.06] to-white/[0.02]",
     glow: "shadow-[0_0_20px_rgba(255,0,122,0.15)]",
   },
   p2p: {
@@ -49,7 +49,7 @@ const modeLabels: Record<AnalysisMode, { label: string; icon: string; prompt: st
     icon: "🤝",
     prompt: "Perform a P2P counterparty risk analysis on this address. Check wallet age, money flow pattern, scam database cross-reference, money mule detection, and network risk. Is it safe to transact?",
     color: "orange",
-    gradient: "from-magenta-500/15 to-magenta-500/5",
+    gradient: "from-white/[0.06] to-white/[0.02]",
     glow: "shadow-[0_0_20px_rgba(255,179,0,0.15)]",
   },
   general: {
@@ -57,7 +57,7 @@ const modeLabels: Record<AnalysisMode, { label: string; icon: string; prompt: st
     icon: "🔍",
     prompt: "Perform a comprehensive trust analysis on this Sui address. Analyze balance, transactions, patterns, risk signals, and provide a trust score with clear verdict.",
     color: "blue",
-    gradient: "from-cyan-500/15 to-cyan-500/5",
+    gradient: "from-white/[0.06] to-white/[0.02]",
     glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]",
   },
 };
@@ -135,12 +135,12 @@ function AgentStepsBar({ steps }: { steps: AgentStep[] }) {
 
   return (
     <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex items-center justify-between w-full text-xs"
       >
-        <div className="flex items-center gap-2 text-cyan-400 font-semibold">
+        <div className="flex items-center gap-2 text-white/80 font-semibold">
           <Zap className="w-4 h-4" />
           Agent executed {steps.length} step{steps.length !== 1 ? "s" : ""}
         </div>
@@ -153,14 +153,14 @@ function AgentStepsBar({ steps }: { steps: AgentStep[] }) {
               <div
                 className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
                   step.status === "success"
-                    ? "bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 text-cyan-400 border border-cyan-500/25"
-                    : "bg-gradient-to-br from-magenta-500/20 to-magenta-500/10 text-magenta-400 border border-magenta-500/25"
+                    ? "bg-gradient-to-br from-cyan-500/20 to-white/[0.04] text-white/80 border border-white/[0.1]"
+                    : "bg-gradient-to-br from-magenta-500/20 to-white/[0.04] text-white/50 border border-magenta-500/25"
                 }`}
               >
                 {step.step}
               </div>
               <div className="flex-1">
-                <span className="font-mono text-cyan-300 text-[11px]">{step.tool}</span>
+                <span className="font-mono text-white/70 text-[11px]">{step.tool}</span>
                 <div className="text-white/40 mt-0.5 leading-relaxed">{step.summary}</div>
                 {step.reasoning && (
                   <div className="text-white/20 text-[10px] mt-1 italic">💡 {step.reasoning}</div>
@@ -206,11 +206,11 @@ function LoadingState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 space-y-6">
       <div className="relative">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-magenta-500/10 border border-cyan-500/20 flex items-center justify-center animate-pulse-glow">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.04] border border-white/[0.08] flex items-center justify-center animate-pulse-glow">
+          <Loader2 className="w-8 h-8 text-white/80 animate-spin" />
         </div>
-        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-magenta-500/20 to-magenta-500/10 border border-magenta-500/30 flex items-center justify-center">
-          <Shield className="w-3 h-3 text-magenta-400" />
+        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-magenta-500/20 to-white/[0.04] border border-white/[0.12] flex items-center justify-center">
+          <Shield className="w-3 h-3 text-white/50" />
         </div>
       </div>
       <div className="text-center space-y-2">
@@ -294,9 +294,9 @@ export default function AnalyzePage() {
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-magenta-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+        <div className="absolute -top-[20%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-white/[0.04] via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-white/[0.04] via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
@@ -321,7 +321,7 @@ export default function AnalyzePage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-[11px] text-white/30">
-              <Database className="w-3.5 h-3.5 text-cyan-400" />
+              <Database className="w-3.5 h-3.5 text-white/80" />
               <span>Tatum + Walrus</span>
             </div>
             <DualWalletButton />
@@ -334,12 +334,12 @@ export default function AnalyzePage() {
         {/* Input Section */}
         <div className="space-y-5">
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 border border-white/[0.06] text-xs">
-              <Search className="w-3 h-3 text-cyan-400" />
-              <span className="bg-gradient-to-r from-cyan-300 to-magenta-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Trust Analysis</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.05] to-white/[0.03] border border-white/[0.06] text-xs">
+              <Search className="w-3 h-3 text-white/80" />
+              <span className="bg-gradient-to-r from-white/90 to-white/50 bg-clip-text text-transparent font-bold uppercase tracking-widest">Trust Analysis</span>
             </div>
             <h1 className="font-display font-bold text-3xl text-white tracking-tight">
-              Analyze Any <span className="bg-gradient-to-r from-cyan-400 to-magenta-400 bg-clip-text text-transparent">Sui Address</span>
+              Analyze Any <span className="bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">Sui Address</span>
             </h1>
             <p className="text-white/30 text-sm max-w-md mx-auto">
               Paste a wallet, contract, or token address to get an AI-powered trust verdict with on-chain proof
@@ -355,9 +355,9 @@ export default function AnalyzePage() {
 
         {/* Error */}
         {error && (
-          <div className="relative rounded-2xl border border-magenta-500/20 bg-gradient-to-br from-magenta-500/10 to-magenta-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
-            <p className="text-magenta-400 text-sm font-medium">{error}</p>
+          <div className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-5 text-center backdrop-blur-xl overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+            <p className="text-white/50 text-sm font-medium">{error}</p>
             <p className="text-white/20 text-xs mt-2">Make sure GROQ_API_KEY is set in .env.local</p>
           </div>
         )}
@@ -375,7 +375,7 @@ export default function AnalyzePage() {
             {/* Share Bar */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-white/30">
-                <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                <Activity className="w-3.5 h-3.5 text-white/80" />
                 Analysis completed in {(result.executionTime / 1000).toFixed(1)}s
               </div>
               {result.onChainProof && (
@@ -388,7 +388,7 @@ export default function AnalyzePage() {
             {/* Risk Signals */}
             <AnalysisSection
               title="Risk Signals"
-              icon={<Shield className="w-4 h-4 text-cyan-400" />}
+              icon={<Shield className="w-4 h-4 text-white/80" />}
               defaultOpen
               accent="cyan"
             >
@@ -402,7 +402,7 @@ export default function AnalyzePage() {
             {/* Full Analysis */}
             <AnalysisSection
               title="Full Analysis"
-              icon={<Brain className="w-4 h-4 text-cyan-400" />}
+              icon={<Brain className="w-4 h-4 text-white/80" />}
               accent="blue"
             >
               <div className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap">
@@ -421,9 +421,9 @@ export default function AnalyzePage() {
                     key={i}
                     className="inline-flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1 font-mono text-white/40 border-white/[0.06] bg-white/[0.03]"
                   >
-                    {src.type === "tatum-sui-rpc" && <span className="text-cyan-400">⚡</span>}
-                    {src.type === "walrus" && <span className="text-magenta-400">⬡</span>}
-                    {src.type === "agent" && <span className="text-magenta-400">🤖</span>}
+                    {src.type === "tatum-sui-rpc" && <span className="text-white/80">⚡</span>}
+                    {src.type === "walrus" && <span className="text-white/50">⬡</span>}
+                    {src.type === "agent" && <span className="text-white/50">🤖</span>}
                     {src.label}
                   </span>
                 ))}
@@ -442,11 +442,11 @@ export default function AnalyzePage() {
             {/* Record on Sui */}
             {result.onChainProof && (
               <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-5 backdrop-blur-xl overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-display font-semibold text-white flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-cyan-400" />
+                      <Zap className="w-4 h-4 text-white/80" />
                       Record on Sui Blockchain
                     </div>
                     <div className="text-xs text-white/20 mt-1">
@@ -454,7 +454,7 @@ export default function AnalyzePage() {
                     </div>
                   </div>
                   {recorded ? (
-                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium">
+                    <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
                       <CheckCircle className="w-4 h-4" />
                       Recorded
                     </div>
@@ -462,7 +462,7 @@ export default function AnalyzePage() {
                     <button
                       onClick={handleRecordOnSui}
                       disabled={recording || !isConnected}
-                      className="px-5 py-2.5 text-sm rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-5 py-2.5 text-sm rounded-xl bg-gradient-to-r from-white to-white/80 text-black font-bold hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(255,255,255,0.08)] hover:shadow-[0_0_30px_rgba(255,255,255,0.12)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {recording ? (
                         <>
@@ -479,10 +479,10 @@ export default function AnalyzePage() {
                   )}
                 </div>
                 {!isConnected && (
-                  <p className="text-xs text-magenta-400/80 mt-3">Connect your Sui wallet to record on-chain</p>
+                  <p className="text-xs text-white/50/80 mt-3">Connect your Sui wallet to record on-chain</p>
                 )}
                 {recordError && (
-                  <p className="text-xs text-magenta-400 mt-3">{recordError}</p>
+                  <p className="text-xs text-white/50 mt-3">{recordError}</p>
                 )}
               </div>
             )}

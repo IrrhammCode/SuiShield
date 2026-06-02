@@ -42,11 +42,11 @@ interface AnalysisRecord {
 
 function RiskBadge({ level, score }: { level: string; score: number }) {
   const colors: Record<string, string> = {
-    safe: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    low: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    medium: "bg-magenta-500/20 text-magenta-400 border-magenta-500/30",
-    high: "bg-magenta-500/20 text-magenta-400 border-magenta-500/30",
-    critical: "bg-magenta-600/20 text-magenta-300 border-magenta-600/30",
+    safe: "bg-cyan-500/20 text-white/80 border-white/[0.12]",
+    low: "bg-cyan-500/20 text-white/80 border-white/[0.12]",
+    medium: "bg-magenta-500/20 text-white/50 border-white/[0.12]",
+    high: "bg-magenta-500/20 text-white/50 border-white/[0.12]",
+    critical: "bg-magenta-600/20 text-white/40 border-magenta-600/30",
   };
   const color = colors[level] || colors.safe;
 
@@ -114,7 +114,7 @@ export default function VerifyPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-white/30">
-            <Database className="w-3.5 h-3.5 text-cyan-400" />
+            <Database className="w-3.5 h-3.5 text-white/80" />
             <span>Walrus Blob</span>
           </div>
         </div>
@@ -124,12 +124,12 @@ export default function VerifyPage() {
       <div className="max-w-4xl mx-auto px-5 py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-4" />
+            <Loader2 className="w-8 h-8 text-white/80 animate-spin mb-4" />
             <p className="text-white/40 text-sm">Fetching analysis from Walrus...</p>
           </div>
         ) : error ? (
-          <div className="card p-8 text-center border-magenta-500/20">
-            <XCircle className="w-12 h-12 text-magenta-400 mx-auto mb-4" />
+          <div className="card p-8 text-center border-white/[0.08]">
+            <XCircle className="w-12 h-12 text-white/50 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">Verification Failed</h2>
             <p className="text-white/40 text-sm mb-4">{error}</p>
             <p className="text-white/30 text-xs">
@@ -139,10 +139,10 @@ export default function VerifyPage() {
         ) : record ? (
           <div className="space-y-6">
             {/* Verification Status */}
-            <div className="card p-6 border-cyan-500/20 bg-cyan-500/5">
+            <div className="card p-6 border-white/[0.08] bg-cyan-500/5">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <CheckCircle className="w-8 h-8 text-cyan-400" />
+                  <CheckCircle className="w-8 h-8 text-white/80" />
                   <div>
                     <h2 className="text-lg font-semibold text-white">Verified On-Chain Analysis</h2>
                     <p className="text-white/40 text-sm">
@@ -158,9 +158,9 @@ export default function VerifyPage() {
             <div className="card p-4">
               <div className="text-xs text-white/30 mb-2 font-medium">WALRUS BLOB ID</div>
               <div className="flex items-center gap-2">
-                <code className="font-mono text-sm text-cyan-400 break-all">{blobId}</code>
+                <code className="font-mono text-sm text-white/80 break-all">{blobId}</code>
                 <button onClick={copyBlobId} className="p-1.5 rounded-lg hover:bg-white/5 flex-shrink-0">
-                  {copied ? <Check className="w-4 h-4 text-cyan-400" /> : <Copy className="w-4 h-4 text-white/30" />}
+                  {copied ? <Check className="w-4 h-4 text-white/80" /> : <Copy className="w-4 h-4 text-white/30" />}
                 </button>
               </div>
               <div className="flex items-center gap-4 mt-3 text-xs text-white/30">
@@ -177,33 +177,33 @@ export default function VerifyPage() {
 
             {/* Proof Chain */}
             {record.inputHash && (
-              <div className="card p-5 border-magenta-500/20 bg-magenta-500/5">
+              <div className="card p-5 border-white/[0.08] bg-magenta-500/5">
                 <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-magenta-400" />
+                  <Link2 className="w-4 h-4 text-white/50" />
                   Proof Chain
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-magenta-500/20 border border-magenta-500/30 flex items-center justify-center">
-                      <Hash className="w-4 h-4 text-magenta-400" />
+                    <div className="w-8 h-8 rounded-lg bg-magenta-500/20 border border-white/[0.12] flex items-center justify-center">
+                      <Hash className="w-4 h-4 text-white/50" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] text-white/30 mb-0.5">INPUT HASH (Prompt + Context)</div>
-                      <code className="font-mono text-xs text-magenta-400 break-all">{record.inputHash}</code>
+                      <code className="font-mono text-xs text-white/50 break-all">{record.inputHash}</code>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-magenta-500/20 border border-magenta-500/30 flex items-center justify-center">
-                      <Hash className="w-4 h-4 text-magenta-400" />
+                    <div className="w-8 h-8 rounded-lg bg-magenta-500/20 border border-white/[0.12] flex items-center justify-center">
+                      <Hash className="w-4 h-4 text-white/50" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] text-white/30 mb-0.5">OUTPUT HASH (LLM Response)</div>
-                      <code className="font-mono text-xs text-magenta-400 break-all">{record.outputHash}</code>
+                      <code className="font-mono text-xs text-white/50 break-all">{record.outputHash}</code>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-white/30 pt-2 border-t border-white/5">
-                    <span>Model: <span className="text-magenta-400">{record.model}</span></span>
-                    <span>Proof: <span className="text-magenta-400">v{record.proofVersion}</span></span>
+                    <span>Model: <span className="text-white/50">{record.model}</span></span>
+                    <span>Proof: <span className="text-white/50">v{record.proofVersion}</span></span>
                   </div>
                 </div>
               </div>
@@ -212,7 +212,7 @@ export default function VerifyPage() {
             {/* Wallet Summary */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-magenta-400" />
+                <Wallet className="w-4 h-4 text-white/50" />
                 Wallet Summary
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -233,7 +233,7 @@ export default function VerifyPage() {
             {/* Risk Score */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-magenta-400" />
+                <Shield className="w-4 h-4 text-white/50" />
                 Risk Assessment
               </h3>
               <div className="flex items-center gap-4">
@@ -268,7 +268,7 @@ export default function VerifyPage() {
             {/* Analysis */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-magenta-400" />
+                <Activity className="w-4 h-4 text-white/50" />
                 Analysis
               </h3>
               <p className="text-white/40 text-sm leading-relaxed">{record.analysis}</p>
@@ -278,13 +278,13 @@ export default function VerifyPage() {
             {record.agentSteps && record.agentSteps.length > 0 && (
               <div className="card p-5">
                 <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-magenta-400" />
+                  <Brain className="w-4 h-4 text-white/50" />
                   Agent Execution Steps
                 </h3>
                 <div className="space-y-2">
                   {record.agentSteps.map((step, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs">
-                      <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-[10px] font-bold">
+                      <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-white/80 border border-white/[0.12] flex items-center justify-center text-[10px] font-bold">
                         {i + 1}
                       </div>
                       <span className="font-mono text-white/40">{step}</span>
@@ -298,11 +298,11 @@ export default function VerifyPage() {
             <div className="text-center text-xs text-white/30 pt-4 border-t border-white/5">
               <p>
                 This analysis is stored on{" "}
-                <a href="https://walrus.space" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+                <a href="https://walrus.space" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:underline">
                   Walrus Decentralized Storage
                 </a>{" "}
                 and verified via{" "}
-                <a href="https://tatum.io" target="_blank" rel="noopener noreferrer" className="text-magenta-400 hover:underline">
+                <a href="https://tatum.io" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:underline">
                   Tatum Sui RPC
                 </a>
               </p>

@@ -81,7 +81,7 @@ export function RotatingShield({ size = 300, className = "" }: RotatingShieldPro
         >
           <div className="text-center">
             <div className="font-display font-black text-3xl text-white mb-2">SuiShield</div>
-            <div className="text-xs text-cyan-400">Check Before You Approve</div>
+            <div className="text-xs text-white/80">Check Before You Approve</div>
           </div>
         </div>
 

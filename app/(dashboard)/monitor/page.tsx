@@ -111,17 +111,17 @@ export default function MonitorPage() {
   };
 
   const getRiskColor = (score: number) => {
-    if (score < 25) return "text-cyan-400";
-    if (score < 50) return "text-magenta-400";
-    if (score < 75) return "text-magenta-400";
-    return "text-magenta-400";
+    if (score < 25) return "text-white/80";
+    if (score < 50) return "text-white/50";
+    if (score < 75) return "text-white/50";
+    return "text-white/50";
   };
 
   const getRiskGradient = (score: number) => {
-    if (score < 25) return "from-cyan-500/15 to-cyan-500/5 border-cyan-500/20";
-    if (score < 50) return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
-    if (score < 75) return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
-    return "from-magenta-500/15 to-magenta-500/5 border-magenta-500/20";
+    if (score < 25) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
+    if (score < 50) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
+    if (score < 75) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
+    return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
   };
 
   return (
@@ -129,9 +129,9 @@ export default function MonitorPage() {
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-magenta-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-white/[0.04] via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-white/[0.04] via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
@@ -170,8 +170,8 @@ export default function MonitorPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-5 py-8 space-y-6">
         {/* Page Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-magenta-500/10 to-magenta-500/10 border border-white/[0.06] text-xs">
-            <Bell className="w-3 h-3 text-magenta-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.04] to-white/[0.04] border border-white/[0.06] text-xs">
+            <Bell className="w-3 h-3 text-white/50" />
             <span className="bg-gradient-to-r from-magenta-300 to-magenta-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Real-time Monitoring</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-white tracking-tight">
@@ -186,19 +186,19 @@ export default function MonitorPage() {
         {status && (
           <div className="grid grid-cols-3 gap-3">
             <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
               <div className="flex items-center gap-2 text-white/30 text-xs mb-2">
-                <Database className="w-3.5 h-3.5 text-cyan-400" />
+                <Database className="w-3.5 h-3.5 text-white/80" />
                 Tatum API
               </div>
-              <div className={`font-display font-bold text-lg ${status.tatumAvailable ? "text-cyan-400" : "text-magenta-400"}`}>
+              <div className={`font-display font-bold text-lg ${status.tatumAvailable ? "text-white/80" : "text-white/50"}`}>
                 {status.tatumAvailable ? "Connected" : "Local Only"}
               </div>
             </div>
             <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-magenta-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
               <div className="flex items-center gap-2 text-white/30 text-xs mb-2">
-                <Eye className="w-3.5 h-3.5 text-magenta-400" />
+                <Eye className="w-3.5 h-3.5 text-white/50" />
                 Monitored
               </div>
               <div className="font-display font-bold text-lg text-white">
@@ -206,9 +206,9 @@ export default function MonitorPage() {
               </div>
             </div>
             <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-magenta-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
               <div className="flex items-center gap-2 text-white/30 text-xs mb-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-magenta-400" />
+                <AlertTriangle className="w-3.5 h-3.5 text-white/50" />
                 Alerts
               </div>
               <div className="font-display font-bold text-lg text-white">
@@ -220,9 +220,9 @@ export default function MonitorPage() {
 
         {/* Add Address */}
         <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-5 backdrop-blur-xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
           <div className="flex items-center gap-2 mb-3">
-            <Plus className="w-4 h-4 text-cyan-400" />
+            <Plus className="w-4 h-4 text-white/80" />
             <span className="text-white font-display font-semibold text-sm">Add Address to Monitor</span>
           </div>
           <div className="flex gap-2">
@@ -237,7 +237,7 @@ export default function MonitorPage() {
             <button
               onClick={handleAddAddress}
               disabled={adding || !newAddress.trim()}
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-white to-white/80 text-black font-bold hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(255,255,255,0.08)] hover:shadow-[0_0_30px_rgba(255,255,255,0.12)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {adding ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -248,18 +248,18 @@ export default function MonitorPage() {
             </button>
           </div>
           {error && (
-            <p className="text-magenta-400 text-xs mt-2">{error}</p>
+            <p className="text-white/50 text-xs mt-2">{error}</p>
           )}
         </div>
 
         {/* Monitored Addresses */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+            <Loader2 className="w-6 h-6 text-white/80 animate-spin" />
           </div>
         ) : monitored.length === 0 ? (
           <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-magenta-500/[0.02] p-8 text-center backdrop-blur-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
             <BellOff className="w-10 h-10 text-white/20 mx-auto mb-3" />
             <p className="text-white/30 text-sm">No addresses being monitored</p>
             <p className="text-white/20 text-xs mt-1">Add an address above to start monitoring</p>
@@ -292,7 +292,7 @@ export default function MonitorPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleSubscribe(addr.address)}
-                      className="p-2 rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-cyan-400"
+                      className="p-2 rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-white/80"
                       title="Subscribe to Tatum webhook"
                     >
                       <Bell className="w-4 h-4" />
@@ -307,7 +307,7 @@ export default function MonitorPage() {
                   </div>
                 </div>
                 {addr.lastAlert && (
-                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center gap-2 text-xs text-magenta-400">
+                  <div className="mt-2 pt-2 border-t border-white/[0.04] flex items-center gap-2 text-xs text-white/50">
                     <AlertTriangle className="w-3 h-3" />
                     Last alert: {new Date(addr.lastAlert).toLocaleString()}
                   </div>
@@ -319,9 +319,9 @@ export default function MonitorPage() {
 
         {/* Info */}
         <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
           <div className="flex gap-3 text-xs text-white/40">
-            <Zap className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+            <Zap className="w-4 h-4 text-white/80 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-white mb-1">How monitoring works</p>
               <p className="leading-relaxed">

@@ -111,7 +111,7 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
 
   return (
     <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
       <svg width="100%" height="500" viewBox={`0 0 ${width} ${height}`}>
         <defs>
           <filter id="glow">
@@ -294,9 +294,9 @@ export default function TrustGraphPage() {
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/15 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-magenta-500/10 via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-magenta-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-white/[0.06] via-white/[0.02] to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-white/[0.04] via-magenta-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-white/[0.04] via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
@@ -324,8 +324,8 @@ export default function TrustGraphPage() {
       <div className="relative z-10 max-w-5xl mx-auto px-5 py-8 space-y-6">
         {/* Page Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-magenta-500/10 to-cyan-500/10 border border-white/[0.06] text-xs">
-            <GitBranch className="w-3 h-3 text-magenta-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.04] to-white/[0.04] border border-white/[0.06] text-xs">
+            <GitBranch className="w-3 h-3 text-white/50" />
             <span className="bg-gradient-to-r from-magenta-300 to-cyan-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Fund Flow Analysis</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-white tracking-tight">
@@ -338,9 +338,9 @@ export default function TrustGraphPage() {
 
         {/* Input */}
         <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-magenta-500/[0.02] p-5 backdrop-blur-xl overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
           <div className="flex items-center gap-2 mb-3">
-            <Search className="w-4 h-4 text-magenta-400" />
+            <Search className="w-4 h-4 text-white/50" />
             <span className="text-white font-display font-semibold text-sm">Trace Fund Flow</span>
           </div>
           <div className="flex gap-2">
@@ -366,8 +366,8 @@ export default function TrustGraphPage() {
         {/* Loading */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-magenta-500/20 to-cyan-500/10 border border-magenta-500/20 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-magenta-400 animate-spin" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-magenta-500/20 to-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-white/50 animate-spin" />
             </div>
             <p className="text-white text-sm">Tracing fund flow...</p>
             <p className="text-white/20 text-xs">Analyzing transactions via Tatum Sui RPC</p>
@@ -376,9 +376,9 @@ export default function TrustGraphPage() {
 
         {/* Error */}
         {error && (
-          <div className="relative rounded-2xl border border-magenta-500/20 bg-gradient-to-br from-magenta-500/10 to-magenta-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/30 to-transparent" />
-            <p className="text-magenta-400 text-sm">{error}</p>
+          <div className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-5 text-center backdrop-blur-xl overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+            <p className="text-white/50 text-sm">{error}</p>
           </div>
         )}
 
@@ -388,10 +388,10 @@ export default function TrustGraphPage() {
             {/* Risk Summary */}
             <div className="grid grid-cols-4 gap-3">
               {[
-                { label: "Overall Risk", value: `${graph.riskSummary.overallRisk}/100`, color: getRiskColor(graph.riskSummary.overallRisk), gradient: "from-magenta-500/10 to-magenta-500/5" },
-                { label: "Addresses", value: graph.riskSummary.uniqueAddresses.toString(), color: "#FFFFFF", gradient: "from-cyan-500/10 to-cyan-500/5" },
-                { label: "Flagged", value: graph.riskSummary.flaggedAddresses.toString(), color: "#FF3366", gradient: "from-magenta-500/10 to-magenta-500/5" },
-                { label: "Volume", value: graph.riskSummary.totalVolume, color: "#00E5FF", gradient: "from-cyan-500/10 to-cyan-500/5" },
+                { label: "Overall Risk", value: `${graph.riskSummary.overallRisk}/100`, color: getRiskColor(graph.riskSummary.overallRisk), gradient: "from-white/[0.04] to-white/[0.02]" },
+                { label: "Addresses", value: graph.riskSummary.uniqueAddresses.toString(), color: "#FFFFFF", gradient: "from-white/[0.04] to-white/[0.02]" },
+                { label: "Flagged", value: graph.riskSummary.flaggedAddresses.toString(), color: "#FF3366", gradient: "from-white/[0.04] to-white/[0.02]" },
+                { label: "Volume", value: graph.riskSummary.totalVolume, color: "#00E5FF", gradient: "from-white/[0.04] to-white/[0.02]" },
               ].map(({ label, value, color, gradient }) => (
                 <div key={label} className={`relative rounded-2xl border border-white/[0.06] bg-gradient-to-br ${gradient} p-4 backdrop-blur-xl overflow-hidden`}>
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
@@ -406,7 +406,7 @@ export default function TrustGraphPage() {
             {/* Trust Graph Visualization */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Eye className="w-4 h-4 text-magenta-400" />
+                <Eye className="w-4 h-4 text-white/50" />
                 <span className="text-white font-display font-semibold text-sm">Trust Graph</span>
               </div>
               <TrustGraphViz graph={graph} />
@@ -416,7 +416,7 @@ export default function TrustGraphPage() {
             {graph.suspiciousPatterns.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-magenta-400" />
+                  <AlertTriangle className="w-4 h-4 text-white/50" />
                   <span className="text-white font-display font-semibold text-sm">
                     Suspicious Patterns ({graph.suspiciousPatterns.length})
                   </span>
@@ -433,23 +433,23 @@ export default function TrustGraphPage() {
             {behavioral && behavioral.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Activity className="w-4 h-4 text-magenta-400" />
+                  <Activity className="w-4 h-4 text-white/50" />
                   <span className="text-white font-display font-semibold text-sm">Behavioral Analysis</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {behavioral.map((pattern, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-white/[0.01] hover:border-white/[0.1] transition-all">
                       {pattern.detected ? (
-                        <AlertTriangle className="w-4 h-4 text-magenta-400 flex-shrink-0" />
+                        <AlertTriangle className="w-4 h-4 text-white/50 flex-shrink-0" />
                       ) : (
-                        <CheckCircle className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-white/80 flex-shrink-0" />
                       )}
                       <div className="flex-1">
                         <div className="text-xs font-mono text-white/40">{pattern.type.replace(/_/g, " ")}</div>
                         <div className="text-xs text-white/20 mt-0.5">{pattern.description}</div>
                       </div>
                       {pattern.detected && (
-                        <span className="text-[10px] text-magenta-400">{pattern.confidence}%</span>
+                        <span className="text-[10px] text-white/50">{pattern.confidence}%</span>
                       )}
                     </div>
                   ))}

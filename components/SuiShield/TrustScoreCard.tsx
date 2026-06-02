@@ -10,11 +10,11 @@ interface TrustScoreCardProps {
 }
 
 const levelConfig = {
-  safe: { label: "SAFE", color: "#00FF9D", icon: CheckCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
-  low: { label: "LOW RISK", color: "#4DA6FF", icon: Shield, bg: "bg-cyan-500/10", border: "border-cyan-500/30" },
-  medium: { label: "MEDIUM RISK", color: "#FFB300", icon: AlertTriangle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
-  high: { label: "HIGH RISK", color: "#FF6B00", icon: XCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
-  critical: { label: "DANGEROUS", color: "#FF3366", icon: XCircle, bg: "bg-magenta-500/10", border: "border-magenta-500/30" },
+  safe: { label: "SAFE", color: "#00FF9D", icon: CheckCircle, bg: "bg-magenta-500/10", border: "border-white/[0.12]" },
+  low: { label: "LOW RISK", color: "#4DA6FF", icon: Shield, bg: "bg-cyan-500/10", border: "border-white/[0.12]" },
+  medium: { label: "MEDIUM RISK", color: "#FFB300", icon: AlertTriangle, bg: "bg-magenta-500/10", border: "border-white/[0.12]" },
+  high: { label: "HIGH RISK", color: "#FF6B00", icon: XCircle, bg: "bg-magenta-500/10", border: "border-white/[0.12]" },
+  critical: { label: "DANGEROUS", color: "#FF3366", icon: XCircle, bg: "bg-magenta-500/10", border: "border-white/[0.12]" },
 };
 
 export function TrustScoreCard({ score, level, address, chain = "Sui" }: TrustScoreCardProps) {

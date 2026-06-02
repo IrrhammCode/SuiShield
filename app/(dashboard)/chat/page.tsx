@@ -29,12 +29,12 @@ import { useWalletAuth } from "@/context/WalletAuthContext";
 function SourceBadge({ source }: { source: DataSource }) {
   const configs: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     walrus: { label: "Walrus", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-rpc": { label: "Tatum RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
-    "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
-    "tatum-api": { label: "Tatum API", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-mcp": { label: "Tatum MCP", color: "text-cyan-400/70 border-cyan-500/20 bg-cyan-500/5", icon: <Brain className="w-3 h-3" /> },
+    "tatum-rpc": { label: "Tatum RPC", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
+    "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
+    "tatum-api": { label: "Tatum API", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Database className="w-3 h-3" /> },
+    "tatum-mcp": { label: "Tatum MCP", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Brain className="w-3 h-3" /> },
     "walrus-dataset": { label: "Walrus Dataset", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    agent: { label: "Agent", color: "text-magenta-400/70 border-magenta-500/20 bg-magenta-500/5", icon: <Brain className="w-3 h-3" /> },
+    agent: { label: "Agent", color: "text-white/50/70 border-white/[0.08] bg-magenta-500/5", icon: <Brain className="w-3 h-3" /> },
   };
   const config = configs[source.type] || configs["tatum-api"];
   return (
@@ -62,7 +62,7 @@ function MessageBubble({ message }: { message: Message }) {
       if (line.startsWith("- ")) {
         return (
           <div key={i} className="flex gap-2 text-white/50 text-sm">
-            <span className="text-cyan-400/60 mt-0.5">›</span>
+            <span className="text-white/80/60 mt-0.5">›</span>
             <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>') }} />
           </div>
         );
@@ -70,7 +70,7 @@ function MessageBubble({ message }: { message: Message }) {
       if (line === "") return <div key={i} className="h-2" />;
       return (
         <div key={i} className="text-white/40 text-sm leading-relaxed" dangerouslySetInnerHTML={{
-          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded text-cyan-300/70">$1</code>')
+          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded text-white/70/70">$1</code>')
         }} />
       );
     });
@@ -91,7 +91,7 @@ function MessageBubble({ message }: { message: Message }) {
 
   return (
     <div className="flex gap-3 animate-slide-up">
-      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
         <img src="/logo.png" alt="SuiShield" className="w-5 h-5 object-contain" />
       </div>
       <div className="flex-1 max-w-[90%] space-y-3">
@@ -108,7 +108,7 @@ function MessageBubble({ message }: { message: Message }) {
               </div>
             )}
             <button onClick={copyContent} className="p-1 rounded hover:bg-white/5 text-white/20 hover:text-white/50 transition-colors">
-              {copied ? <Check className="w-3 h-3 text-cyan-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? <Check className="w-3 h-3 text-white/80" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         )}
@@ -121,11 +121,11 @@ function MessageBubble({ message }: { message: Message }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3 animate-fade-in">
-      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
         <img src="/logo.png" alt="SuiShield" className="w-5 h-5 object-contain" />
       </div>
       <div className="rounded-2xl rounded-bl-md px-5 py-4 flex items-center gap-2 bg-white/[0.03] border border-white/5">
-        <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
+        <Loader2 className="w-4 h-4 text-white/80 animate-spin" />
         <span className="text-white/30 text-sm">Thinking...</span>
         <div className="flex gap-1 ml-2">
           {[0, 1, 2].map((i) => (
@@ -139,12 +139,12 @@ function TypingIndicator() {
 
 // ─── Suggested Queries ────────────────────────────────────
 const SUGGESTED_QUERIES = [
-  { icon: <Shield className="w-4 h-4" />, text: "Is wallet 0x742d35Cc... safe to interact with?", color: "border-magenta-500/20 hover:border-magenta-500/40" },
-  { icon: <TrendingUp className="w-4 h-4" />, text: "Show me SUI price history for 2026", color: "border-cyan-500/20 hover:border-cyan-500/40" },
-  { icon: <Activity className="w-4 h-4" />, text: "What was Ethereum's daily TPS in Q1 2025?", color: "border-cyan-500/20 hover:border-cyan-500/40" },
-  { icon: <Database className="w-4 h-4" />, text: "Top DeFi protocols on Sui by TVL", color: "border-magenta-500/20 hover:border-magenta-500/40" },
-  { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-magenta-500/20 hover:border-magenta-500/40" },
-  { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-magenta-500/20 hover:border-magenta-500/40" },
+  { icon: <Shield className="w-4 h-4" />, text: "Is wallet 0x742d35Cc... safe to interact with?", color: "border-white/[0.08] hover:border-magenta-500/40" },
+  { icon: <TrendingUp className="w-4 h-4" />, text: "Show me SUI price history for 2026", color: "border-white/[0.08] hover:border-cyan-500/40" },
+  { icon: <Activity className="w-4 h-4" />, text: "What was Ethereum's daily TPS in Q1 2025?", color: "border-white/[0.08] hover:border-cyan-500/40" },
+  { icon: <Database className="w-4 h-4" />, text: "Top DeFi protocols on Sui by TVL", color: "border-white/[0.08] hover:border-magenta-500/40" },
+  { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-white/[0.08] hover:border-magenta-500/40" },
+  { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-white/[0.08] hover:border-magenta-500/40" },
 ];
 
 // ─── Right Info Panel ─────────────────────────────────────
@@ -155,7 +155,7 @@ function InfoPanel() {
     {
       id: "tools",
       title: "Active Tatum Tools",
-      icon: <Zap className="w-4 h-4 text-cyan-400" />,
+      icon: <Zap className="w-4 h-4 text-white/80" />,
       content: (
         <div className="space-y-1.5">
           {[
@@ -177,7 +177,7 @@ function InfoPanel() {
     {
       id: "walrus",
       title: "Walrus Data Sources",
-      icon: <Database className="w-4 h-4 text-magenta-400" />,
+      icon: <Database className="w-4 h-4 text-white/50" />,
       content: (
         <div className="space-y-2">
           {[
@@ -200,14 +200,14 @@ function InfoPanel() {
     {
       id: "network",
       title: "Network Status",
-      icon: <Activity className="w-4 h-4 text-cyan-400" />,
+      icon: <Activity className="w-4 h-4 text-white/80" />,
       content: (
         <div className="space-y-2">
           {[
-            { label: "Tatum RPC", status: "Online", color: "text-cyan-400" },
-            { label: "Walrus Aggregator", status: "Online", color: "text-cyan-400" },
-            { label: "Sui Mainnet", status: "Online", color: "text-cyan-400" },
-            { label: "MCP Server", status: "Ready", color: "text-cyan-400" },
+            { label: "Tatum RPC", status: "Online", color: "text-white/80" },
+            { label: "Walrus Aggregator", status: "Online", color: "text-white/80" },
+            { label: "Sui Mainnet", status: "Online", color: "text-white/80" },
+            { label: "MCP Server", status: "Ready", color: "text-white/80" },
           ].map(({ label, status, color }) => (
             <div key={label} className="flex items-center justify-between text-xs">
               <span className="text-white/20">{label}</span>
@@ -225,7 +225,7 @@ function InfoPanel() {
   return (
     <div className="w-72 flex-shrink-0 border-l border-white/5 p-4 space-y-3 overflow-y-auto scroll-area hidden lg:block">
       {sections.map((section, idx) => (
-        <div key={section.id} className={`p-4 rounded-2xl backdrop-blur-xl bg-black/40 border ${idx === 0 ? 'border-cyan-500/20' : 'border-white/5'}`}>
+        <div key={section.id} className={`p-4 rounded-2xl backdrop-blur-xl bg-black/40 border ${idx === 0 ? 'border-white/[0.08]' : 'border-white/5'}`}>
           <button
             className="w-full flex items-center justify-between text-sm font-medium text-white mb-2"
             onClick={() => setExpanded(expanded === section.id ? null : section.id)}
@@ -245,7 +245,7 @@ function InfoPanel() {
       {/* Info */}
       <div className="p-3 rounded-xl border border-cyan-500/10 bg-cyan-500/5">
         <div className="flex gap-2 text-xs text-white/40">
-          <Info className="w-3 h-3 text-cyan-400 flex-shrink-0 mt-0.5" />
+          <Info className="w-3 h-3 text-white/80 flex-shrink-0 mt-0.5" />
           <span>Queries for data older than 3 days are automatically routed to Walrus blobs, bypassing the Sui RPC pruning limit.</span>
         </div>
       </div>
@@ -384,7 +384,7 @@ What would you like to know?`,
 
         <div className="flex items-center gap-3">
           <ConnectWalletButton />
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-cyan-400">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-white/80">
             <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span>Online</span>
           </div>
@@ -418,7 +418,7 @@ What would you like to know?`,
                       onClick={() => handleSuggestion(text)}
                       className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 group text-sm ${color} bg-white/[0.02] hover:bg-white/5`}
                     >
-                      <span className="text-white/30 group-hover:text-cyan-400 transition-colors flex-shrink-0">{icon}</span>
+                      <span className="text-white/30 group-hover:text-white/80 transition-colors flex-shrink-0">{icon}</span>
                       <span className="text-white/40 group-hover:text-white transition-colors leading-tight">{text}</span>
                     </button>
                   ))}

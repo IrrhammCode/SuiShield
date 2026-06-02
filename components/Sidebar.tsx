@@ -57,7 +57,7 @@ export function Sidebar() {
                   : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
               }`}
             >
-              <div className={`${isActive ? "text-cyan-400" : "text-white/30 group-hover:text-white/60"} transition-colors`}>
+              <div className={`${isActive ? "text-white/80" : "text-white/30 group-hover:text-white/60"} transition-colors`}>
                 {item.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -76,9 +76,9 @@ export function Sidebar() {
       <div className="p-3 border-t border-white/5">
         <div className="space-y-2">
           {[
-            { label: "Tatum RPC", status: "Online", color: "text-cyan-400" },
-            { label: "Walrus", status: "Connected", color: "text-cyan-400" },
-            { label: "Sui Testnet", status: "Live", color: "text-cyan-400" },
+            { label: "Tatum RPC", status: "Online", color: "text-white/80" },
+            { label: "Walrus", status: "Connected", color: "text-white/80" },
+            { label: "Sui Testnet", status: "Live", color: "text-white/80" },
           ].map(({ label, status, color }) => (
             <div key={label} className="flex items-center justify-between text-xs">
               <span className="text-white/20">{label}</span>

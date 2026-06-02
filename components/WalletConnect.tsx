@@ -32,13 +32,13 @@ export function SuiWalletButton() {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="flex items-center gap-2 px-3 py-2 rounded-full border border-magenta-500/30 bg-magenta-500/10 hover:bg-magenta-500/20 transition-all"
+        className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.12] bg-magenta-500/10 hover:bg-magenta-500/20 transition-all"
       >
         <div className="w-2 h-2 rounded-full bg-magenta-400 animate-pulse" />
-        <span className="text-magenta-400 font-mono text-xs">
+        <span className="text-white/50 font-mono text-xs">
           {address.slice(0, 6)}...{address.slice(-4)}
         </span>
-        <ChevronDown className="w-3 h-3 text-magenta-400" />
+        <ChevronDown className="w-3 h-3 text-white/50" />
       </button>
 
       {showDropdown && (
@@ -52,7 +52,7 @@ export function SuiWalletButton() {
               onClick={copyAddress}
               className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-white/50" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied!" : "Copy Address"}
             </button>
           </div>
@@ -71,7 +71,7 @@ export function EvmWalletButton() {
     return (
       <button 
         onClick={() => open()}
-        className="flex items-center gap-2 px-3 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all text-cyan-400 text-xs font-medium cursor-pointer"
+        className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.12] bg-cyan-500/10 hover:bg-cyan-500/20 transition-all text-white/80 text-xs font-medium cursor-pointer"
       >
         <Wallet className="w-3.5 h-3.5" />
         Connect EVM
@@ -83,10 +83,10 @@ export function EvmWalletButton() {
     <div className="relative">
       <button
         onClick={() => open({ view: 'Account' })}
-        className="flex items-center gap-2 px-3 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all cursor-pointer"
+        className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.12] bg-cyan-500/10 hover:bg-cyan-500/20 transition-all cursor-pointer"
       >
         <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-        <span className="text-cyan-400 font-mono text-xs">
+        <span className="text-white/80 font-mono text-xs">
           {address.slice(0, 6)}...{address.slice(-4)}
         </span>
       </button>
@@ -112,7 +112,7 @@ export function DualWalletButton() {
         {!isEvmConnected && (
            <button 
              onClick={() => open()}
-             className="flex items-center gap-2 px-3 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all text-cyan-400 text-xs font-medium cursor-pointer"
+             className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.12] bg-cyan-500/10 hover:bg-cyan-500/20 transition-all text-white/80 text-xs font-medium cursor-pointer"
            >
              <Wallet className="w-3.5 h-3.5" />
              Add EVM
@@ -122,7 +122,7 @@ export function DualWalletButton() {
         {!isSuiConnected && (
           <SuiConnectModal 
             trigger={
-              <button className="flex items-center gap-2 px-3 py-2 rounded-full border border-magenta-500/30 bg-magenta-500/10 hover:bg-magenta-500/20 transition-all text-magenta-400 text-xs font-medium cursor-pointer">
+              <button className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.12] bg-magenta-500/10 hover:bg-magenta-500/20 transition-all text-white/50 text-xs font-medium cursor-pointer">
                 <span>Add Sui</span>
               </button>
             }
@@ -150,7 +150,7 @@ export function DualWalletButton() {
           
           <button 
             onClick={() => { open(); setIsOpen(false); }}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-cyan-500/10 transition-colors text-cyan-400 text-sm font-medium w-full text-left cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-cyan-500/10 transition-colors text-white/80 text-sm font-medium w-full text-left cursor-pointer"
           >
             <Wallet className="w-4 h-4" />
             Connect EVM
@@ -160,7 +160,7 @@ export function DualWalletButton() {
             trigger={
               <button 
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-magenta-500/10 transition-colors text-magenta-400 text-sm font-medium w-full text-left cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-magenta-500/10 transition-colors text-white/50 text-sm font-medium w-full text-left cursor-pointer"
               >
                 <Wallet className="w-4 h-4" />
                 Connect Sui

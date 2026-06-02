@@ -9,9 +9,9 @@ interface RiskSignalProps {
 }
 
 const signalConfig = {
-  positive: { icon: CheckCircle, color: "text-magenta-400", bg: "bg-magenta-500/10" },
-  warning: { icon: AlertTriangle, color: "text-magenta-400", bg: "bg-magenta-500/10" },
-  negative: { icon: XCircle, color: "text-magenta-400", bg: "bg-magenta-500/10" },
+  positive: { icon: CheckCircle, color: "text-white/50", bg: "bg-magenta-500/10" },
+  warning: { icon: AlertTriangle, color: "text-white/50", bg: "bg-magenta-500/10" },
+  negative: { icon: XCircle, color: "text-white/50", bg: "bg-magenta-500/10" },
 };
 
 export function RiskSignal({ type, text, detail }: RiskSignalProps) {
