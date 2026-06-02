@@ -18,27 +18,27 @@ import {
 import type { Message, DataSource } from "@/types";
 import { useWalletAuth } from "@/context/WalletAuthContext";
 
-// ─── Source Badge ─────────────────────────────────────────
+// Source Badge
 function SourceBadge({ source }: { source: DataSource }) {
-  const configs: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    walrus: { label: "Walrus", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-rpc": { label: "Tatum RPC", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
-    "tatum-sui-rpc": { label: "Tatum Sui RPC", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Zap className="w-3 h-3" /> },
-    "tatum-api": { label: "Tatum API", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Database className="w-3 h-3" /> },
-    "tatum-mcp": { label: "Tatum MCP", color: "text-white/80/70 border-white/[0.08] bg-cyan-500/5", icon: <Brain className="w-3 h-3" /> },
-    "walrus-dataset": { label: "Walrus Dataset", color: "text-white/50 border-white/10 bg-white/5", icon: <Database className="w-3 h-3" /> },
-    agent: { label: "Agent", color: "text-white/50/70 border-white/[0.08] bg-magenta-500/5", icon: <Brain className="w-3 h-3" /> },
+  const configs: Record<string, { label: string; icon: React.ReactNode }> = {
+    walrus: { label: "Walrus", icon: <Database className="w-3 h-3" /> },
+    "tatum-rpc": { label: "Tatum RPC", icon: <Zap className="w-3 h-3" /> },
+    "tatum-sui-rpc": { label: "Tatum Sui RPC", icon: <Zap className="w-3 h-3" /> },
+    "tatum-api": { label: "Tatum API", icon: <Database className="w-3 h-3" /> },
+    "tatum-mcp": { label: "Tatum MCP", icon: <Brain className="w-3 h-3" /> },
+    "walrus-dataset": { label: "Walrus Dataset", icon: <Database className="w-3 h-3" /> },
+    agent: { label: "Agent", icon: <Brain className="w-3 h-3" /> },
   };
   const config = configs[source.type] || configs["tatum-api"];
   return (
-    <div className={`inline-flex items-center gap-1.5 text-[10px] border rounded-lg px-2 py-0.5 font-mono ${config.color}`}>
+    <div className="inline-flex items-center gap-1.5 text-[10px] border rounded-lg px-2 py-0.5 font-mono text-white/40 border-white/[0.06] bg-white/[0.02]">
       {config.icon}
-      <span>{source.label}</span>
+      <span>{config.label}</span>
     </div>
   );
 }
 
-// ─── Message Bubble ───────────────────────────────────────
+// Message Bubble
 function MessageBubble({ message }: { message: Message }) {
   const [copied, setCopied] = useState(false);
   const copyContent = () => {
@@ -54,16 +54,16 @@ function MessageBubble({ message }: { message: Message }) {
       }
       if (line.startsWith("- ")) {
         return (
-          <div key={i} className="flex gap-2 text-white/50 text-sm">
-            <span className="text-white/80/60 mt-0.5">›</span>
+          <div key={i} className="flex gap-2 text-white/40 text-sm">
+            <span className="text-white/30 mt-0.5">›</span>
             <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>') }} />
           </div>
         );
       }
       if (line === "") return <div key={i} className="h-2" />;
       return (
-        <div key={i} className="text-white/40 text-sm leading-relaxed" dangerouslySetInnerHTML={{
-          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded text-white/70/70">$1</code>')
+        <div key={i} className="text-white/30 text-sm leading-relaxed" dangerouslySetInnerHTML={{
+          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded text-white/50">$1</code>')
         }} />
       );
     });
@@ -72,11 +72,11 @@ function MessageBubble({ message }: { message: Message }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end gap-3 animate-slide-up">
-        <div className="rounded-2xl rounded-br-md px-5 py-3.5 max-w-[80%] bg-white/10 border border-white/10">
+        <div className="rounded-2xl rounded-br-md px-5 py-3.5 max-w-[80%] bg-white/[0.08] border border-white/[0.06]">
           <p className="text-white text-[15px] leading-relaxed">{message.content}</p>
         </div>
-        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mt-1">
-          <User className="w-4 h-4 text-white/40" />
+        <div className="w-9 h-9 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center flex-shrink-0 mt-1">
+          <User className="w-4 h-4 text-white/30" />
         </div>
       </div>
     );
@@ -84,24 +84,24 @@ function MessageBubble({ message }: { message: Message }) {
 
   return (
     <div className="flex gap-3 animate-slide-up">
-      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
+      <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
         <img src="/logo.png" alt="SuiShield" className="w-5 h-5 object-contain" />
       </div>
       <div className="flex-1 max-w-[90%] space-y-3">
-        <div className="rounded-2xl rounded-bl-md px-5 py-4 space-y-1.5 bg-white/[0.03] border border-white/5">
+        <div className="rounded-2xl rounded-bl-md px-5 py-4 space-y-1.5 bg-white/[0.02] border border-white/[0.04]">
           {renderContent(message.content)}
         </div>
         {message.metadata && (
           <div className="flex flex-wrap items-center gap-2">
             {message.metadata.sources?.map((src, i) => <SourceBadge key={i} source={src} />)}
             {message.metadata.executionTime && (
-              <div className="text-[10px] text-white/20 flex items-center gap-1">
+              <div className="text-[10px] text-white/15 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {(message.metadata.executionTime / 1000).toFixed(2)}s
               </div>
             )}
-            <button onClick={copyContent} className="p-1 rounded hover:bg-white/5 text-white/20 hover:text-white/50 transition-colors">
-              {copied ? <Check className="w-3 h-3 text-white/80" /> : <Copy className="w-3 h-3" />}
+            <button onClick={copyContent} className="p-1 rounded hover:bg-white/5 text-white/15 hover:text-white/40 transition-colors">
+              {copied ? <Check className="w-3 h-3 text-white/50" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         )}
@@ -110,19 +110,19 @@ function MessageBubble({ message }: { message: Message }) {
   );
 }
 
-// ─── Typing Indicator ─────────────────────────────────────
+// Typing Indicator
 function TypingIndicator() {
   return (
     <div className="flex gap-3 animate-fade-in">
-      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
+      <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
         <img src="/logo.png" alt="SuiShield" className="w-5 h-5 object-contain" />
       </div>
-      <div className="rounded-2xl rounded-bl-md px-5 py-4 flex items-center gap-2 bg-white/[0.03] border border-white/5">
-        <Loader2 className="w-4 h-4 text-white/80 animate-spin" />
-        <span className="text-white/30 text-sm">Thinking...</span>
+      <div className="rounded-2xl rounded-bl-md px-5 py-4 flex items-center gap-2 bg-white/[0.02] border border-white/[0.04]">
+        <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+        <span className="text-white/20 text-sm">Thinking...</span>
         <div className="flex gap-1 ml-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-400/50 animate-typing-dot typing-dot" style={{ animationDelay: `${i * 0.2}s` }} />
+            <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/20 animate-typing-dot typing-dot" style={{ animationDelay: `${i * 0.2}s` }} />
           ))}
         </div>
       </div>
@@ -130,7 +130,7 @@ function TypingIndicator() {
   );
 }
 
-// ─── Suggested Queries ────────────────────────────────────
+// Suggested Queries
 const SUGGESTED_QUERIES = [
   { icon: <Shield className="w-4 h-4" />, text: "Is this wallet safe to interact with?" },
   { icon: <TrendingUp className="w-4 h-4" />, text: "Show me SUI price history" },
@@ -138,7 +138,7 @@ const SUGGESTED_QUERIES = [
   { icon: <Database className="w-4 h-4" />, text: "Top DeFi protocols on Sui" },
 ];
 
-// ─── Dashboard Page ───────────────────────────────────────
+// Dashboard Page
 export default function DashboardPage() {
   const { address: walletAddress } = useWalletAuth();
   const [messages, setMessages] = useState<Message[]>([
@@ -218,14 +218,14 @@ What would you like to know?`,
   return (
     <>
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/[0.04] bg-black/40 backdrop-blur-xl">
         <div>
           <div className="font-display font-black text-white text-sm">AI Assistant</div>
-          <div className="text-[10px] text-white/20">Powered by Groq + Tatum + Walrus</div>
+          <div className="text-[10px] text-white/15">Powered by Groq + Tatum + Walrus</div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-[10px] text-white/80">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+            <div className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
             <span className="font-medium">Online</span>
           </div>
         </div>
@@ -248,7 +248,7 @@ What would you like to know?`,
               <button
                 key={text}
                 onClick={() => { setInput(text); inputRef.current?.focus(); }}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/[0.02] text-xs text-white/40 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.04] bg-white/[0.02] text-xs text-white/30 hover:text-white/60 hover:border-white/[0.08] hover:bg-white/[0.04] transition-all"
               >
                 {icon}
                 {text}
@@ -260,14 +260,14 @@ What would you like to know?`,
 
       {/* Input Area */}
       <div className="px-6 pb-6 pt-2">
-        <div className="max-w-3xl mx-auto flex items-end gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-2">
+        <div className="max-w-3xl mx-auto flex items-end gap-2 bg-white/[0.02] border border-white/[0.04] rounded-2xl p-2">
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask anything about blockchain data..."
-            className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none placeholder-white/20"
+            className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none placeholder-white/15"
             rows={1}
           />
           <button
@@ -275,22 +275,22 @@ What would you like to know?`,
             disabled={!input.trim() || isLoading}
             className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
               input.trim() && !isLoading
-                ? "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                : "bg-white/5 text-white/20 cursor-not-allowed"
+                ? "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.08)]"
+                : "bg-white/[0.03] text-white/15 cursor-not-allowed"
             }`}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>
         <div className="max-w-3xl mx-auto flex items-center justify-between mt-2 px-1">
-          <div className="text-[10px] text-white/10 flex items-center gap-2">
+          <div className="text-[10px] text-white/[0.08] flex items-center gap-2">
             <span className="flex items-center gap-1"><Database className="w-3 h-3" /> Walrus</span>
             <span>·</span>
             <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Tatum</span>
             <span>·</span>
             <span>Sui Testnet</span>
           </div>
-          <div className="text-[10px] text-white/10">Enter to send</div>
+          <div className="text-[10px] text-white/[0.08]">Enter to send</div>
         </div>
       </div>
     </>
