@@ -336,10 +336,10 @@ export default function AnalyzePage() {
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.05] to-white/[0.03] border border-white/[0.06] text-xs">
               <Search className="w-3 h-3 text-white/80" />
-              <span className="bg-gradient-to-r from-white/90 to-white/50 bg-clip-text text-transparent font-bold uppercase tracking-widest">Trust Analysis</span>
+              <span className="text-white/60 font-bold uppercase tracking-widest">Trust Analysis</span>
             </div>
             <h1 className="font-display font-bold text-3xl text-white tracking-tight">
-              Analyze Any <span className="bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">Sui Address</span>
+              Analyze Any <span className="text-white/60">Sui Address</span>
             </h1>
             <p className="text-white/30 text-sm max-w-md mx-auto">
               Paste a wallet, contract, or token address to get an AI-powered trust verdict with on-chain proof

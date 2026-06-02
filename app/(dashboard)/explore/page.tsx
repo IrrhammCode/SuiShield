@@ -406,11 +406,11 @@ export default function ExplorePage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-white/[0.05] to-white/[0.03] border border-white/[0.06] text-xs mb-4">
             <CheckCircle2 className="w-3 h-3 text-white/80" />
-            <span className="bg-gradient-to-r from-white/90 to-white/50 bg-clip-text text-transparent font-bold uppercase tracking-widest">Walrus Verified</span>
+            <span className="text-white/60 font-bold uppercase tracking-widest">Walrus Verified</span>
           </div>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-white mb-4 tracking-tight">
             Tatum Historical{" "}
-            <span className="bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">Datasets</span>
+            <span className="text-white/60">Datasets</span>
           </h1>
           <p className="text-white/30 text-lg max-w-2xl">
             {totalSize} of verified blockchain history stored on Walrus decentralized storage.
