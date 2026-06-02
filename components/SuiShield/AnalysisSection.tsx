@@ -32,7 +32,7 @@ export function AnalysisSection({ title, icon, children, defaultOpen = false, ac
           {title}
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-[#525880] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-white/30 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && <div className="px-4 pb-4">{children}</div>}

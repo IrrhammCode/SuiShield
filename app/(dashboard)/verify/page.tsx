@@ -9,7 +9,6 @@ import {
   CheckCircle,
   XCircle,
   ExternalLink,
-  Database,
   Clock,
   Copy,
   Check,
@@ -72,10 +71,25 @@ export default function VerifyPage() {
     return "text-red-400";
   };
 
+  const getRiskGradient = (score: number) => {
+    if (score < 25) return "from-green-500/15 to-green-500/5 border-green-500/20";
+    if (score < 50) return "from-cyan-500/15 to-cyan-500/5 border-cyan-500/20";
+    if (score < 75) return "from-yellow-500/15 to-yellow-500/5 border-yellow-500/20";
+    return "from-red-500/15 to-red-500/5 border-red-500/20";
+  };
+
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen relative">
+      {/* Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 grid-bg opacity-20" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-green-500/15 via-green-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-cyan-500/10 via-cyan-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-emerald-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
+      </div>
+
       {/* Header */}
-      <div className="border-b border-white/5 bg-black/40 backdrop-blur-xl sticky top-0 z-40">
+      <div className="border-b border-white/[0.06] bg-black/40 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="p-2 rounded-xl hover:bg-white/5 transition-colors text-white/30 hover:text-white">
@@ -83,7 +97,7 @@ export default function VerifyPage() {
             </Link>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 flex items-center justify-center">
-                <img src="/logo.png" alt="SuiShield" className="w-full h-full object-contain" />
+                <img src="/logo.png" alt="SuiShield" className="w-full h-full object-contain drop-shadow-[0_0_12px_rgba(0,229,255,0.4)]" />
               </div>
               <div>
                 <div className="font-display font-black text-white text-sm">SuiShield</div>
@@ -95,15 +109,15 @@ export default function VerifyPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
+      <div className="relative z-10 max-w-3xl mx-auto px-6 py-10 space-y-8">
         {/* Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-400 font-bold uppercase tracking-wider">
-            <Shield className="w-3 h-3" />
-            On-Chain Verification
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-cyan-500/10 border border-white/[0.06] text-xs">
+            <Shield className="w-3 h-3 text-green-400" />
+            <span className="bg-gradient-to-r from-green-300 to-cyan-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">On-Chain Verification</span>
           </div>
           <h1 className="font-display font-black text-3xl text-white tracking-tight">
-            Verify Analysis Proof
+            Verify Analysis <span className="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">Proof</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
             Enter a Walrus blob ID to verify an analysis proof stored on-chain.
@@ -111,9 +125,10 @@ export default function VerifyPage() {
         </div>
 
         {/* Input */}
-        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+        <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-green-500/[0.02] p-5 backdrop-blur-xl overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/30 to-transparent" />
           <div className="flex items-center gap-2 mb-3">
-            <Search className="w-4 h-4 text-cyan-400" />
+            <Search className="w-4 h-4 text-green-400" />
             <span className="text-white font-bold text-sm">Enter Blob ID</span>
           </div>
           <div className="flex gap-2">
@@ -122,13 +137,13 @@ export default function VerifyPage() {
               value={blobId}
               onChange={(e) => setBlobId(e.target.value)}
               placeholder="Paste Walrus blob ID..."
-              className="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-white placeholder-white/20 text-sm outline-none focus:border-cyan-500/30 transition-colors font-mono"
+              className="flex-1 bg-black/40 border border-white/[0.06] rounded-xl px-4 py-3 text-white placeholder-white/20 text-sm outline-none focus:border-green-500/30 transition-colors font-mono"
               onKeyDown={(e) => e.key === "Enter" && handleVerify()}
             />
             <button
               onClick={handleVerify}
               disabled={loading || !blobId.trim()}
-              className="px-5 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-white/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-green-400 to-green-500 text-black font-bold text-sm hover:from-green-300 hover:to-green-400 transition-all shadow-[0_0_20px_rgba(0,255,157,0.2)] hover:shadow-[0_0_30px_rgba(0,255,157,0.4)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
               Verify
@@ -138,14 +153,18 @@ export default function VerifyPage() {
 
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500/20 to-cyan-500/10 border border-green-500/20 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-green-400 animate-spin" />
+            </div>
+            <p className="text-white text-sm">Verifying proof...</p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-5 text-center">
+          <div className="relative rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/10 to-red-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
             <XCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
             <p className="text-red-400 text-sm font-medium">{error}</p>
           </div>
@@ -153,9 +172,16 @@ export default function VerifyPage() {
 
         {/* Result */}
         {result && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-slide-up">
             {/* Status */}
-            <div className={`rounded-2xl border p-5 ${result.found ? "border-green-500/10 bg-green-500/5" : "border-red-500/10 bg-red-500/5"}`}>
+            <div className={`relative rounded-2xl border p-5 backdrop-blur-xl overflow-hidden ${
+              result.found 
+                ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-500/5" 
+                : "border-red-500/20 bg-gradient-to-br from-red-500/10 to-red-500/5"
+            }`}>
+              <div className={`absolute top-0 left-0 right-0 h-px ${
+                result.found ? "bg-gradient-to-r from-transparent via-green-500/30 to-transparent" : "bg-gradient-to-r from-transparent via-red-500/30 to-transparent"
+              }`} />
               <div className="flex items-center gap-3 mb-3">
                 {result.found ? (
                   <CheckCircle className="w-6 h-6 text-green-400" />
@@ -175,7 +201,8 @@ export default function VerifyPage() {
 
             {/* Details */}
             {result.found && result.record && (
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 space-y-4">
+              <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-green-500/[0.02] p-5 space-y-4 backdrop-blur-xl overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/30 to-transparent" />
                 <div className="flex items-center justify-between">
                   <span className="text-white/30 text-xs font-bold uppercase tracking-wider">Analysis Details</span>
                   <span className={`font-display font-bold ${getRiskColor(result.record.riskScore)}`}>
@@ -192,7 +219,7 @@ export default function VerifyPage() {
                     { label: "Analyzed By", value: `${result.record.analyzedBy.slice(0, 10)}...` },
                     { label: "Proof Version", value: result.record.proofVersion },
                   ].map(({ label, value }) => (
-                    <div key={label} className="bg-black/40 rounded-xl p-3 border border-white/5">
+                    <div key={label} className={`rounded-xl p-3 bg-gradient-to-br ${getRiskGradient(result.record!.riskScore)}`}>
                       <div className="text-white/20 text-[10px] mb-1">{label}</div>
                       <div className="text-white text-xs font-mono">{value}</div>
                     </div>
@@ -207,7 +234,7 @@ export default function VerifyPage() {
 
                 {/* Analysis Text */}
                 {result.record.analysis && (
-                  <div className="bg-black/40 rounded-xl p-4 border border-white/5">
+                  <div className="rounded-xl p-4 bg-black/40 border border-white/[0.06]">
                     <div className="text-white/20 text-[10px] mb-2 font-bold uppercase">Analysis</div>
                     <p className="text-white/40 text-sm leading-relaxed">{result.record.analysis}</p>
                   </div>
@@ -217,7 +244,7 @@ export default function VerifyPage() {
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={copyLink}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-white/50 text-xs font-medium hover:bg-white/10 transition-all"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? "Copied" : "Copy Link"}
@@ -226,7 +253,7 @@ export default function VerifyPage() {
                     href={`https://aggregator.walrus-testnet.walrus.space/v1/blobs/${blobId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-white/50 text-xs font-medium hover:bg-white/10 transition-all"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     View on Walrus

@@ -1,122 +1,23 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Brain,
   Send,
   Database,
   Shield,
   TrendingUp,
-  Activity,
   Copy,
   Check,
   Zap,
   Loader2,
-  BarChart3,
   Clock,
-  Wallet,
-  RefreshCw,
-  Info,
-  ChevronDown,
   User,
   Search,
   GitBranch,
-  Bell,
-  Eye,
-  Globe,
-  Home,
-  Layers,
 } from "lucide-react";
-import type { Message, MessageMetadata, DataSource, WalletInfo, AgentStep } from "@/types";
-import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+import type { Message, MessageMetadata, DataSource } from "@/types";
 import { useWalletAuth } from "@/context/WalletAuthContext";
-
-// ─── Sidebar Navigation ──────────────────────────────────
-
-const NAV_ITEMS = [
-  { icon: <Home className="w-4 h-4" />, label: "Dashboard", href: "/dashboard", description: "AI Chat" },
-  { icon: <Search className="w-4 h-4" />, label: "Analyze", href: "/analyze", description: "Trust Score" },
-  { icon: <GitBranch className="w-4 h-4" />, label: "Trust Graph", href: "/trust-graph", description: "Fund Flow" },
-  { icon: <Bell className="w-4 h-4" />, label: "Monitor", href: "/monitor", description: "Alerts" },
-  { icon: <Database className="w-4 h-4" />, label: "Explore", href: "/explore", description: "Datasets" },
-  { icon: <Eye className="w-4 h-4" />, label: "Verify", href: "/verify", description: "Proofs" },
-];
-
-function Sidebar() {
-  const pathname = usePathname();
-
-  return (
-    <div className="w-64 flex-shrink-0 border-r border-white/5 bg-black/40 backdrop-blur-xl flex flex-col">
-      {/* Logo */}
-      <div className="p-4 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center">
-            <img src="/logo.png" alt="SuiShield" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,229,255,0.4)]" />
-          </div>
-          <div>
-            <div className="font-display font-black text-white text-sm">SuiShield</div>
-            <div className="text-[10px] text-white/20 font-medium">Check Before You Approve</div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 p-3 space-y-1">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                isActive
-                  ? "bg-white/10 text-white border border-white/10"
-                  : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              <div className={`${isActive ? "text-cyan-400" : "text-white/30 group-hover:text-white/60"} transition-colors`}>
-                {item.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold">{item.label}</div>
-                <div className="text-[10px] text-white/20">{item.description}</div>
-              </div>
-              {isActive && (
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              )}
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Status */}
-      <div className="p-3 border-t border-white/5">
-        <div className="space-y-2">
-          {[
-            { label: "Tatum RPC", status: "Online", color: "text-green-400" },
-            { label: "Walrus", status: "Connected", color: "text-green-400" },
-            { label: "Sui Testnet", status: "Live", color: "text-green-400" },
-          ].map(({ label, status, color }) => (
-            <div key={label} className="flex items-center justify-between text-xs">
-              <span className="text-white/20">{label}</span>
-              <span className={`${color} flex items-center gap-1.5 font-medium`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                {status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Wallet */}
-      <div className="p-3 border-t border-white/5">
-        <ConnectWalletButton />
-      </div>
-    </div>
-  );
-}
 
 // ─── Source Badge ─────────────────────────────────────────
 function SourceBadge({ source }: { source: DataSource }) {
@@ -316,89 +217,83 @@ What would you like to know?`,
   };
 
   return (
-    <div className="flex h-screen bg-black">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-          <div>
-            <div className="font-display font-black text-white text-sm">AI Assistant</div>
-            <div className="text-[10px] text-white/20">Powered by Groq + Tatum + Walrus</div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-[10px] text-green-400">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="font-medium">Online</span>
-            </div>
-          </div>
+    <>
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+        <div>
+          <div className="font-display font-black text-white text-sm">AI Assistant</div>
+          <div className="text-[10px] text-white/20">Powered by Groq + Tatum + Walrus</div>
         </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto scroll-area">
-          <div className="max-w-3xl mx-auto w-full px-6 py-8 space-y-6">
-            {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}
-            {isLoading && <TypingIndicator />}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Suggested Queries */}
-        {messages.length === 1 && (
-          <div className="px-6 pb-3">
-            <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
-              {SUGGESTED_QUERIES.map(({ icon, text }) => (
-                <button
-                  key={text}
-                  onClick={() => { setInput(text); inputRef.current?.focus(); }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/[0.02] text-xs text-white/40 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
-                >
-                  {icon}
-                  {text}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Input Area */}
-        <div className="px-6 pb-6 pt-2">
-          <div className="max-w-3xl mx-auto flex items-end gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything about blockchain data..."
-              className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none placeholder-white/20"
-              rows={1}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                input.trim() && !isLoading
-                  ? "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                  : "bg-white/5 text-white/20 cursor-not-allowed"
-              }`}
-            >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </button>
-          </div>
-          <div className="max-w-3xl mx-auto flex items-center justify-between mt-2 px-1">
-            <div className="text-[10px] text-white/10 flex items-center gap-2">
-              <span className="flex items-center gap-1"><Database className="w-3 h-3" /> Walrus</span>
-              <span>·</span>
-              <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Tatum</span>
-              <span>·</span>
-              <span>Sui Testnet</span>
-            </div>
-            <div className="text-[10px] text-white/10">Enter to send</div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-[10px] text-green-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="font-medium">Online</span>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto scroll-area">
+        <div className="max-w-3xl mx-auto w-full px-6 py-8 space-y-6">
+          {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}
+          {isLoading && <TypingIndicator />}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Suggested Queries */}
+      {messages.length === 1 && (
+        <div className="px-6 pb-3">
+          <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
+            {SUGGESTED_QUERIES.map(({ icon, text }) => (
+              <button
+                key={text}
+                onClick={() => { setInput(text); inputRef.current?.focus(); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/[0.02] text-xs text-white/40 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
+              >
+                {icon}
+                {text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="px-6 pb-6 pt-2">
+        <div className="max-w-3xl mx-auto flex items-end gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-2">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask anything about blockchain data..."
+            className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none placeholder-white/20"
+            rows={1}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+              input.trim() && !isLoading
+                ? "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                : "bg-white/5 text-white/20 cursor-not-allowed"
+            }`}
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </button>
+        </div>
+        <div className="max-w-3xl mx-auto flex items-center justify-between mt-2 px-1">
+          <div className="text-[10px] text-white/10 flex items-center gap-2">
+            <span className="flex items-center gap-1"><Database className="w-3 h-3" /> Walrus</span>
+            <span>·</span>
+            <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Tatum</span>
+            <span>·</span>
+            <span>Sui Testnet</span>
+          </div>
+          <div className="text-[10px] text-white/10">Enter to send</div>
+        </div>
+      </div>
+    </>
   );
 }

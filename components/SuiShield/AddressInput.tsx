@@ -39,7 +39,7 @@ export function AddressInput({ onAnalyze, isLoading, placeholder = "Paste Sui ad
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-white text-sm pl-4 pr-2 py-3 focus:outline-none placeholder:text-[#525880]"
+          className="flex-1 bg-transparent text-white text-sm pl-4 pr-2 py-3 focus:outline-none placeholder:text-white/30"
           disabled={isLoading}
         />
         <button
@@ -48,7 +48,7 @@ export function AddressInput({ onAnalyze, isLoading, placeholder = "Paste Sui ad
           className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
             value.trim() && !isLoading
               ? "bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] text-[#050505] shadow-[0_0_20px_rgba(0,229,255,0.3)]"
-              : "bg-white/5 text-[#525880] cursor-not-allowed"
+              : "bg-white/5 text-white/30 cursor-not-allowed"
           }`}
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -56,13 +56,13 @@ export function AddressInput({ onAnalyze, isLoading, placeholder = "Paste Sui ad
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-[#525880]">Quick:</span>
+        <span className="text-[10px] text-white/30">Quick:</span>
         {["DeFi Pool", "NFT Collection", "P2P Wallet"].map((label) => (
           <button
             key={label}
             type="button"
             onClick={() => handleQuickCheck(label.toLowerCase())}
-            className="text-[10px] px-2 py-0.5 rounded-full border border-white/5 text-[#8B93C4] hover:text-white hover:border-white/10 transition-colors"
+            className="text-[10px] px-2 py-0.5 rounded-full border border-white/5 text-white/40 hover:text-white hover:border-white/10 transition-colors"
           >
             {label}
           </button>

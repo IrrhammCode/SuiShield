@@ -18,7 +18,7 @@ export function TatumBadge({ variant = "default", className = "" }: TatumBadgePr
           <span className="font-display font-semibold text-cyan-400 text-sm">Tatum</span>
         </div>
         <div className="w-px h-4 bg-white/10" />
-        <span className="text-[#525880] text-xs">Sui RPC Gateway</span>
+        <span className="text-white/30 text-xs">Sui RPC Gateway</span>
         <div className="ml-auto flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           <span className="text-green-400 text-[10px] font-medium">LIVE</span>
@@ -55,7 +55,7 @@ export function WalrusBadge({ variant = "default", className = "" }: TatumBadgeP
           <span className="font-display font-semibold text-magenta-400 text-sm">Walrus</span>
         </div>
         <div className="w-px h-4 bg-white/10" />
-        <span className="text-[#525880] text-xs">Decentralized Storage</span>
+        <span className="text-white/30 text-xs">Decentralized Storage</span>
         <div className="ml-auto flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           <span className="text-green-400 text-[10px] font-medium">VERIFIED</span>

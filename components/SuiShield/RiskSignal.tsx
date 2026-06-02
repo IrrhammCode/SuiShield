@@ -23,7 +23,7 @@ export function RiskSignal({ type, text, detail }: RiskSignalProps) {
       <Icon className={`w-4 h-4 ${config.color} flex-shrink-0 mt-0.5`} />
       <div>
         <span className="text-sm text-[#B0B8E0]">{text}</span>
-        {detail && <div className="text-xs text-[#525880] mt-0.5">{detail}</div>}
+        {detail && <div className="text-xs text-white/30 mt-0.5">{detail}</div>}
       </div>
     </div>
   );

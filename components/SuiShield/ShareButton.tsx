@@ -25,14 +25,14 @@ export function ShareButton({ url }: ShareButtonProps) {
     <div className="flex items-center gap-2">
       <button
         onClick={copyLink}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-[#8B93C4] hover:text-white hover:border-white/20 transition-all"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/40 hover:text-white hover:border-white/20 transition-all"
       >
         {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5" />}
         {copied ? "Copied!" : "Copy Link"}
       </button>
       <button
         onClick={shareTwitter}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-[#8B93C4] hover:text-white hover:border-white/20 transition-all"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/40 hover:text-white hover:border-white/20 transition-all"
       >
         <ExternalLink className="w-3.5 h-3.5" />
         Share

@@ -44,13 +44,13 @@ export function SuiWalletButton() {
       {showDropdown && (
         <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-white/10 bg-[#1A1D2E] shadow-xl z-50 overflow-hidden">
           <div className="p-3 border-b border-white/5">
-            <div className="text-xs text-[#525880] mb-1">Sui Wallet</div>
+            <div className="text-xs text-white/30 mb-1">Sui Wallet</div>
             <div className="font-mono text-xs text-white">{address}</div>
           </div>
           <div className="p-1">
             <button
               onClick={copyAddress}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8B93C4] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied!" : "Copy Address"}
@@ -146,7 +146,7 @@ export function DualWalletButton() {
       
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-[#1A1D2E] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col p-1 gap-1">
-          <div className="px-3 py-2 text-xs font-medium text-[#8B93C4] border-b border-white/5 mb-1">Select Network</div>
+          <div className="px-3 py-2 text-xs font-medium text-white/40 border-b border-white/5 mb-1">Select Network</div>
           
           <button 
             onClick={() => { open(); setIsOpen(false); }}

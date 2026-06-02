@@ -31,7 +31,7 @@ export function TrustScoreCard({ score, level, address, chain = "Sui" }: TrustSc
             <div className="text-2xl font-bold" style={{ color: config.color }}>
               {config.label}
             </div>
-            <div className="text-[#525880] text-xs font-mono">
+            <div className="text-white/30 text-xs font-mono">
               {address.slice(0, 8)}...{address.slice(-6)} · {chain}
             </div>
           </div>
@@ -40,7 +40,7 @@ export function TrustScoreCard({ score, level, address, chain = "Sui" }: TrustSc
           <div className="text-4xl font-bold" style={{ color: config.color }}>
             {score}
           </div>
-          <div className="text-[#525880] text-xs">/100</div>
+          <div className="text-white/30 text-xs">/100</div>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export function TrustScoreCard({ score, level, address, chain = "Sui" }: TrustSc
           style={{ width: `${score}%`, background: config.color }}
         />
       </div>
-      <div className="flex justify-between text-[10px] text-[#525880] mt-1.5">
+      <div className="flex justify-between text-[10px] text-white/30 mt-1.5">
         <span>Safe</span>
         <span>Critical</span>
       </div>

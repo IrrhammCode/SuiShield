@@ -27,17 +27,17 @@ export function OnChainProof({ blobId, storedAt, verificationUrl }: OnChainProof
 
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#525880] w-16">Blob ID</span>
+          <span className="text-xs text-white/30 w-16">Blob ID</span>
           <code className="font-mono text-xs text-magenta-400 flex-1 truncate">{blobId}</code>
           <button onClick={copyBlobId} className="p-1 rounded hover:bg-white/5">
-            {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5 text-[#525880]" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-magenta-400" /> : <Copy className="w-3.5 h-3.5 text-white/30" />}
           </button>
         </div>
 
         {storedAt && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#525880] w-16">Stored</span>
-            <span className="text-xs text-[#8B93C4]">{new Date(storedAt).toLocaleString()}</span>
+            <span className="text-xs text-white/30 w-16">Stored</span>
+            <span className="text-xs text-white/40">{new Date(storedAt).toLocaleString()}</span>
           </div>
         )}
 
@@ -51,8 +51,8 @@ export function OnChainProof({ blobId, storedAt, verificationUrl }: OnChainProof
               Verify on Walrus
             </a>
           )}
-          <span className="text-[#525880]">·</span>
-          <span className="text-xs text-[#525880]">Immutable & Verifiable</span>
+          <span className="text-white/30">·</span>
+          <span className="text-xs text-white/30">Immutable & Verifiable</span>
         </div>
       </div>
     </div>

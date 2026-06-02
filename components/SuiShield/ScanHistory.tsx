@@ -53,14 +53,14 @@ export function ScanHistory({ onSelect }: { onSelect: (address: string) => void 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-xs text-[#525880]">
+      <div className="flex items-center gap-2 text-xs text-white/30">
         <Clock className="w-3.5 h-3.5" />
         <span>Recent scans</span>
       </div>
       <div className="space-y-1">
         {scans.slice(0, 5).map((scan) => {
           const Icon = levelIcons[scan.level] || Shield;
-          const color = levelColors[scan.level] || "text-[#8B93C4]";
+          const color = levelColors[scan.level] || "text-white/40";
           return (
             <button
               key={scan.address + scan.timestamp}
@@ -68,11 +68,11 @@ export function ScanHistory({ onSelect }: { onSelect: (address: string) => void 
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-left"
             >
               <Icon className={`w-3.5 h-3.5 ${color} flex-shrink-0`} />
-              <span className="font-mono text-xs text-[#8B93C4] flex-1 truncate">
+              <span className="font-mono text-xs text-white/40 flex-1 truncate">
                 {scan.address.slice(0, 8)}...{scan.address.slice(-6)}
               </span>
               <span className={`text-xs font-medium ${color}`}>{scan.score}</span>
-              <span className="text-[10px] text-[#525880]">
+              <span className="text-[10px] text-white/30">
                 {timeAgo(scan.timestamp)}
               </span>
             </button>

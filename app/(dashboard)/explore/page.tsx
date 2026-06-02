@@ -33,9 +33,9 @@ const CHAIN_FILTERS = ["All", "Bitcoin", "Ethereum", "BNB Chain", "Sui", "Multi-
 // ─── Format badge ──────────────────────────────────────────
 function FormatBadge({ format }: { format: Dataset["format"] }) {
   const styles = {
-    Parquet: "badge-purple",
-    CSV: "badge-teal",
-    JSON: "badge-warning",
+    Parquet: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+    CSV: "bg-teal-500/10 text-teal-400 border border-teal-500/20",
+    JSON: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
   };
   return <span className={`badge ${styles[format]} text-xs`}>{format}</span>;
 }
@@ -77,14 +77,14 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
             <h3 className="font-display font-semibold text-white text-sm leading-tight group-hover:text-purple-300 transition-colors">
               {dataset.name}
             </h3>
-            <div className="text-[#525880] text-xs mt-0.5">{dataset.chain}</div>
+            <div className="text-white/30 text-xs mt-0.5">{dataset.chain}</div>
           </div>
         </div>
         <FormatBadge format={dataset.format} />
       </div>
 
       {/* Description */}
-      <p className="text-[#8B93C4] text-xs leading-relaxed mb-4 line-clamp-2">{dataset.description}</p>
+      <p className="text-white/40 text-xs leading-relaxed mb-4 line-clamp-2">{dataset.description}</p>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2 mb-4">
@@ -93,8 +93,8 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
           { icon: <Calendar className="w-3 h-3" />, label: "Range", value: dataset.timeRange },
           { icon: <BarChart2 className="w-3 h-3" />, label: "Rows", value: dataset.rowCount || "—" },
         ].map(({ icon, label, value }) => (
-          <div key={label} className="bg-[#0E1120] rounded-xl p-2.5 border border-white/5">
-            <div className="flex items-center gap-1 text-[#525880] text-[10px] mb-1">
+          <div key={label} className="bg-black/40 rounded-xl p-2.5 border border-white/5">
+            <div className="flex items-center gap-1 text-white/30 text-[10px] mb-1">
               {icon}
               {label}
             </div>
@@ -106,7 +106,7 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
       {/* Tags */}
       <div className="flex flex-wrap gap-1.5 mb-4">
         {dataset.tags.slice(0, 4).map((tag) => (
-          <span key={tag} className="text-[10px] font-mono text-[#525880] bg-white/[0.03] border border-white/5 rounded px-2 py-0.5">
+          <span key={tag} className="text-[10px] font-mono text-white/30 bg-white/[0.03] border border-white/5 rounded px-2 py-0.5">
             #{tag}
           </span>
         ))}
@@ -120,7 +120,7 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
         </div>
         <button
           onClick={copyBlobId}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors text-[#525880] hover:text-white"
+          className="p-2 rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-white"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
@@ -185,7 +185,7 @@ function DataPreviewTable({ dataset }: { dataset: Dataset }) {
           ))}
         </tbody>
       </table>
-      <div className="px-4 py-2 text-xs text-[#525880] border-t border-white/5 flex items-center justify-between">
+      <div className="px-4 py-2 text-xs text-white/30 border-t border-white/5 flex items-center justify-between">
         <span>Showing 3 preview rows • Full dataset: {dataset.rowCount}</span>
         <span className="font-mono">{dataset.format} format</span>
       </div>
@@ -230,15 +230,15 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
             <div>
               <h2 className="font-display font-bold text-white text-xl">{dataset.name}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[#525880] text-sm">{dataset.chain}</span>
-                <span className="text-[#525880]">·</span>
+                <span className="text-white/30 text-sm">{dataset.chain}</span>
+                <span className="text-white/30">·</span>
                 <FormatBadge format={dataset.format} />
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-[#525880] hover:text-white transition-colors text-xl leading-none"
+            className="text-white/30 hover:text-white transition-colors text-xl leading-none"
           >
             ✕
           </button>
@@ -246,7 +246,7 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
 
         <div className="p-6 space-y-6">
           {/* Description */}
-          <p className="text-[#8B93C4] leading-relaxed">{dataset.description}</p>
+          <p className="text-white/40 leading-relaxed">{dataset.description}</p>
 
           {/* Stats grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -257,7 +257,7 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
               { icon: <FileText className="w-4 h-4" />, label: "Format", value: dataset.format },
             ].map(({ icon, label, value }) => (
               <div key={label} className="card p-4 border-white/[0.04]">
-                <div className="flex items-center gap-2 text-[#525880] text-xs mb-2">
+                <div className="flex items-center gap-2 text-white/30 text-xs mb-2">
                   {icon} {label}
                 </div>
                 <div className="text-white font-semibold">{value}</div>
@@ -310,19 +310,19 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
           {/* Data preview */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Eye className="w-4 h-4 text-[#525880]" />
+              <Eye className="w-4 h-4 text-white/30" />
               <span className="text-white font-medium text-sm">Data Preview</span>
-              <span className="text-[#525880] text-xs">(3 rows)</span>
+              <span className="text-white/30 text-xs">(3 rows)</span>
             </div>
             <DataPreviewTable dataset={dataset} />
           </div>
 
           {/* Tags */}
           <div>
-            <div className="text-sm text-[#525880] mb-3">Tags</div>
+            <div className="text-sm text-white/30 mb-3">Tags</div>
             <div className="flex flex-wrap gap-2">
               {dataset.tags.map((tag) => (
-                <span key={tag} className="font-mono text-xs text-[#525880] bg-white/[0.03] border border-white/5 rounded px-2.5 py-1">
+                <span key={tag} className="font-mono text-xs text-white/30 bg-white/[0.03] border border-white/5 rounded px-2.5 py-1">
                   #{tag}
                 </span>
               ))}
@@ -368,19 +368,20 @@ export default function ExplorePage() {
   const totalDatasets = TATUM_DATASETS.length;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen relative">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-cyan-500/5 blur-[120px] rounded-full" />
-        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-magenta-500/4 blur-[120px] rounded-full" />
+        <div className="absolute -top-[15%] -left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-teal-500/15 via-teal-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-[10%] w-[500px] h-[500px] bg-gradient-to-bl from-purple-500/10 via-purple-500/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[30%] w-[400px] h-[400px] bg-gradient-to-t from-cyan-500/10 via-transparent to-transparent rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
-      <div className="border-b border-white/5 glass-bright sticky top-0 z-40">
+      <div className="border-b border-white/[0.06] bg-black/40 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-1.5 text-[#525880] hover:text-white transition-colors text-sm">
+            <Link href="/" className="flex items-center gap-1.5 text-white/30 hover:text-white transition-colors text-sm">
               <ChevronLeft className="w-4 h-4" />
               Home
             </Link>
@@ -392,7 +393,7 @@ export default function ExplorePage() {
           </div>
           <div className="flex items-center gap-3">
             <ConnectWalletButton />
-            <Link href="/chat" className="btn-primary text-sm py-2 px-4 flex items-center gap-2">
+            <Link href="/chat" className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-400 to-teal-500 text-black font-bold text-sm hover:from-teal-300 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] flex items-center gap-2">
               <Brain className="w-4 h-4" />
               Chat with Data
             </Link>
@@ -403,15 +404,15 @@ export default function ExplorePage() {
       <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Page title */}
         <div className="mb-10">
-          <div className="badge badge-teal inline-flex mb-4">
-            <CheckCircle2 className="w-3 h-3" />
-            Walrus Verified
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-500/10 to-purple-500/10 border border-white/[0.06] text-xs mb-4">
+            <CheckCircle2 className="w-3 h-3 text-teal-400" />
+            <span className="bg-gradient-to-r from-teal-300 to-purple-300 bg-clip-text text-transparent font-bold uppercase tracking-widest">Walrus Verified</span>
           </div>
           <h1 className="font-display font-bold text-4xl md:text-5xl text-white mb-4 tracking-tight">
             Tatum Historical{" "}
-            <span className="text-gradient-teal">Datasets</span>
+            <span className="bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-transparent">Datasets</span>
           </h1>
-          <p className="text-[#8B93C4] text-lg max-w-2xl">
+          <p className="text-white/30 text-lg max-w-2xl">
             {totalSize} of verified blockchain history stored on Walrus decentralized storage.
             Every dataset is immutable, publicly readable, and cryptographically pinned to Sui.
           </p>
@@ -429,7 +430,7 @@ export default function ExplorePage() {
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">{icon}</div>
               <div>
                 <div className="text-white font-bold text-lg leading-tight">{value}</div>
-                <div className="text-[#525880] text-xs">{label}</div>
+                <div className="text-white/30 text-xs">{label}</div>
               </div>
             </div>
           ))}
@@ -438,17 +439,17 @@ export default function ExplorePage() {
         {/* Search + Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#525880]" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search datasets by name, chain, or tag..."
-              className="w-full bg-[#0E1120] border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white placeholder-[#525880] text-sm outline-none focus:border-purple-500/40 transition-colors"
+              className="w-full bg-black/40 border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white placeholder-white/30 text-sm outline-none focus:border-purple-500/40 transition-colors"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-[#525880]" />
+            <Filter className="w-4 h-4 text-white/30" />
             <div className="flex gap-1.5">
               {CHAIN_FILTERS.map((chain) => (
                 <button
@@ -457,7 +458,7 @@ export default function ExplorePage() {
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                     filter === chain
                       ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                      : "text-[#525880] hover:text-white border border-transparent hover:border-white/10"
+                      : "text-white/30 hover:text-white border border-transparent hover:border-white/10"
                   }`}
                 >
                   {chain}
@@ -469,7 +470,7 @@ export default function ExplorePage() {
 
         {/* Dataset grid */}
         {filtered.length === 0 ? (
-          <div className="text-center py-20 text-[#525880]">
+          <div className="text-center py-20 text-white/30">
             <Database className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <p>No datasets match your search.</p>
           </div>
@@ -482,14 +483,14 @@ export default function ExplorePage() {
         )}
 
         {/* How to access CTA */}
-        <div className="mt-12 glass-bright rounded-2xl p-8 relative overflow-hidden">
+        <div className="mt-12 bg-black/40 backdrop-blur-xl rounded-2xl p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 ambient-blob ambient-purple opacity-20" />
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-2xl text-white mb-2">
                 Access any dataset with a single HTTP call
               </h3>
-              <p className="text-[#8B93C4] mb-4">
+              <p className="text-white/40 mb-4">
                 No authentication required. No rate limiting. Just fetch directly from any Walrus aggregator.
               </p>
               <div className="font-mono text-sm text-teal-300 bg-teal-500/10 rounded-xl px-5 py-3 border border-teal-500/20 inline-block">

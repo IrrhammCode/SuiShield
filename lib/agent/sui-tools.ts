@@ -423,14 +423,57 @@ export async function toolAnalyzeSuiWallet(
       }
     }
 
+    // ── Signal 7: Object Diversity Score ───────────────────
+    let objectDiversityScore = 50;
+    if (objects) {
+      const typeCount = Object.keys(objects.objectTypes || {}).length;
+      if (typeCount >= 3) {
+        objectDiversityScore -= 15; // Diverse interactions = safer
+        riskFactors.push(`Diverse object types: ${typeCount} different types`);
+      } else if (typeCount === 0) {
+        objectDiversityScore += 10;
+        riskFactors.push("No objects owned");
+      }
+    }
+    objectDiversityScore = Math.max(0, Math.min(100, objectDiversityScore));
+
+    // ── Signal 8: Transaction Regularity Score ─────────────
+    let txRegularityScore = 50;
+    if (txs && txs.transactions.length >= 5) {
+      // Check if transactions are evenly spaced (regular pattern)
+      const timestamps = txs.transactions
+        .map((tx) => (tx as { timestampMs?: string }).timestampMs ? Number((tx as { timestampMs?: string }).timestampMs) : 0)
+        .filter((t) => t > 0)
+        .sort();
+      
+      if (timestamps.length >= 3) {
+        const intervals = [];
+        for (let i = 1; i < timestamps.length; i++) {
+          intervals.push(timestamps[i] - timestamps[i - 1]);
+        }
+        const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        const variance = intervals.reduce((sum, i) => sum + Math.pow(i - avgInterval, 2), 0) / intervals.length;
+        const stdDev = Math.sqrt(variance);
+        
+        // Low variance = regular pattern = safer
+        if (stdDev < avgInterval * 0.3) {
+          txRegularityScore -= 10;
+          riskFactors.push("Regular transaction pattern detected");
+        }
+      }
+    }
+    txRegularityScore = Math.max(0, Math.min(100, txRegularityScore));
+
     // ── Composite Score (weighted average) ────────────────
     const riskScore = Math.round(
-      onChainScore * 0.2 +
-      maturityScore * 0.15 +
-      balanceScore * 0.15 +
-      communityScore * 0.1 +
-      protocolScore * 0.15 +
-      mcpSecurityScore * 0.25 // MCP security gets highest weight
+      onChainScore * 0.15 +
+      maturityScore * 0.12 +
+      balanceScore * 0.12 +
+      communityScore * 0.08 +
+      protocolScore * 0.12 +
+      mcpSecurityScore * 0.2 +
+      objectDiversityScore * 0.1 +
+      txRegularityScore * 0.11
     );
 
     const riskLevel =
