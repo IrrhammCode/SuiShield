@@ -306,11 +306,15 @@ export async function toolAnalyzeSuiWallet(
     const memoryContext = buildMemoryContext("sui", address);
     const previousAnalysis = await getPreviousAnalysis("sui", address);
 
-    // Fetch all data in parallel — Tatum Sui RPC + MCP tools
+    // Fetch base data in parallel — Tatum Sui RPC + MCP tools
+    // Mode-specific: fetch more objects for NFT, more txs for P2P/DeFi
+    const objectLimit = mode === "nft" ? 100 : 50;
+    const txLimit = mode === "p2p" ? 50 : mode === "defi" ? 30 : 20;
+
     const [balanceResult, objectsResult, txResult, maliciousCheck, exchangeRate] = await Promise.all([
       toolGetSuiBalance(address),
-      toolGetSuiObjects(address, 50),
-      toolGetSuiTransactions(address, 20),
+      toolGetSuiObjects(address, objectLimit),
+      toolGetSuiTransactions(address, txLimit),
       mcpCheckMaliciousAddress(address, "sui-testnet").catch(() => null),
       mcpGetExchangeRate("SUI", "USD").catch(() => null),
     ]);
@@ -327,62 +331,145 @@ export async function toolAnalyzeSuiWallet(
     const riskFactors: string[] = [];
 
     // ── Mode-specific data enrichment ─────────────────────
+    // Each mode collects DIFFERENT additional data so the LLM produces distinct results
     let modeSpecificData: Record<string, unknown> = {};
+
     if (mode === "defi") {
-      // DeFi: check for DeFi objects, LP tokens, protocol interactions
-      const objectTypes = objects ? Object.keys(objects.objectTypes || {}) : [];
-      const defiObjects = objectTypes.filter(t =>
-        t.toLowerCase().includes("pool") ||
-        t.toLowerCase().includes("liquidity") ||
-        t.toLowerCase().includes("lp") ||
-        t.toLowerCase().includes("vault") ||
-        t.toLowerCase().includes("stake") ||
-        t.toLowerCase().includes("lending")
+      // DeFi: run full protocol check + fund flow for DeFi-specific analysis
+      const [protocolCheckResult, fundFlowResult] = await Promise.all([
+        toolCheckSuiProtocols(address).catch(() => null),
+        toolGetSuiFundFlow(address).catch(() => null),
+      ]);
+
+      // Scan objects for DeFi-related types
+      const allObjectTypes = objects?.objectTypes || {};
+      const objectTypeKeys = Object.keys(allObjectTypes);
+      const defiKeywords = ["pool", "liquidity", "lp", "vault", "stake", "lending", "swap", "amm", "farm", "yield"];
+      const defiRelatedTypes = objectTypeKeys.filter(t =>
+        defiKeywords.some(kw => t.toLowerCase().includes(kw))
       );
-      const hasDeFiActivity = defiObjects.length > 0;
+
+      const protocolData = protocolCheckResult?.success ? protocolCheckResult.data as Record<string, unknown> : null;
+      const flowData = fundFlowResult?.success ? fundFlowResult.data as Record<string, unknown> : null;
+
       modeSpecificData = {
         mode: "defi",
-        defiObjects,
-        hasDeFiActivity,
-        protocolCount: defiObjects.length,
-        verifiedProtocols: defiObjects.filter(d =>
-          ["cetus", "scallop", "turbos", "navi", "bucket", "bluemove"].some(p => d.toLowerCase().includes(p))
+        defiRelatedTypes,
+        hasDeFiActivity: defiRelatedTypes.length > 0 || (protocolData?.totalProtocols as number || 0) > 0,
+        protocolAnalysis: protocolData ? {
+          totalProtocols: protocolData.totalProtocols,
+          verifiedProtocols: protocolData.verifiedProtocols,
+          unverifiedProtocols: protocolData.unverifiedProtocols,
+          interactions: protocolData.interactions,
+          protocolScore: protocolData.protocolScore,
+          knownProtocols: protocolData.knownProtocols,
+        } : null,
+        fundFlow: flowData ? {
+          transferCount: flowData.transferCount,
+          incomingCount: flowData.incomingCount,
+          outgoingCount: flowData.outgoingCount,
+          uniqueCounterparties: (flowData.nodes as unknown[])?.length || 0,
+          topTransfers: (flowData.links as Array<{ value: number; type: string }>)?.slice(0, 5),
+        } : null,
+        verifiedProtocolsUsed: defiRelatedTypes.filter(d =>
+          ["cetus", "scallop", "turbos", "navi", "bucket", "bluemove", "aftermath", "deepbook"].some(p => d.toLowerCase().includes(p))
         ),
-        unverifiedProtocols: defiObjects.filter(d =>
-          !["cetus", "scallop", "turbos", "navi", "bucket", "bluemove"].some(p => d.toLowerCase().includes(p))
-        ),
+        allObjectTypes,
       };
     } else if (mode === "nft") {
-      // NFT: check for NFT objects, collections, minting activity
-      const objectTypes = objects ? Object.keys(objects.objectTypes || {}) : [];
-      const nftObjects = objectTypes.filter(t =>
-        t.toLowerCase().includes("nft") ||
-        t.toLowerCase().includes("collection") ||
-        t.toLowerCase().includes("mint") ||
-        t.toLowerCase().includes("token")
+      // NFT: deep object scan — classify every object for NFT analysis
+      const allObjects = (objectsResult.success && objectsResult.data)
+        ? (objectsResult.data as { objects: Array<{ objectId: string; type: string; digest: string }> }).objects
+        : [];
+
+      const nftKeywords = ["nft", "collection", "display", "kiosk", "suifrens", "bullshark", "capy", "image", "art", "mint"];
+      const nftObjects = allObjects.filter(obj =>
+        nftKeywords.some(kw => (obj.type || "").toLowerCase().includes(kw))
       );
-      const hasNFTActivity = nftObjects.length > 0;
+
+      // Group by collection (approximate by type prefix)
+      const collectionMap: Record<string, number> = {};
+      for (const obj of nftObjects) {
+        const typePrefix = (obj.type || "unknown").split("::").slice(0, 2).join("::");
+        collectionMap[typePrefix] = (collectionMap[typePrefix] || 0) + 1;
+      }
+
+      // Check for minting activity in transactions
+      const txList = txs?.transactions || [];
+      const mintTxs = (txList as Array<{ kind?: string; digest?: string }>).filter(tx =>
+        (tx.kind || "").toLowerCase().includes("move") ||
+        (tx.kind || "").toLowerCase().includes("publish")
+      );
+
       modeSpecificData = {
         mode: "nft",
-        nftObjects,
-        hasNFTActivity,
-        collectionCount: nftObjects.length,
-        totalNFTs: objects ? (objects as { objectCount: number }).objectCount : 0,
+        totalObjects: objects?.objectCount || 0,
+        nftObjectCount: nftObjects.length,
+        nftObjects: nftObjects.slice(0, 20).map(o => ({ objectId: o.objectId, type: o.type })),
+        collections: collectionMap,
+        collectionCount: Object.keys(collectionMap).length,
+        hasNFTActivity: nftObjects.length > 0,
+        mintingTransactions: mintTxs.length,
+        allObjectTypes: objects?.objectTypes || {},
+        washTradingSignals: {
+          highVolumeUniqueRatio: txs ? (txs.transactionCount > 50 && nftObjects.length < 5) : false,
+          repeatedCounterparties: false, // would need deeper analysis
+        },
       };
     } else if (mode === "p2p") {
-      // P2P: check transaction counterparties, money flow
-      const txList = txs ? (txs as { transactions: Array<{ sender?: string; recipient?: string }> }).transactions : [];
+      // P2P: full fund flow tracing + counterparty analysis
+      const fundFlowResult = await toolGetSuiFundFlow(address).catch(() => null);
+      const flowData = fundFlowResult?.success ? fundFlowResult.data as Record<string, unknown> : null;
+
+      // Analyze transaction senders/recipients
+      const txList = txs ? (txs as { transactions: Array<{ sender?: string; digest?: string; timestamp?: string }> }).transactions : [];
       const counterparties = new Set<string>();
+      const senderCounts: Record<string, number> = {};
+
       txList.forEach(tx => {
-        if (tx.sender && tx.sender !== address) counterparties.add(tx.sender);
-        if (tx.recipient && tx.recipient !== address) counterparties.add(tx.recipient);
+        if (tx.sender && tx.sender !== address) {
+          counterparties.add(tx.sender);
+          senderCounts[tx.sender] = (senderCounts[tx.sender] || 0) + 1;
+        }
       });
+
+      // Detect suspicious patterns
+      const repeatedSenders = Object.entries(senderCounts)
+        .filter(([, count]) => count >= 3)
+        .map(([addr, count]) => ({ address: addr.slice(0, 10) + "...", count }));
+
+      // Estimate wallet age from first transaction
+      const timestamps = txList
+        .map(tx => (tx as { timestamp?: string }).timestamp)
+        .filter(Boolean)
+        .sort();
+      const firstTxDate = timestamps.length > 0 ? timestamps[0] : null;
+      const lastTxDate = timestamps.length > 0 ? timestamps[timestamps.length - 1] : null;
+
       modeSpecificData = {
         mode: "p2p",
+        fundFlow: flowData ? {
+          transferCount: flowData.transferCount,
+          incomingCount: flowData.incomingCount,
+          outgoingCount: flowData.outgoingCount,
+          nodes: (flowData.nodes as unknown[])?.length || 0,
+          topTransfers: (flowData.links as Array<{ source: string; target: string; value: number; type: string }>)?.slice(0, 10),
+          summary: flowData.summary,
+        } : null,
         uniqueCounterparties: counterparties.size,
-        counterpartyList: Array.from(counterparties).slice(0, 10),
-        hasSuspiciousPatterns: counterparties.size > 50,
-        transactionFrequency: txs ? (txs as { transactionCount: number }).transactionCount : 0,
+        counterpartyList: Array.from(counterparties).slice(0, 15).map(a => a.slice(0, 10) + "..."),
+        repeatedSenders,
+        hasSuspiciousPatterns: repeatedSenders.length > 3 || counterparties.size > 50,
+        walletAge: {
+          firstTransaction: firstTxDate,
+          lastTransaction: lastTxDate,
+        },
+        transactionFrequency: txs?.transactionCount || 0,
+        moneyMuleIndicators: {
+          highThroughput: (flowData?.incomingCount as number || 0) > 10 && (flowData?.outgoingCount as number || 0) > 10,
+          rapidTurnover: counterparties.size > 20,
+          lowRetention: balance ? mistToSui(balance.totalBalance) < 1 && (txs?.transactionCount || 0) > 20 : false,
+        },
       };
     }
 

@@ -517,27 +517,60 @@ export async function runAgent(
   // ── Call LLM ──────────────────────────────────────────
   // Build mode-specific focus instructions
   const modeFocus: Record<string, string> = {
-    defi: `\n\n## ANALYSIS MODE: DeFi\nFocus specifically on:\n- Protocol interactions (verified vs unverified: Cetus, Scallop, Turbos, Navi, Bucket, BlueMove)
-- TVL and liquidity positions
-- Yield sources and sustainability
-- LP token holdings and impermanent loss risk
-- Smart contract approval risks
-- Exit liquidity and slippage estimation
-Your response MUST emphasize DeFi-specific metrics and protocol analysis.`,
-    nft: `\n\n## ANALYSIS MODE: NFT\nFocus specifically on:\n- NFT collections owned and their floor prices
-- Creator track record and past projects
-- Wash trading detection (volume vs unique wallets)
-- Collection health (unique holders, trading volume)
-- Floor price manipulation signals
-- Metadata integrity and copycat detection
-Your response MUST emphasize NFT-specific metrics and creator analysis.`,
-    p2p: `\n\n## ANALYSIS MODE: P2P Counterparty\nFocus specifically on:\n- Wallet age and creation pattern
-- Funding source tracing
-- Money flow patterns and counterparties
-- Money mule detection signals
-- Network risk (1-hop to flagged addresses)
-- Transaction pattern anomalies
-Your response MUST emphasize counterparty risk and money flow analysis.`,
+    defi: `\n\n## ANALYSIS MODE: DeFi
+CRITICAL: You MUST produce a DeFi-specific analysis that is COMPLETELY DIFFERENT from a general analysis.
+The tool results include "modeSpecificData" with DeFi-specific fields like protocolAnalysis, fundFlow, defiRelatedTypes, and verifiedProtocolsUsed. USE THIS DATA.
+
+Your output MUST include these DeFi-specific sections instead of the generic ones:
+- **DeFi Protocol Interactions**: List all protocols used (Cetus, Scallop, Turbos, Navi, Bucket, BlueMove, Aftermath, DeepBook). Mark each as verified/unverified.
+- **Liquidity & Position Analysis**: LP tokens, pool positions, staking positions found in objects
+- **Yield Assessment**: Is yield from real fees or token emissions?
+- **Exit Risk**: Liquidity depth, concentration risk, slippage estimation
+- **Fund Flow for DeFi**: How money flows between protocols and counterparties
+
+Risk Signals MUST use DeFi-specific markers:
+- [+] Uses verified protocols (Cetus, Scallop, etc.)
+- [!] Unverified protocol interactions
+- [-] High concentration risk or exit liquidity issues
+
+DO NOT produce a generic "wallet overview" analysis. This MUST read as a DeFi audit.`,
+
+    nft: `\n\n## ANALYSIS MODE: NFT
+CRITICAL: You MUST produce an NFT-specific analysis that is COMPLETELY DIFFERENT from a general analysis.
+The tool results include "modeSpecificData" with NFT-specific fields like nftObjects, collections, collectionCount, mintingTransactions, and washTradingSignals. USE THIS DATA.
+
+Your output MUST include these NFT-specific sections instead of the generic ones:
+- **NFT Holdings**: List NFT objects found, grouped by collection
+- **Collection Analysis**: Number of collections, diversity of holdings
+- **Creator Assessment**: Based on object types and minting patterns
+- **Wash Trading Detection**: Analyze volume vs unique counterparties, repeated patterns
+- **Minting Activity**: Number of mint transactions, publish transactions
+- **Metadata Check**: Object type integrity, display objects
+
+Risk Signals MUST use NFT-specific markers:
+- [+] Diverse NFT holdings across multiple collections
+- [!] Potential wash trading signals detected
+- [-] Copycat or suspicious collection patterns
+
+DO NOT produce a generic "wallet overview" analysis. This MUST read as an NFT collector/creator audit.`,
+
+    p2p: `\n\n## ANALYSIS MODE: P2P Counterparty
+CRITICAL: You MUST produce a P2P counterparty risk analysis that is COMPLETELY DIFFERENT from a general analysis.
+The tool results include "modeSpecificData" with P2P-specific fields like fundFlow, counterpartyList, repeatedSenders, walletAge, moneyMuleIndicators. USE THIS DATA.
+
+Your output MUST include these P2P-specific sections instead of the generic ones:
+- **Counterparty Profile**: Wallet age, first/last transaction dates, activity timeline
+- **Money Flow Analysis**: Incoming vs outgoing transfers, unique counterparties, top transfers by value
+- **Counterparty Network**: Who does this wallet interact with? Repeated senders?
+- **Money Mule Detection**: High throughput + rapid turnover + low retention = mule risk
+- **Behavioral Patterns**: Transaction frequency, regularity, counterparty diversity
+
+Risk Signals MUST use P2P-specific markers:
+- [+] Long wallet history with consistent counterparties
+- [!] Rapid fund turnover or high volume with low retention
+- [-] Money mule indicators detected
+
+DO NOT produce a generic "wallet overview" analysis. This MUST read as a counterparty risk assessment for P2P trading.`,
   };
 
   const modeInstruction = mode && modeFocus[mode] ? modeFocus[mode] : "";
