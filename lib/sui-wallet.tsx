@@ -2,7 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, ComponentType } from "react";
 
-// Context for Sui wallet state
+// ── DappKit readiness context ──────────────────────────────
+// Lets child components know when WalletProvider is available
+const DappKitReadyContext = createContext<boolean>(false);
+function useDappKitReady() {
+  return useContext(DappKitReadyContext);
+}
+
+// ── Wallet state context ───────────────────────────────────
 interface SuiWalletContextType {
   address: string | null;
   isConnected: boolean;
@@ -21,7 +28,7 @@ export function useSuiWallet() {
   return useContext(SuiWalletContext);
 }
 
-// Types for dapp-kit components
+// ── DappKit types ─────────────────────────────────────────
 interface DappKitModule {
   createNetworkConfig: (config: Record<string, unknown>) => { networkConfig: Record<string, unknown> };
   SuiClientProvider: ComponentType<{ networks: Record<string, unknown>; defaultNetwork: string; children: ReactNode }>;
@@ -37,7 +44,24 @@ interface ReactQueryModule {
   QueryClient: new () => unknown;
 }
 
-// Provider that handles Sui wallet state
+// ── Shared dapp-kit loader ─────────────────────────────────
+// Single place to load dapp-kit so all components share the same state
+let _dappKitPromise: Promise<{ dappKit: DappKitModule; reactQuery: ReactQueryModule }> | null = null;
+
+function loadDappKit() {
+  if (!_dappKitPromise) {
+    _dappKitPromise = Promise.all([
+      import("@mysten/dapp-kit"),
+      import("@tanstack/react-query"),
+    ]).then(([dappKitMod, reactQueryMod]) => ({
+      dappKit: dappKitMod as unknown as DappKitModule,
+      reactQuery: reactQueryMod as unknown as ReactQueryModule,
+    }));
+  }
+  return _dappKitPromise;
+}
+
+// ── Wallet state provider ──────────────────────────────────
 function SuiWalletStateInner({ children, useCurrentAccount, useSignTransaction }: {
   children: ReactNode;
   useCurrentAccount: () => { address: string } | null;
@@ -55,32 +79,53 @@ function SuiWalletStateInner({ children, useCurrentAccount, useSignTransaction }
   }, [address, signTransaction]);
 
   return (
-    <SuiWalletContext.Provider
-      value={{
-        address,
-        isConnected,
-        isConnecting: false,
-        signAndExecute,
-      }}
-    >
+    <SuiWalletContext.Provider value={{ address, isConnected, isConnecting: false, signAndExecute }}>
       {children}
     </SuiWalletContext.Provider>
   );
 }
 
-// Inner provider that requires dapp-kit to be loaded
+// ── Loaded provider ────────────────────────────────────────
+function SuiWalletLoaded({ children, dappKit, reactQuery }: {
+  children: ReactNode;
+  dappKit: DappKitModule;
+  reactQuery: ReactQueryModule;
+}) {
+  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKit;
+  const { QueryClientProvider, QueryClient } = reactQuery;
+
+  const { networkConfig } = createNetworkConfig({
+    testnet: { url: "https://fullnode.testnet.sui.io:443", network: "testnet" },
+    mainnet: { url: "https://fullnode.mainnet.sui.io:443", network: "mainnet" },
+  });
+
+  const queryClient = new QueryClient();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
+        <WalletProvider autoConnect>
+          <DappKitReadyContext.Provider value={true}>
+            <SuiWalletStateInner useCurrentAccount={useCurrentAccount} useSignTransaction={useSignTransaction}>
+              {children}
+            </SuiWalletStateInner>
+          </DappKitReadyContext.Provider>
+        </WalletProvider>
+      </SuiClientProvider>
+    </QueryClientProvider>
+  );
+}
+
+// ── Inner loader ───────────────────────────────────────────
 function SuiWalletInner({ children }: { children: ReactNode }) {
   const [dappKit, setDappKit] = useState<DappKitModule | null>(null);
   const [reactQuery, setReactQuery] = useState<ReactQueryModule | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      import("@mysten/dapp-kit"),
-      import("@tanstack/react-query"),
-    ]).then(([dappKitMod, reactQueryMod]) => {
-      setDappKit(dappKitMod as unknown as DappKitModule);
-      setReactQuery(reactQueryMod as unknown as ReactQueryModule);
+    loadDappKit().then(({ dappKit: dk, reactQuery: rq }) => {
+      setDappKit(dk);
+      setReactQuery(rq);
       setLoaded(true);
     });
   }, []);
@@ -92,58 +137,23 @@ function SuiWalletInner({ children }: { children: ReactNode }) {
   return <SuiWalletLoaded dappKit={dappKit} reactQuery={reactQuery}>{children}</SuiWalletLoaded>;
 }
 
-// Loaded provider — separate component so hooks count stays consistent
-function SuiWalletLoaded({ children, dappKit, reactQuery }: { children: ReactNode; dappKit: DappKitModule; reactQuery: ReactQueryModule }) {
-  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKit;
-  const { QueryClientProvider, QueryClient } = reactQuery;
-
-  const { networkConfig } = createNetworkConfig({
-    testnet: {
-      url: "https://fullnode.testnet.sui.io:443",
-      network: "testnet",
-    },
-    mainnet: {
-      url: "https://fullnode.mainnet.sui.io:443",
-      network: "mainnet",
-    },
-  });
-
-  const queryClient = new QueryClient();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-        <WalletProvider autoConnect>
-          <SuiWalletStateInner
-            useCurrentAccount={useCurrentAccount}
-            useSignTransaction={useSignTransaction}
-          >
-            {children}
-          </SuiWalletStateInner>
-        </WalletProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
-  );
-}
-
-// Provider that handles Sui wallet state
+// ── Public provider ────────────────────────────────────────
 export function SuiWalletProvider({ children }: { children: ReactNode }) {
   return <SuiWalletInner>{children}</SuiWalletInner>;
 }
 
-// ConnectButton component
+// ── ConnectButton ──────────────────────────────────────────
 export function SuiConnectButton() {
-  const [mounted, setMounted] = useState(false);
-  const [ConnectButtonComp, setConnectButtonComp] = useState<ComponentType | null>(null);
+  const ready = useDappKitReady();
+  const [Comp, setComp] = useState<ComponentType | null>(null);
 
   useEffect(() => {
-    import("@mysten/dapp-kit").then((mod) => {
-      setConnectButtonComp(() => mod.ConnectButton);
-      setMounted(true);
-    });
-  }, []);
+    if (ready) {
+      loadDappKit().then(({ dappKit }) => setComp(() => dappKit.ConnectButton));
+    }
+  }, [ready]);
 
-  if (!mounted || !ConnectButtonComp) {
+  if (!ready || !Comp) {
     return (
       <button className="flex items-center gap-2 px-3 py-2 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-400 text-xs font-medium">
         Connect Sui
@@ -151,25 +161,24 @@ export function SuiConnectButton() {
     );
   }
 
-  return <ConnectButtonComp />;
+  return <Comp />;
 }
 
-// ConnectModal wrapper
+// ── ConnectModal ───────────────────────────────────────────
 export function SuiConnectModal({ trigger }: { trigger: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
+  const ready = useDappKitReady();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [ConnectModalComp, setConnectModalComp] = useState<any>(null);
+  const [Comp, setComp] = useState<any>(null);
 
   useEffect(() => {
-    import("@mysten/dapp-kit").then((mod) => {
-      setConnectModalComp(() => mod.ConnectModal);
-      setMounted(true);
-    });
-  }, []);
+    if (ready) {
+      loadDappKit().then(({ dappKit }) => setComp(() => dappKit.ConnectModal));
+    }
+  }, [ready]);
 
-  if (!mounted || !ConnectModalComp) {
+  if (!ready || !Comp) {
     return <>{trigger}</>;
   }
 
-  return <ConnectModalComp trigger={trigger} />;
+  return <Comp trigger={trigger} />;
 }
