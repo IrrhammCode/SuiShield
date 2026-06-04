@@ -31,13 +31,21 @@ export async function saveAnalysis(params: {
 }): Promise<StoredAnalysis> {
   const record = await createAnalysisRecord(params);
 
-  // Store on Walrus
-  const result = await storeAnalysisOnWalrus(record);
+  // Try to store on Walrus — graceful fail (no public mainnet publisher)
+  let blobId = `local-${Date.now()}`;
+  const storedAt = new Date().toISOString();
+  try {
+    const result = await storeAnalysisOnWalrus(record);
+    blobId = result.blobId;
+  } catch {
+    // Walrus write failed — expected on mainnet (no public publisher)
+    // Analysis continues with local-only proof
+  }
 
   const stored: StoredAnalysis = {
-    blobId: result.blobId,
+    blobId,
     record,
-    storedAt: new Date().toISOString(),
+    storedAt,
   };
 
   // Cache locally
