@@ -20,7 +20,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2009 – Present",
     rowCount: "850M+ transactions",
-    blobId: "n3ZntaDDSIaAxABIX1l7YyQH8fNsbXTAa9xPzCzD-XU",
+    blobId: "s3bvi9zHs5tw3mW_q_EGdhEI84IvsVedCIqpgRzBC-Y",
     tags: ["bitcoin", "transactions", "UTXO", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -36,7 +36,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2015 – Present",
     rowCount: "2.5B+ transactions",
-    blobId: "2kArgsuu6Nl8W5rZFxN3sdqmG_OBnZ7SIYhbkyw2qUo",
+    blobId: "FelM02u30o_COlk_qI-CplhTbCcEeEA3x3a1pXdDKPg",
     tags: ["ethereum", "ERC-20", "DeFi", "NFT", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -52,7 +52,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2020 – Present",
     rowCount: "3B+ transactions",
-    blobId: "3bCZks9wkXZfFk-lR9lUS7QYwgIMB1ig0eLkO08Sd4k",
+    blobId: "s3bvi9zHs5tw3mW_q_EGdhEI84IvsVedCIqpgRzBC-Y",
     tags: ["BSC", "BNB", "DeFi", "PancakeSwap", "historical"],
     lastUpdated: "2026-05-19",
   },
@@ -100,7 +100,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "CSV",
     timeRange: "2021 – Present",
     rowCount: "50M+ data points",
-    blobId: "R3Zo-CULg_wtMAHayE_QnJaGjoMoVit52qKwIOjwBAQ",
+    blobId: "FelM02u30o_COlk_qI-CplhTbCcEeEA3x3a1pXdDKPg",
     tags: ["DeFi", "TVL", "liquidity", "Uniswap", "CETUS", "historical"],
     lastUpdated: "2026-05-22",
   },
@@ -116,6 +116,32 @@ export async function fetchBlobFromWalrus(blobId: string): Promise<ArrayBuffer> 
 
   if (!response.ok) {
     throw new Error(`Failed to fetch blob ${blobId}: ${response.statusText}`);
+  }
+
+  return response.arrayBuffer();
+}
+
+// Fetch quilt patches list (for quilt-type blobs)
+export async function fetchQuiltPatches(quiltId: string): Promise<Array<{ identifier: string; patch_id: string; tags: Record<string, string> }>> {
+  const aggregator = WALRUS_AGGREGATOR_URLS[0];
+  const url = `${aggregator}/v1/quilts/${quiltId}/patches`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch quilt patches: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Fetch a single blob from a quilt by patch ID
+export async function fetchQuiltPatch(patchId: string): Promise<ArrayBuffer> {
+  const aggregator = WALRUS_AGGREGATOR_URLS[0];
+  const url = `${aggregator}/v1/blobs/by-quilt-patch-id/${patchId}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch quilt patch ${patchId}: ${response.statusText}`);
   }
 
   return response.arrayBuffer();
