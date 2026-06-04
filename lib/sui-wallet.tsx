@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, ComponentType } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback, ComponentType } from "react";
 
 // Context for Sui wallet state
 interface SuiWalletContextType {
@@ -68,29 +68,29 @@ function SuiWalletStateInner({ children, useCurrentAccount, useSignTransaction }
   );
 }
 
-// Dynamic import wrapper for dapp-kit components
-export function SuiWalletProvider({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  const [dappKit, setDappKit] = useState<DappKitModule | null>(null);
-  const [reactQuery, setReactQuery] = useState<ReactQueryModule | null>(null);
+// Inner provider that requires dapp-kit to be loaded
+function SuiWalletInner({ children }: { children: ReactNode }) {
+  const dappKitRef = useRef<DappKitModule | null>(null);
+  const reactQueryRef = useRef<ReactQueryModule | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     Promise.all([
       import("@mysten/dapp-kit"),
       import("@tanstack/react-query"),
     ]).then(([dappKitMod, reactQueryMod]) => {
-      setDappKit(dappKitMod as unknown as DappKitModule);
-      setReactQuery(reactQueryMod as unknown as ReactQueryModule);
-      setMounted(true);
+      dappKitRef.current = dappKitMod as unknown as DappKitModule;
+      reactQueryRef.current = reactQueryMod as unknown as ReactQueryModule;
+      setLoaded(true);
     });
   }, []);
 
-  if (!mounted || !dappKit || !reactQuery) {
+  if (!loaded || !dappKitRef.current || !reactQueryRef.current) {
     return <>{children}</>;
   }
 
-  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKit;
-  const { QueryClientProvider, QueryClient } = reactQuery;
+  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKitRef.current;
+  const { QueryClientProvider, QueryClient } = reactQueryRef.current;
 
   const { networkConfig } = createNetworkConfig({
     testnet: {
@@ -119,6 +119,11 @@ export function SuiWalletProvider({ children }: { children: ReactNode }) {
       </SuiClientProvider>
     </QueryClientProvider>
   );
+}
+
+// Provider that handles Sui wallet state
+export function SuiWalletProvider({ children }: { children: ReactNode }) {
+  return <SuiWalletInner>{children}</SuiWalletInner>;
 }
 
 // ConnectButton component
