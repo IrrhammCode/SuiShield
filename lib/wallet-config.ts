@@ -8,7 +8,7 @@ import type { CaipNetwork } from "@reown/appkit-common";
 // 1. Get a project ID at https://cloud.reown.com
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694";
 
-// 2. Define supported networks
+// 2. Define supported networks — only Ethereum + Base to avoid RPC spam
 const ethereum: CaipNetwork = {
   id: "eip155:1",
   chainId: 1,
@@ -16,37 +16,7 @@ const ethereum: CaipNetwork = {
   name: "Ethereum",
   currency: "ETH",
   explorerUrl: "https://etherscan.io",
-  rpcUrl: "https://eth.llamarpc.com",
-};
-
-const arbitrum: CaipNetwork = {
-  id: "eip155:42161",
-  chainId: 42161,
-  chainNamespace: "eip155",
-  name: "Arbitrum",
-  currency: "ETH",
-  explorerUrl: "https://arbiscan.io",
-  rpcUrl: "https://arb1.arbitrum.io/rpc",
-};
-
-const optimism: CaipNetwork = {
-  id: "eip155:10",
-  chainId: 10,
-  chainNamespace: "eip155",
-  name: "Optimism",
-  currency: "ETH",
-  explorerUrl: "https://optimistic.etherscan.io",
-  rpcUrl: "https://mainnet.optimism.io",
-};
-
-const polygon: CaipNetwork = {
-  id: "eip155:137",
-  chainId: 137,
-  chainNamespace: "eip155",
-  name: "Polygon",
-  currency: "MATIC",
-  explorerUrl: "https://polygonscan.com",
-  rpcUrl: "https://polygon-rpc.com",
+  rpcUrl: "https://ethereum-rpc.publicnode.com",
 };
 
 const base: CaipNetwork = {
@@ -59,17 +29,7 @@ const base: CaipNetwork = {
   rpcUrl: "https://mainnet.base.org",
 };
 
-const sepolia: CaipNetwork = {
-  id: "eip155:11155111",
-  chainId: 11155111,
-  chainNamespace: "eip155",
-  name: "Sepolia",
-  currency: "ETH",
-  explorerUrl: "https://sepolia.etherscan.io",
-  rpcUrl: "https://rpc.sepolia.org",
-};
-
-export const networks = [ethereum, arbitrum, optimism, polygon, base, sepolia];
+export const networks = [ethereum, base];
 
 // 3. Set up the metadata
 const metadata = {

@@ -29,6 +29,21 @@ if (typeof window !== "undefined") {
     _origWarn.apply(console, args);
   };
 
+  // Suppress unhandled promise rejections from RPC connections
+  window.addEventListener("unhandledrejection", (event) => {
+    const msg = event.reason?.message || event.reason || "";
+    if (
+      typeof msg === "string" &&
+      (msg.includes("Failed to fetch") ||
+        msg.includes("NetworkError") ||
+        msg.includes("Load failed") ||
+        msg.includes("ERR_NETWORK") ||
+        msg.includes("ERR_CONNECTION_REFUSED"))
+    ) {
+      event.preventDefault();
+    }
+  });
+
   // Restore after AppKit initialization completes
   setTimeout(() => {
     console.error = _origErr;
