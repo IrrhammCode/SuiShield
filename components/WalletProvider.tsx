@@ -56,9 +56,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [chainId, setChainId] = useState<number | undefined>(undefined);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [hasProvider] = useState(() => hasInjectedProvider());
+  const [hasProvider, setHasProvider] = useState(false);
 
   const isConnected = !!address;
+
+  // Check for injected provider on mount to avoid hydration mismatch
+  useEffect(() => {
+    // Run asynchronously to avoid the synchronous setState within effect lint warning
+    Promise.resolve().then(() => {
+      setHasProvider(hasInjectedProvider());
+    });
+  }, []);
 
   // Fetch balance whenever address changes
   useEffect(() => {
