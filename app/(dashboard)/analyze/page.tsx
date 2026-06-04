@@ -11,7 +11,6 @@ import {
   Activity,
   Search,
   ChevronLeft,
-  CheckCircle,
 } from "lucide-react";
 import type { AgentStep } from "@/types";
 import { TrustScoreCard } from "@/components/SuiShield/TrustScoreCard";
@@ -22,8 +21,6 @@ import { ShareButton } from "@/components/SuiShield/ShareButton";
 import { AddressInput } from "@/components/SuiShield/AddressInput";
 import { ScanHistory, saveScan } from "@/components/SuiShield/ScanHistory";
 import { DualWalletButton } from "@/components/WalletConnect";
-import { buildAnalyzeTransaction } from "@/lib/sui-contract";
-import { useSuiWallet } from "@/lib/sui-wallet";
 
 type AnalysisMode = "defi" | "nft" | "p2p" | "general";
 
@@ -232,10 +229,6 @@ export default function AnalyzePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<AnalysisMode>("general");
-  const [recording, setRecording] = useState(false);
-  const [recorded, setRecorded] = useState(false);
-  const [recordError, setRecordError] = useState<string | null>(null);
-  const { signAndExecute, isConnected } = useSuiWallet();
 
   const handleAnalyze = useCallback(async (address: string) => {
     setIsLoading(true);
@@ -267,27 +260,6 @@ export default function AnalyzePage() {
       setIsLoading(false);
     }
   }, [mode]);
-
-  const handleRecordOnSui = useCallback(async () => {
-    if (!result?.onChainProof || !isConnected) return;
-    setRecording(true);
-    setRecordError(null);
-    try {
-      const tx = buildAnalyzeTransaction(
-        result.address,
-        result.trustScore,
-        result.trustLevel === "safe" ? 0 : result.trustLevel === "low" ? 1 : result.trustLevel === "medium" ? 2 : 3,
-        result.onChainProof.blobId
-      );
-      if (!tx) throw new Error("Failed to build transaction — contract env vars not set");
-      await signAndExecute(tx);
-      setRecorded(true);
-    } catch (e: unknown) {
-      setRecordError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setRecording(false);
-    }
-  }, [result, isConnected, signAndExecute]);
 
   return (
     <div className="min-h-screen relative">
@@ -437,54 +409,6 @@ export default function AnalyzePage() {
                 storedAt={result.onChainProof.storedAt}
                 verificationUrl={result.onChainProof.verificationUrl}
               />
-            )}
-
-            {/* Record on Sui */}
-            {result.onChainProof && (
-              <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-5 backdrop-blur-xl overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-display font-semibold text-white flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-white/80" />
-                      Record on Sui Blockchain
-                    </div>
-                    <div className="text-xs text-white/20 mt-1">
-                      Permanently record this analysis on-chain and mint an AnalysisCertificate NFT
-                    </div>
-                  </div>
-                  {recorded ? (
-                    <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
-                      <CheckCircle className="w-4 h-4" />
-                      Recorded
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleRecordOnSui}
-                      disabled={recording || !isConnected}
-                      className="px-5 py-2.5 text-sm rounded-xl bg-gradient-to-r from-white to-white/80 text-black font-bold hover:from-cyan-300 hover:to-cyan-400 transition-all shadow-[0_0_20px_rgba(255,255,255,0.08)] hover:shadow-[0_0_30px_rgba(255,255,255,0.12)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {recording ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Recording...
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4" />
-                          Record on Sui
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-                {!isConnected && (
-                  <p className="text-xs text-white/50/80 mt-3">Connect your Sui wallet to record on-chain</p>
-                )}
-                {recordError && (
-                  <p className="text-xs text-white/50 mt-3">{recordError}</p>
-                )}
-              </div>
             )}
           </div>
         )}

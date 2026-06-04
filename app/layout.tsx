@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { WalletProvider } from "@/components/WalletProvider";
 import { WalletAuthProvider } from "@/context/WalletAuthContext";
-import { SuiWalletProvider } from "@/lib/sui-wallet";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -44,11 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`} data-scroll-behavior="smooth">
       <body className="antialiased font-sans bg-[#080A14] text-white overflow-x-hidden min-h-screen">
-        <SuiWalletProvider>
-          <WalletProvider>
-            <WalletAuthProvider>{children}</WalletAuthProvider>
-          </WalletProvider>
-        </SuiWalletProvider>
+        <WalletProvider>
+          <WalletAuthProvider>{children}</WalletAuthProvider>
+        </WalletProvider>
       </body>
     </html>
   );
