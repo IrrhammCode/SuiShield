@@ -2,9 +2,9 @@
 
 import type { Dataset } from "@/types";
 
-// Fallback chain: testnet first (mainnet not live yet)
+// Walrus mainnet aggregator (Tatum publishes here)
 export const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus-testnet.walrus.space",
+  "https://aggregator.walrus-mainnet.walrus.space",
 ];
 
 export const TATUM_DATASETS: Dataset[] = [
@@ -20,7 +20,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2009 – Present",
     rowCount: "850M+ transactions",
-    blobId: "pending", // To be updated with actual blob ID from Tatum Discord
+    blobId: "n3ZntaDDSIaAxABIX1l7YyQH8fNsbXTAa9xPzCzD-XU",
     tags: ["bitcoin", "transactions", "UTXO", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -36,7 +36,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2015 – Present",
     rowCount: "2.5B+ transactions",
-    blobId: "pending",
+    blobId: "2kArgsuu6Nl8W5rZFxN3sdqmG_OBnZ7SIYhbkyw2qUo",
     tags: ["ethereum", "ERC-20", "DeFi", "NFT", "historical"],
     lastUpdated: "2026-05-20",
   },
@@ -52,7 +52,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2020 – Present",
     rowCount: "3B+ transactions",
-    blobId: "pending",
+    blobId: "3bCZks9wkXZfFk-lR9lUS7QYwgIMB1ig0eLkO08Sd4k",
     tags: ["BSC", "BNB", "DeFi", "PancakeSwap", "historical"],
     lastUpdated: "2026-05-19",
   },
@@ -68,7 +68,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "CSV",
     timeRange: "2022 – Present",
     rowCount: "210M+ candles",
-    blobId: "pending",
+    blobId: "lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg",
     tags: ["price", "OHLCV", "trading", "BTC", "ETH", "SUI", "historical"],
     lastUpdated: "2026-05-25",
   },
@@ -84,7 +84,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "Parquet",
     timeRange: "2023 – Present",
     rowCount: "420M+ transactions",
-    blobId: "pending",
+    blobId: "fCM9Oo6QcoakdF7h81pK22KA_1l2pRb5eC7h8exxKFk",
     tags: ["Sui", "Move", "NFT", "DeFi", "CETUS", "historical"],
     lastUpdated: "2026-05-24",
   },
@@ -100,7 +100,7 @@ export const TATUM_DATASETS: Dataset[] = [
     format: "CSV",
     timeRange: "2021 – Present",
     rowCount: "50M+ data points",
-    blobId: "pending",
+    blobId: "R3Zo-CULg_wtMAHayE_QnJaGjoMoVit52qKwIOjwBAQ",
     tags: ["DeFi", "TVL", "liquidity", "Uniswap", "CETUS", "historical"],
     lastUpdated: "2026-05-22",
   },
