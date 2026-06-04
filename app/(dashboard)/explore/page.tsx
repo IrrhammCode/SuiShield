@@ -22,10 +22,54 @@ import {
   Globe,
   Zap,
   ArrowRight,
+  AlertTriangle,
+  Droplet,
+  DollarSign,
+  Tag,
+  Link2,
+  Activity,
 } from "lucide-react";
 import { TATUM_DATASETS, formatBlobId, getAggregatorUrl } from "@/lib/walrus";
 import type { Dataset } from "@/types";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+
+// ─── Chain icon mapping ────────────────────────────────────
+const CHAIN_ICONS: Record<string, React.ReactNode> = {
+  bitcoin: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h1c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1h-1v1h1c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1h-1v2h-2v-2h-2v2H9v-2H8c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1h1v-1H8c-.55 0-1-.45-1-1V10c0-.55.45-1 1-1h1V7h2zm-1 4h3v-1h-3v1zm0 3h3v-1h-3v1z"/>
+    </svg>
+  ),
+  ethereum: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+      <path d="M12 1.75l-6.25 10.5L12 16l6.25-3.75L12 1.75zM5.75 13.5L12 22.25l6.25-8.75L12 17.25 5.75 13.5z"/>
+    </svg>
+  ),
+  bnb: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+      <path d="M12 2L6.5 7.5 8.5 9.5 12 6l3.5 3.5 2-2L12 2zM2 12l2-2 2 2-2 2-2-2zm4 6l2 2 5.5-5.5L9.5 12.5 6 16l2 2zm12 0l-2-2 2-2 2 2-2 2zM12 22l5.5-5.5L15.5 14.5 12 18l-3.5-3.5L6.5 16.5 12 22zm0-6l2-2-2-2-2 2 2 2z"/>
+    </svg>
+  ),
+  sui: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2V7h2v10z"/>
+    </svg>
+  ),
+  chart: <BarChart2 className="w-6 h-6" />,
+  zap: <Zap className="w-6 h-6" />,
+  bridge: <Link2 className="w-6 h-6" />,
+  whale: <Activity className="w-6 h-6" />,
+  gas: <Zap className="w-6 h-6" />,
+  dollar: <DollarSign className="w-6 h-6" />,
+  droplet: <Droplet className="w-6 h-6" />,
+  tag: <Tag className="w-6 h-6" />,
+  alert: <AlertTriangle className="w-6 h-6" />,
+  "bar-chart": <BarChart2 className="w-6 h-6" />,
+};
+
+function getChainIcon(iconName: string): React.ReactNode {
+  return CHAIN_ICONS[iconName] || <Database className="w-6 h-6" />;
+}
 
 // ─── Chain filter options ──────────────────────────────────
 const CHAIN_FILTERS = ["All", "Bitcoin", "Ethereum", "BNB Chain", "Sui", "Multi-Chain"];
@@ -65,13 +109,13 @@ function DatasetCard({ dataset, onClick }: { dataset: Dataset; onClick: () => vo
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white/80 flex-shrink-0"
             style={{
               background: `${dataset.chainColor}12`,
               border: `1px solid ${dataset.chainColor}30`,
             }}
           >
-            {dataset.chainIcon}
+            {getChainIcon(dataset.chainIcon)}
           </div>
           <div>
             <h3 className="font-display font-semibold text-white text-sm leading-tight group-hover:text-white/40 transition-colors">
@@ -222,10 +266,10 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
         >
           <div className="flex items-center gap-4">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-white/80"
               style={{ background: `${dataset.chainColor}15`, border: `1px solid ${dataset.chainColor}30` }}
             >
-              {dataset.chainIcon}
+              {getChainIcon(dataset.chainIcon)}
             </div>
             <div>
               <h2 className="font-display font-bold text-white text-xl">{dataset.name}</h2>
