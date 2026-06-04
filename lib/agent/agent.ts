@@ -172,7 +172,8 @@ export async function runAgent(
         // Run full wallet analysis
         const analysisResult = await toolAnalyzeSuiWallet(
           suiAddress,
-          connectedAddress || "unknown"
+          connectedAddress || "unknown",
+          mode
         );
         toolResults.push(analysisResult);
         toolsUsed.push("analyzeSuiWallet");

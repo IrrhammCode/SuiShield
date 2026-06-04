@@ -296,7 +296,8 @@ export async function toolGetSuiFundFlow(address: string): Promise<ToolResult> {
 
 export async function toolAnalyzeSuiWallet(
   address: string,
-  analyzedBy: string
+  analyzedBy: string,
+  mode?: string
 ): Promise<ToolResult> {
   const start = Date.now();
 
@@ -324,6 +325,66 @@ export async function toolAnalyzeSuiWallet(
     const txs = txResult.success ? (txResult.data as TxsData) : null;
 
     const riskFactors: string[] = [];
+
+    // ── Mode-specific data enrichment ─────────────────────
+    let modeSpecificData: Record<string, unknown> = {};
+    if (mode === "defi") {
+      // DeFi: check for DeFi objects, LP tokens, protocol interactions
+      const objectTypes = objects ? Object.keys(objects.objectTypes || {}) : [];
+      const defiObjects = objectTypes.filter(t =>
+        t.toLowerCase().includes("pool") ||
+        t.toLowerCase().includes("liquidity") ||
+        t.toLowerCase().includes("lp") ||
+        t.toLowerCase().includes("vault") ||
+        t.toLowerCase().includes("stake") ||
+        t.toLowerCase().includes("lending")
+      );
+      const hasDeFiActivity = defiObjects.length > 0;
+      modeSpecificData = {
+        mode: "defi",
+        defiObjects,
+        hasDeFiActivity,
+        protocolCount: defiObjects.length,
+        verifiedProtocols: defiObjects.filter(d =>
+          ["cetus", "scallop", "turbos", "navi", "bucket", "bluemove"].some(p => d.toLowerCase().includes(p))
+        ),
+        unverifiedProtocols: defiObjects.filter(d =>
+          !["cetus", "scallop", "turbos", "navi", "bucket", "bluemove"].some(p => d.toLowerCase().includes(p))
+        ),
+      };
+    } else if (mode === "nft") {
+      // NFT: check for NFT objects, collections, minting activity
+      const objectTypes = objects ? Object.keys(objects.objectTypes || {}) : [];
+      const nftObjects = objectTypes.filter(t =>
+        t.toLowerCase().includes("nft") ||
+        t.toLowerCase().includes("collection") ||
+        t.toLowerCase().includes("mint") ||
+        t.toLowerCase().includes("token")
+      );
+      const hasNFTActivity = nftObjects.length > 0;
+      modeSpecificData = {
+        mode: "nft",
+        nftObjects,
+        hasNFTActivity,
+        collectionCount: nftObjects.length,
+        totalNFTs: objects ? (objects as { objectCount: number }).objectCount : 0,
+      };
+    } else if (mode === "p2p") {
+      // P2P: check transaction counterparties, money flow
+      const txList = txs ? (txs as { transactions: Array<{ sender?: string; recipient?: string }> }).transactions : [];
+      const counterparties = new Set<string>();
+      txList.forEach(tx => {
+        if (tx.sender && tx.sender !== address) counterparties.add(tx.sender);
+        if (tx.recipient && tx.recipient !== address) counterparties.add(tx.recipient);
+      });
+      modeSpecificData = {
+        mode: "p2p",
+        uniqueCounterparties: counterparties.size,
+        counterpartyList: Array.from(counterparties).slice(0, 10),
+        hasSuspiciousPatterns: counterparties.size > 50,
+        transactionFrequency: txs ? (txs as { transactionCount: number }).transactionCount : 0,
+      };
+    }
 
     // ── Signal 1: On-chain Activity Score ─────────────────
     let onChainScore = 50;
@@ -514,6 +575,8 @@ export async function toolAnalyzeSuiWallet(
         riskScore,
         riskLevel,
         riskFactors,
+        mode: mode || "general",
+        modeSpecificData,
         multiSignalScores: {
           onChain: onChainScore,
           maturity: maturityScore,
