@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback, ComponentType } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, ComponentType } from "react";
 
 // Context for Sui wallet state
 interface SuiWalletContextType {
@@ -70,8 +70,8 @@ function SuiWalletStateInner({ children, useCurrentAccount, useSignTransaction }
 
 // Inner provider that requires dapp-kit to be loaded
 function SuiWalletInner({ children }: { children: ReactNode }) {
-  const dappKitRef = useRef<DappKitModule | null>(null);
-  const reactQueryRef = useRef<ReactQueryModule | null>(null);
+  const [dappKit, setDappKit] = useState<DappKitModule | null>(null);
+  const [reactQuery, setReactQuery] = useState<ReactQueryModule | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -79,18 +79,23 @@ function SuiWalletInner({ children }: { children: ReactNode }) {
       import("@mysten/dapp-kit"),
       import("@tanstack/react-query"),
     ]).then(([dappKitMod, reactQueryMod]) => {
-      dappKitRef.current = dappKitMod as unknown as DappKitModule;
-      reactQueryRef.current = reactQueryMod as unknown as ReactQueryModule;
+      setDappKit(dappKitMod as unknown as DappKitModule);
+      setReactQuery(reactQueryMod as unknown as ReactQueryModule);
       setLoaded(true);
     });
   }, []);
 
-  if (!loaded || !dappKitRef.current || !reactQueryRef.current) {
+  if (!loaded || !dappKit || !reactQuery) {
     return <>{children}</>;
   }
 
-  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKitRef.current;
-  const { QueryClientProvider, QueryClient } = reactQueryRef.current;
+  return <SuiWalletLoaded dappKit={dappKit} reactQuery={reactQuery}>{children}</SuiWalletLoaded>;
+}
+
+// Loaded provider — separate component so hooks count stays consistent
+function SuiWalletLoaded({ children, dappKit, reactQuery }: { children: ReactNode; dappKit: DappKitModule; reactQuery: ReactQueryModule }) {
+  const { createNetworkConfig, SuiClientProvider, WalletProvider, useCurrentAccount, useSignTransaction } = dappKit;
+  const { QueryClientProvider, QueryClient } = reactQuery;
 
   const { networkConfig } = createNetworkConfig({
     testnet: {
