@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Wallet, ChevronDown, Copy, Check } from "lucide-react";
-import { useWalletAuth } from "@/context/WalletAuthContext";
-import { useAppKit } from "@reown/appkit/react";
+import { Wallet, ChevronDown, Copy, Check, LogOut } from "lucide-react";
+import { useWallet } from "@/components/WalletProvider";
 
-// EVM Wallet Connect Button (Reown / MetaMask / etc.)
+// EVM Wallet Connect Button (Native MetaMask / EIP-1193)
 export function WalletButton() {
-  const { address, isConnected } = useWalletAuth();
-  const { open } = useAppKit();
+  const { address, isConnected, connect, disconnect, isConnecting, hasProvider } = useWallet();
   const [copied, setCopied] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -23,11 +21,12 @@ export function WalletButton() {
   if (!isConnected || !address) {
     return (
       <button
-        onClick={() => open()}
-        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00E5FF] to-[#00B8D4] text-[#050505] font-medium text-sm py-2.5 px-5 rounded-full shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-all cursor-pointer"
+        onClick={connect}
+        disabled={isConnecting}
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00E5FF] to-[#00B8D4] text-[#050505] font-medium text-sm py-2.5 px-5 rounded-full shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <Wallet className="w-4 h-4" />
-        Connect Wallet
+        {isConnecting ? "Connecting..." : hasProvider ? "Connect Wallet" : "Install MetaMask"}
       </button>
     );
   }
@@ -60,11 +59,11 @@ export function WalletButton() {
               {copied ? "Copied!" : "Copy Address"}
             </button>
             <button
-              onClick={() => { open({ view: 'Account' }); setShowDropdown(false); }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              onClick={() => { disconnect(); setShowDropdown(false); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400/80 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
             >
-              <Wallet className="w-3.5 h-3.5" />
-              Manage Wallet
+              <LogOut className="w-3.5 h-3.5" />
+              Disconnect
             </button>
           </div>
         </div>

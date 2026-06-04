@@ -189,7 +189,6 @@ function ModeSelector({ mode, onChange }: { mode: AnalysisMode; onChange: (m: An
                 : "bg-white/[0.03] text-white/30 border border-white/5 hover:text-white hover:border-white/10 hover:bg-white/5"
             }`}
           >
-            <span className="text-base">{config.icon}</span>
             {config.label}
           </button>
         );

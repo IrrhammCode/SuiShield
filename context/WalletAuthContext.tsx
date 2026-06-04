@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, type ReactNode } from "react";
-import { useAppKitAccount } from "@reown/appkit/react";
+import { useWallet } from "@/components/WalletProvider";
 import { useRouter, usePathname } from "next/navigation";
 
 interface WalletAuthState {
@@ -19,7 +19,7 @@ export function useWalletAuth() {
 }
 
 export function WalletAuthProvider({ children }: { children: ReactNode }) {
-  const { address, isConnected } = useAppKitAccount();
+  const { address, isConnected } = useWallet();
   const router = useRouter();
   const pathname = usePathname();
 
