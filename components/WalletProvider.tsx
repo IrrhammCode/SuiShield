@@ -56,21 +56,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [chainId, setChainId] = useState<number | undefined>(undefined);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [hasProvider, setHasProvider] = useState(false);
+  const [hasProvider] = useState(() => hasInjectedProvider());
 
   const isConnected = !!address;
 
-  // Check for injected provider on mount
-  useEffect(() => {
-    setHasProvider(hasInjectedProvider());
-  }, []);
-
   // Fetch balance whenever address changes
   useEffect(() => {
-    if (!address) {
-      setBalance(undefined);
-      return;
-    }
+    if (!address) return;
 
     let cancelled = false;
 
