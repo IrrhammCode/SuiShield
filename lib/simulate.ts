@@ -1,7 +1,7 @@
 // Transaction Simulator — Preview what would happen before you approve
 // Uses Tatum Sui RPC to simulate transaction outcomes
 
-import { getSuiBalances, getSuiTransactionBlocks, formatSuiBalance, mistToSui } from "./tatum-sui";
+import { getSuiBalances, getSuiTransactionBlocks, mistToSui } from "./tatum-sui";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -198,7 +198,7 @@ export async function simulateContractInteraction(
         level,
         warnings,
         recommendation: level === "dangerous"
-          ? "DO NOT interact with this contract"
+          ? `DO NOT interact with contract ${functionName}`
           : level === "caution"
           ? "Proceed with caution"
           : "Contract interaction appears safe",

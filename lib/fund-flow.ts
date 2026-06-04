@@ -2,7 +2,7 @@
 // This is SuiShield's killer feature: visual fund flow analysis
 // Detects mixer patterns, suspicious clusters, and money laundering
 
-import { getSuiTransactionBlocks, getSuiBalances } from "./tatum-sui";
+import { getSuiTransactionBlocks } from "./tatum-sui";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -213,9 +213,6 @@ function extractTransfers(
     // Find transfers involving the owner
     const outgoing = tx.balanceChanges.filter(
       (c) => c.owner?.AddressOwner === ownerAddress && parseInt(c.amount || "0") < 0
-    );
-    const incoming = tx.balanceChanges.filter(
-      (c) => c.owner?.AddressOwner === ownerAddress && parseInt(c.amount || "0") > 0
     );
 
     // Find counterparties

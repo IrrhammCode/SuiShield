@@ -229,7 +229,7 @@ export async function runAgent(
               ? `This address is flagged: ${maliciousResult.description || "confirmed threat"}`
               : "No known threats detected for this address",
           });
-        } catch (e) {
+        } catch {
           // MCP check optional
         }
 
@@ -246,7 +246,7 @@ export async function runAgent(
             reasoning: "Exchange rate needed to calculate USD value of holdings",
             insight: `Current SUI price: $${rate.rate.toFixed(4)}`,
           });
-        } catch (e) {
+        } catch {
           // Rate check optional
         }
 

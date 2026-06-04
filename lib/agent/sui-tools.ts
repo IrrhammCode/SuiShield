@@ -8,12 +8,10 @@ import {
   getSuiProtocolConfig,
   getSuiPrice,
   formatSuiBalance,
-  formatUsdValue,
   mistToSui,
 } from "@/lib/tatum-sui";
 import {
   analyzeProtocolInteractions,
-  getProtocolByPackageId,
   getVerifiedProtocols,
   getProtocolsByType,
   type ProtocolAnalysis,
@@ -21,8 +19,6 @@ import {
 import {
   mcpCheckMaliciousAddress,
   mcpGetExchangeRate,
-  mcpGetWalletPortfolio,
-  mcpGetTransactionHistory,
 } from "@/lib/tatum-mcp";
 import { saveAnalysis, buildMemoryContext, getPreviousAnalysis } from "./memory";
 import type { ToolResult } from "./tools";
@@ -223,7 +219,7 @@ export async function toolGetSuiPrice(): Promise<ToolResult> {
   }
 }
 
-export async function toolGetSuiFundFlow(address: string, depth = 1): Promise<ToolResult> {
+export async function toolGetSuiFundFlow(address: string): Promise<ToolResult> {
   const start = Date.now();
   try {
     // Get recent transactions to trace fund flow

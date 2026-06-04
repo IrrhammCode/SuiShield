@@ -1,15 +1,15 @@
 // Walrus Write Integration — store analysis results on-chain
 // Docs: https://docs.walrus.site/
 
-// Testnet first for hackathon development
+// Fallback chain: mainnet → testnet
 const WALRUS_PUBLISHER_URLS = [
-  "https://publisher.walrus-testnet.walrus.space",
   "https://publisher.walrus.space",
+  "https://publisher.walrus-testnet.walrus.space",
 ];
 
 const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus-testnet.walrus.space",
   "https://aggregator.walrus.space",
+  "https://aggregator.walrus-testnet.walrus.space",
 ];
 
 // ── Hash Utility ─────────────────────────────────────────

@@ -4,15 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Database,
-  Shield,
-  Brain,
-  Zap,
   Home,
   Search,
   GitBranch,
   Bell,
   Eye,
-  Globe,
 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 

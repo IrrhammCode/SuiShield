@@ -12,12 +12,15 @@ const TATUM_API_KEY = process.env.TATUM_API_KEY;
 
 // ── Sui JSON-RPC Helper ─────────────────────────────────
 
+// Read network from env — allows mainnet read-only with testnet contract
+const ENV_NETWORK = (process.env.NEXT_PUBLIC_SUI_NETWORK || "testnet") as "mainnet" | "testnet";
+
 async function suiRpc<T = unknown>(
   method: string,
   params: unknown[] = [],
-  network: "mainnet" | "testnet" = "testnet"
+  network: "mainnet" | "testnet" = ENV_NETWORK
 ): Promise<T> {
-  // Use Tatum Sui RPC gateway — default testnet for development
+  // Use Tatum Sui RPC gateway — respects NEXT_PUBLIC_SUI_NETWORK env
   const rpcUrl = network === "testnet" ? TATUM_SUI_TESTNET : TATUM_SUI_MAINNET;
 
   const headers: Record<string, string> = {

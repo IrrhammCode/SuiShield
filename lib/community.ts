@@ -2,7 +2,7 @@
 // Users can report scam addresses, verify/dispute reports
 // Trust scores update based on community consensus
 
-import { storeAnalysisOnWalrus, readAnalysisFromWalrus, formatBlobId } from "./walrus-write";
+import { storeAnalysisOnWalrus } from "./walrus-write";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -66,11 +66,6 @@ export async function submitScamReport(params: {
 
   // Also store on Walrus for immutability
   try {
-    const record = {
-      version: "1.0",
-      type: "scam-report" as const,
-      ...report,
-    };
     await storeAnalysisOnWalrus({
       version: "1.0",
       type: "wallet-analysis",

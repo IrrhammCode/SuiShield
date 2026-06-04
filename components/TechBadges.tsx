@@ -1,6 +1,6 @@
 "use client";
 
-import { Zap, Database, Globe, Activity } from "lucide-react";
+import { Zap, Database, Globe } from "lucide-react";
 
 interface TatumBadgeProps {
   variant?: "default" | "compact" | "banner";

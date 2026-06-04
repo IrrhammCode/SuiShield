@@ -18,7 +18,6 @@ const TATUM_SUI_ENDPOINTS: Record<string, string> = {
   devnet: "https://sui-devnet.gateway.tatum.io",
 };
 
-const TATUM_API_KEY = process.env.TATUM_API_KEY;
 
 export interface TrustScoreData {
   score: number;

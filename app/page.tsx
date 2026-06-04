@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Shield,
   AlertTriangle,
-  CheckCircle,
   XCircle,
   ArrowRight,
   Database,
