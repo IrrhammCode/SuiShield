@@ -126,7 +126,8 @@ interface AgentStep {
 export async function runAgent(
   userMessage: string,
   connectedAddress?: string,
-  history: Array<{ role: "user" | "assistant"; content: string }> = []
+  history: Array<{ role: "user" | "assistant"; content: string }> = [],
+  mode?: string
 ): Promise<ChatResponse & { agentSteps?: AgentStep[]; onChainProof?: Record<string, unknown> | null }> {
   const startTime = Date.now();
   const toolsUsed: string[] = [];
@@ -513,8 +514,35 @@ export async function runAgent(
   const memorySection = memoryContext ? `\n\n--- Agent Memory ---\n${memoryContext}` : "";
 
   // ── Call LLM ──────────────────────────────────────────
+  // Build mode-specific focus instructions
+  const modeFocus: Record<string, string> = {
+    defi: `\n\n## ANALYSIS MODE: DeFi\nFocus specifically on:\n- Protocol interactions (verified vs unverified: Cetus, Scallop, Turbos, Navi, Bucket, BlueMove)
+- TVL and liquidity positions
+- Yield sources and sustainability
+- LP token holdings and impermanent loss risk
+- Smart contract approval risks
+- Exit liquidity and slippage estimation
+Your response MUST emphasize DeFi-specific metrics and protocol analysis.`,
+    nft: `\n\n## ANALYSIS MODE: NFT\nFocus specifically on:\n- NFT collections owned and their floor prices
+- Creator track record and past projects
+- Wash trading detection (volume vs unique wallets)
+- Collection health (unique holders, trading volume)
+- Floor price manipulation signals
+- Metadata integrity and copycat detection
+Your response MUST emphasize NFT-specific metrics and creator analysis.`,
+    p2p: `\n\n## ANALYSIS MODE: P2P Counterparty\nFocus specifically on:\n- Wallet age and creation pattern
+- Funding source tracing
+- Money flow patterns and counterparties
+- Money mule detection signals
+- Network risk (1-hop to flagged addresses)
+- Transaction pattern anomalies
+Your response MUST emphasize counterparty risk and money flow analysis.`,
+  };
+
+  const modeInstruction = mode && modeFocus[mode] ? modeFocus[mode] : "";
+
   const messages = [
-    { role: "system" as const, content: AGENT_SYSTEM_PROMPT },
+    { role: "system" as const, content: AGENT_SYSTEM_PROMPT + modeInstruction },
     ...history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
     {
       role: "user" as const,

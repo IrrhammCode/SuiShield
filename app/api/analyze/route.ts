@@ -118,7 +118,7 @@ Be thorough and specific. Use real data from tools.`;
 
     // Run agent with timeout
     const response = await withTimeout(
-      runAgent(message, walletAddress || address, []),
+      runAgent(message, walletAddress || address, [], mode),
       60000 // 60 second timeout
     );
 
