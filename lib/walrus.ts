@@ -2,9 +2,8 @@
 
 import type { Dataset } from "@/types";
 
-// Fallback chain: mainnet → testnet
+// Fallback chain: testnet first (mainnet not live yet)
 export const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
   "https://aggregator.walrus-testnet.walrus.space",
 ];
 

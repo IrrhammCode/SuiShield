@@ -1,14 +1,12 @@
 // Walrus Write Integration — store analysis results on-chain
 // Docs: https://docs.walrus.site/
 
-// Fallback chain: mainnet → testnet
+// Fallback chain: testnet first (mainnet not live yet)
 const WALRUS_PUBLISHER_URLS = [
-  "https://publisher.walrus.space",
   "https://publisher.walrus-testnet.walrus.space",
 ];
 
 const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
   "https://aggregator.walrus-testnet.walrus.space",
 ];
 
