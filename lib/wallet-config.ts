@@ -80,14 +80,22 @@ const metadata = {
 };
 
 // 4. Create the AppKit instance
-export const appKit = createAppKit({
-  adapters: [new EthersAdapter()],
-  networks,
-  metadata,
-  projectId,
-  themeMode: "dark",
-  themeVariables: {
-    "--w3m-accent": "#4F37FD",
-    "--w3m-border-radius-master": "8px",
-  },
-});
+let appKit: ReturnType<typeof createAppKit> | undefined;
+try {
+  appKit = createAppKit({
+    adapters: [new EthersAdapter()],
+    networks,
+    metadata,
+    projectId,
+    themeMode: "dark",
+    themeVariables: {
+      "--w3m-accent": "#4F37FD",
+      "--w3m-border-radius-master": "8px",
+    },
+  });
+} catch (e) {
+  // AppKit initialization may fail in dev mode without WalletConnect project ID
+  console.warn("AppKit initialization skipped:", e);
+}
+
+export { appKit };
