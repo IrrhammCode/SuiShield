@@ -88,7 +88,7 @@ export async function toolGetSuiObjects(
         objectCount: objects.length,
         hasNextPage: result.hasNextPage,
         objectTypes,
-        objects: objects.slice(0, 20).map((o) => ({
+        objects: objects.map((o) => ({
           objectId: o.data?.objectId,
           type: o.data?.type,
           digest: o.data?.digest,
@@ -302,14 +302,15 @@ export async function toolAnalyzeSuiWallet(
   const start = Date.now();
 
   try {
+    const normalizedMode = mode?.toLowerCase() || "general";
     // Check for previous analysis (agent memory)
     const memoryContext = buildMemoryContext("sui", address);
     const previousAnalysis = await getPreviousAnalysis("sui", address);
 
     // Fetch base data in parallel — Tatum Sui RPC + MCP tools
-    // Mode-specific: fetch more objects for NFT, more txs for P2P/DeFi
-    const objectLimit = mode === "nft" ? 100 : 50;
-    const txLimit = mode === "p2p" ? 50 : mode === "defi" ? 30 : 20;
+    // Mode-specific: fetch more objects for NFT. Always fetch 50 txs to share cache with protocol check
+    const objectLimit = 50;
+    const txLimit = 50;
 
     const [balanceResult, objectsResult, txResult, maliciousCheck, exchangeRate] = await Promise.all([
       toolGetSuiBalance(address),
@@ -334,11 +335,11 @@ export async function toolAnalyzeSuiWallet(
     // Each mode collects DIFFERENT additional data so the LLM produces distinct results
     let modeSpecificData: Record<string, unknown> = {};
 
-    if (mode === "defi") {
+    if (normalizedMode === "defi") {
       // DeFi: run full protocol check + fund flow for DeFi-specific analysis
       const [protocolCheckResult, fundFlowResult] = await Promise.all([
-        toolCheckSuiProtocols(address).catch(() => null),
-        toolGetSuiFundFlow(address).catch(() => null),
+        toolCheckSuiProtocols(address).catch((e) => { console.error("Protocol check error:", e); return null; }),
+        toolGetSuiFundFlow(address).catch((e) => { console.error("Fund flow error:", e); return null; }),
       ]);
 
       // Scan objects for DeFi-related types
@@ -376,7 +377,7 @@ export async function toolAnalyzeSuiWallet(
         ),
         allObjectTypes,
       };
-    } else if (mode === "nft") {
+    } else if (normalizedMode === "nft") {
       // NFT: deep object scan — classify every object for NFT analysis
       const allObjects = (objectsResult.success && objectsResult.data)
         ? (objectsResult.data as { objects: Array<{ objectId: string; type: string; digest: string }> }).objects
@@ -416,7 +417,7 @@ export async function toolAnalyzeSuiWallet(
           repeatedCounterparties: false, // would need deeper analysis
         },
       };
-    } else if (mode === "p2p") {
+    } else if (normalizedMode === "p2p") {
       // P2P: full fund flow tracing + counterparty analysis
       const fundFlowResult = await toolGetSuiFundFlow(address).catch(() => null);
       const flowData = fundFlowResult?.success ? fundFlowResult.data as Record<string, unknown> : null;
@@ -538,12 +539,13 @@ export async function toolAnalyzeSuiWallet(
     // ── Signal 5: Protocol Interaction Score ──────────────
     let protocolScore = 50;
     let protocolAnalysis: ProtocolAnalysis | null = null;
-    if (txs && txs.transactions.length > 0) {
-      protocolAnalysis = analyzeProtocolInteractions(
-        txs.transactions as Parameters<typeof analyzeProtocolInteractions>[0]
-      );
+    
+    // Always fetch accurate protocol interactions
+    const checkResult = await toolCheckSuiProtocols(address).catch((e) => { console.error("toolCheckSuiProtocols failed:", e); return null; });
+    if (checkResult && checkResult.success) {
+      protocolAnalysis = checkResult.data as ProtocolAnalysis;
       protocolScore = protocolAnalysis.protocolScore;
-      riskFactors.push(...protocolAnalysis.riskFactors);
+      riskFactors.push(...(protocolAnalysis.riskFactors || []));
 
       if (protocolAnalysis.totalProtocols > 0) {
         const verifiedNames = protocolAnalysis.interactions
@@ -653,17 +655,17 @@ export async function toolAnalyzeSuiWallet(
       analyzedBy,
     });
 
-    return {
-      tool: "analyzeSuiWallet",
-      success: true,
-      data: {
-        address,
-        chain: "sui",
-        riskScore,
-        riskLevel,
-        riskFactors,
-        mode: mode || "general",
-        modeSpecificData,
+      return {
+        tool: "analyzeSuiWallet",
+        success: true,
+        data: {
+          address,
+          chain: "sui",
+          riskScore,
+          riskLevel,
+          riskFactors,
+          mode: normalizedMode,
+          modeSpecificData,
         multiSignalScores: {
           onChain: onChainScore,
           maturity: maturityScore,
@@ -720,12 +722,13 @@ export async function toolAnalyzeSuiWallet(
 export async function toolCheckSuiProtocols(address: string): Promise<ToolResult> {
   const start = Date.now();
   try {
-    const txResult = await toolGetSuiTransactions(address, 50);
-    if (!txResult.success) throw new Error(txResult.error || "Failed to fetch transactions");
+    // Call getSuiTransactionBlocks directly instead of toolGetSuiTransactions
+    // so we get the full raw transaction data (including inner MoveCalls)
+    const result = await getSuiTransactionBlocks(address, 50);
+    if (!result.data) throw new Error("Failed to fetch transactions");
 
-    const txs = txResult.data as { transactions: unknown[] };
     const protocolAnalysis = analyzeProtocolInteractions(
-      txs.transactions as Parameters<typeof analyzeProtocolInteractions>[0]
+      result.data as Parameters<typeof analyzeProtocolInteractions>[0]
     );
 
     // Get all known protocols for reference

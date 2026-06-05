@@ -25,6 +25,8 @@ interface FlowNode {
   isOrigin: boolean;
   isFlagged: boolean;
   txCount: number;
+  nodeType: "wallet" | "protocol" | "contract" | "exchange" | "unknown";
+  protocolInfo?: { name: string; type: string; verified: boolean };
 }
 
 interface FlowEdge {
@@ -34,6 +36,7 @@ interface FlowEdge {
   timestamp: string;
   txHash: string;
   isSuspicious: boolean;
+  edgeType: "transfer" | "contract_call" | "nft_transfer" | "stake" | "swap";
 }
 
 interface SuspiciousPattern {
@@ -83,6 +86,33 @@ function getSeverityColor(severity: string): string {
   return colors[severity] || "#525880";
 }
 
+function getEdgeStyle(edgeType: string, isSuspicious: boolean): { stroke: string; strokeWidth: number; dashArray: string } {
+  if (isSuspicious) return { stroke: "#FF3366", strokeWidth: 2.5, dashArray: "5,5" };
+  const styles: Record<string, { stroke: string; strokeWidth: number; dashArray: string }> = {
+    transfer:      { stroke: "rgba(0,229,255,0.25)", strokeWidth: 1.5, dashArray: "none" },
+    contract_call: { stroke: "rgba(168,85,247,0.4)",  strokeWidth: 1.5, dashArray: "4,3" },
+    swap:          { stroke: "rgba(0,255,157,0.4)",   strokeWidth: 2,   dashArray: "none" },
+    stake:         { stroke: "rgba(255,179,0,0.35)",   strokeWidth: 1.5, dashArray: "6,3" },
+    nft_transfer:  { stroke: "rgba(255,107,0,0.4)",   strokeWidth: 1.5, dashArray: "3,3" },
+  };
+  return styles[edgeType] || styles.transfer;
+}
+
+function getNodeColor(node: FlowNode): string {
+  if (node.isFlagged) return "#FF3366";
+  if (node.nodeType === "protocol") {
+    if (node.protocolInfo?.verified) return "#00E5FF";
+    return "#A855F7";
+  }
+  return getRiskColor(node.riskScore);
+}
+
+function getNodeShape(nodeType: string): "circle" | "diamond" | "square" {
+  if (nodeType === "protocol") return "diamond";
+  if (nodeType === "contract") return "square";
+  return "circle";
+}
+
 // ── Trust Graph Visualization ────────────────────────────
 
 function TrustGraphViz({ graph }: { graph: FlowGraph }) {
@@ -98,14 +128,27 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
     nodePositions.set(originNode.id, { x: centerX, y: centerY });
   }
 
-  const otherNodes = graph.nodes.filter((n) => !n.isOrigin);
-  const radius = Math.min(width, height) * 0.35;
+  // Separate protocol nodes from wallet nodes for layout
+  const protocolNodes = graph.nodes.filter((n) => !n.isOrigin && n.nodeType === "protocol");
+  const walletNodes = graph.nodes.filter((n) => !n.isOrigin && n.nodeType !== "protocol");
 
-  otherNodes.forEach((node, i) => {
-    const angle = (2 * Math.PI * i) / otherNodes.length;
+  // Place protocol nodes in an inner ring
+  const protocolRadius = Math.min(width, height) * 0.22;
+  protocolNodes.forEach((node, i) => {
+    const angle = (2 * Math.PI * i) / (protocolNodes.length || 1) - Math.PI / 2;
     nodePositions.set(node.id, {
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle),
+      x: centerX + protocolRadius * Math.cos(angle),
+      y: centerY + protocolRadius * Math.sin(angle),
+    });
+  });
+
+  // Place wallet nodes in an outer ring
+  const walletRadius = Math.min(width, height) * 0.38;
+  walletNodes.forEach((node, i) => {
+    const angle = (2 * Math.PI * i) / (walletNodes.length || 1);
+    nodePositions.set(node.id, {
+      x: centerX + walletRadius * Math.cos(angle),
+      y: centerY + walletRadius * Math.sin(angle),
     });
   });
 
@@ -121,6 +164,13 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          <filter id="protocolGlow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {/* Edges */}
@@ -129,6 +179,8 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
           const toPos = nodePositions.get(edge.to);
           if (!fromPos || !toPos) return null;
 
+          const style = getEdgeStyle(edge.edgeType, edge.isSuspicious);
+
           return (
             <g key={i}>
               <line
@@ -136,20 +188,37 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                 y1={fromPos.y}
                 x2={toPos.x}
                 y2={toPos.y}
-                stroke={edge.isSuspicious ? "#FF3366" : "rgba(0,229,255,0.2)"}
-                strokeWidth={edge.isSuspicious ? 2 : 1}
-                strokeDasharray={edge.isSuspicious ? "5,5" : "none"}
+                stroke={style.stroke}
+                strokeWidth={style.strokeWidth}
+                strokeDasharray={style.dashArray}
               />
-              <text
-                x={(fromPos.x + toPos.x) / 2}
-                y={(fromPos.y + toPos.y) / 2 - 8}
-                fill={edge.isSuspicious ? "#FF3366" : "#525880"}
-                fontSize="9"
-                textAnchor="middle"
-                fontFamily="JetBrains Mono, monospace"
-              >
-                {edge.amount} SUI
-              </text>
+              {/* Only show amount label for coin transfers */}
+              {edge.edgeType === "transfer" && parseFloat(edge.amount) > 0 && (
+                <text
+                  x={(fromPos.x + toPos.x) / 2}
+                  y={(fromPos.y + toPos.y) / 2 - 8}
+                  fill={edge.isSuspicious ? "#FF3366" : "#525880"}
+                  fontSize="9"
+                  textAnchor="middle"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {edge.amount} SUI
+                </text>
+              )}
+              {/* Show edge type label for non-transfer edges */}
+              {edge.edgeType !== "transfer" && (
+                <text
+                  x={(fromPos.x + toPos.x) / 2}
+                  y={(fromPos.y + toPos.y) / 2 - 8}
+                  fill={style.stroke}
+                  fontSize="8"
+                  textAnchor="middle"
+                  fontFamily="JetBrains Mono, monospace"
+                  opacity={0.7}
+                >
+                  {edge.edgeType.replace("_", " ")}
+                </text>
+              )}
             </g>
           );
         })}
@@ -160,12 +229,15 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
           if (!pos) return null;
 
           const isOrigin = node.isOrigin;
-          const isFlagged = node.isFlagged;
-          const nodeSize = isOrigin ? 20 : 12;
-          const color = isFlagged ? "#FF3366" : getRiskColor(node.riskScore);
+          const isProtocol = node.nodeType === "protocol";
+          const color = getNodeColor(node);
+          const shape = getNodeShape(node.nodeType);
+
+          const nodeSize = isOrigin ? 20 : isProtocol ? 16 : 12;
 
           return (
             <g key={node.id}>
+              {/* Origin glow ring */}
               {isOrigin && (
                 <circle
                   cx={pos.x}
@@ -178,43 +250,83 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                 />
               )}
 
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={nodeSize}
-                fill={isFlagged ? "rgba(255,51,102,0.2)" : "rgba(0,229,255,0.1)"}
-                stroke={color}
-                strokeWidth={isOrigin ? 3 : 2}
-              />
+              {/* Protocol glow */}
+              {isProtocol && (
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={nodeSize + 6}
+                  fill="none"
+                  stroke={node.protocolInfo?.verified ? "rgba(0,229,255,0.15)" : "rgba(168,85,247,0.15)"}
+                  strokeWidth="1"
+                  filter="url(#protocolGlow)"
+                />
+              )}
 
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={4}
-                fill={color}
-              />
+              {/* Node shape */}
+              {shape === "diamond" ? (
+                <rect
+                  x={pos.x - nodeSize * 0.7}
+                  y={pos.y - nodeSize * 0.7}
+                  width={nodeSize * 1.4}
+                  height={nodeSize * 1.4}
+                  transform={`rotate(45 ${pos.x} ${pos.y})`}
+                  fill={isProtocol ? "rgba(0,229,255,0.08)" : "rgba(0,229,255,0.1)"}
+                  stroke={color}
+                  strokeWidth={2}
+                  rx={2}
+                />
+              ) : (
+                <>
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={nodeSize}
+                    fill={node.isFlagged ? "rgba(255,51,102,0.2)" : "rgba(0,229,255,0.1)"}
+                    stroke={color}
+                    strokeWidth={isOrigin ? 3 : 2}
+                  />
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={4}
+                    fill={color}
+                  />
+                </>
+              )}
 
+              {/* Center dot for diamond */}
+              {shape === "diamond" && (
+                <circle cx={pos.x} cy={pos.y} r={3} fill={color} />
+              )}
+
+              {/* Label */}
               <text
                 x={pos.x}
                 y={pos.y + nodeSize + 14}
-                fill="#8B93C4"
-                fontSize="9"
+                fill={isProtocol ? "#00E5FF" : "#8B93C4"}
+                fontSize={isProtocol ? "10" : "9"}
                 textAnchor="middle"
                 fontFamily="JetBrains Mono, monospace"
+                fontWeight={isProtocol ? "bold" : "normal"}
               >
                 {node.label || `${node.address.slice(0, 6)}...${node.address.slice(-4)}`}
               </text>
 
+              {/* Sub-label: protocol type or risk score */}
               <text
                 x={pos.x}
                 y={pos.y + nodeSize + 26}
-                fill={color}
+                fill={isProtocol ? "rgba(0,229,255,0.5)" : color}
                 fontSize="8"
                 textAnchor="middle"
                 fontFamily="JetBrains Mono, monospace"
                 fontWeight="bold"
               >
-                {node.riskScore}/100
+                {isProtocol
+                  ? (node.protocolInfo?.verified ? "✓ Verified" : "Unverified")
+                  : `${node.riskScore}/100`
+                }
               </text>
             </g>
           );
@@ -234,6 +346,10 @@ function PatternCard({ pattern }: { pattern: SuspiciousPattern }) {
     circular: "🔁",
     sybil: "👥",
     rapid_drain: "💸",
+    dusting: "🧹",
+    peel_chain: "🔗",
+    unverified_contract: "🚨",
+    nft_wash_trade: "🎭",
   };
 
   return (
@@ -274,7 +390,7 @@ export default function TrustGraphPage() {
       const res = await fetch("/api/fund-flow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: address.trim(), depth: 2, maxNodes: 30 }),
+        body: JSON.stringify({ address: address.trim(), depth: 2, maxNodes: 50 }),
       });
 
       if (!res.ok) throw new Error(`Analysis failed: ${res.status}`);
@@ -460,13 +576,25 @@ export default function TrustGraphPage() {
             {/* Legend */}
             <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-white/[0.01] p-4 backdrop-xl overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-              <div className="flex flex-wrap items-center gap-4 text-xs text-white/30">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: "#00FF9D" }} /> Safe</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: "#FFB300" }} /> Medium</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: "#FF3366" }} /> High Risk</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2 border-cyan-400" /> Origin</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2 border-magenta-400" /> Flagged</span>
-                <span className="flex items-center gap-1.5"><span className="w-8 h-0.5 border-t-2 border-dashed border-magenta-400" /> Suspicious</span>
+              <div className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-3">Legend</div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {/* Node Types */}
+                <div className="text-white/30 text-[10px] font-bold uppercase tracking-wider col-span-2 mt-1 mb-0.5">Nodes</div>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rounded-full" style={{ background: "#00FF9D" }} /> Safe Wallet</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rounded-full" style={{ background: "#FFB300" }} /> Medium Risk</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rounded-full" style={{ background: "#FF3366" }} /> High Risk</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rounded-full border-2 border-cyan-400" /> Origin</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rotate-45 rounded-sm" style={{ background: "rgba(0,229,255,0.3)", border: "1.5px solid #00E5FF" }} /> Verified Protocol</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-3 h-3 rotate-45 rounded-sm" style={{ background: "rgba(168,85,247,0.3)", border: "1.5px solid #A855F7" }} /> Unverified Contract</span>
+
+                {/* Edge Types */}
+                <div className="text-white/30 text-[10px] font-bold uppercase tracking-wider col-span-2 mt-2 mb-0.5">Connections</div>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5" style={{ background: "rgba(0,229,255,0.4)" }} /> Transfer</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5 border-t-2 border-dashed" style={{ borderColor: "rgba(168,85,247,0.6)" }} /> Contract Call</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5" style={{ background: "rgba(0,255,157,0.5)" }} /> Swap</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5 border-t-2 border-dashed" style={{ borderColor: "rgba(255,179,0,0.5)" }} /> Stake</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5 border-t-2 border-dashed" style={{ borderColor: "rgba(255,107,0,0.5)" }} /> NFT Transfer</span>
+                <span className="flex items-center gap-1.5 text-xs text-white/30"><span className="w-6 h-0.5 border-t-2 border-dashed border-magenta-400" /> Suspicious</span>
               </div>
             </div>
           </div>

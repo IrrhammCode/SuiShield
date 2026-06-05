@@ -4,8 +4,9 @@
 export interface SuiProtocol {
   id: string;
   name: string;
-  type: "dex" | "lending" | "nft" | "gaming" | "bridge" | "infrastructure" | "aggregator";
+  type: "dex" | "lending" | "nft" | "gaming" | "bridge" | "infrastructure" | "aggregator" | "other";
   packageId: string;
+  additionalPackages?: string[]; // Support for protocol upgrades or router/aggregator packages
   riskLevel: "low" | "medium" | "high";
   verified: boolean;
   description: string;
@@ -57,6 +58,19 @@ export const SUI_PROTOCOLS: SuiProtocol[] = [
     verified: true,
     description: "DEX aggregator routing across Cetus, Turbos, and more",
     website: "https://aftermath.finance",
+  },
+  {
+    id: "dex-aggregators",
+    name: "Sui DEX Aggregators",
+    type: "aggregator",
+    packageId: "0x3a7fa58adcd7ff474ca0330c93068b139f5263c0cf9c64e702f5c4b17996ff10",
+    additionalPackages: [
+      "0xe25c44519b9b2eff67ada9b823db0eca3e801a801ce9050d2082268b7d902397",
+      "0xb675ff3e9c82bd3bdfdab6942b86d43ef324287353b8819dbbfdd8302d8b0414"
+    ],
+    riskLevel: "low",
+    verified: true,
+    description: "Multi-DEX swap aggregators and routers used to find the best trading prices across Sui",
   },
 
   // Lending / Borrowing
@@ -258,6 +272,8 @@ export function analyzeProtocolInteractions(
             kind?: string;
             target?: string;
             package?: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            MoveCall?: { package?: string; module?: string; function?: string; [key: string]: any };
           }>;
         };
       };
@@ -273,6 +289,11 @@ export function analyzeProtocolInteractions(
   const knownPackages = new Map<string, SuiProtocol>();
   for (const protocol of SUI_PROTOCOLS) {
     knownPackages.set(protocol.packageId, protocol);
+    if (protocol.additionalPackages) {
+      for (const extraPkg of protocol.additionalPackages) {
+        knownPackages.set(extraPkg, protocol);
+      }
+    }
   }
 
   let verifiedCount = 0;
@@ -286,11 +307,18 @@ export function analyzeProtocolInteractions(
     // Check for package calls in the transaction
     const innerTxs = txData.transactions || [];
     for (const inner of innerTxs) {
-      const target = inner.target || inner.package || "";
-      // Extract package ID from target (format: package::module::function)
-      const packageId = target.split("::")[0];
+      // In Sui Programmable Transactions, it's usually inside MoveCall
+      let packageId = "";
+      
+      if (inner.MoveCall) {
+        packageId = inner.MoveCall.package || "";
+      } else if (inner.target || inner.package) {
+        // Fallback for other structures
+        const target = inner.target || inner.package || "";
+        packageId = target.split("::")[0];
+      }
 
-      if (knownPackages.has(packageId)) {
+      if (packageId && knownPackages.has(packageId)) {
         const protocol = knownPackages.get(packageId)!;
         const existing = interactionMap.get(protocol.id);
 

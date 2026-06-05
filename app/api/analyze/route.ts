@@ -34,8 +34,10 @@ export async function POST(req: NextRequest) {
       return apiError("Invalid Sui address format. Must start with 0x followed by 40-64 hex characters.", 400);
     }
 
+    const normalizedMode = (mode || "general").toLowerCase();
+
     // Check cache for recent analysis
-    const cacheKeyStr = cacheKey("analysis", address, mode || "general");
+    const cacheKeyStr = cacheKey("analysis", address, normalizedMode);
     const cachedAnalysis = cache.get<Record<string, unknown>>(cacheKeyStr);
     if (cachedAnalysis) {
       return apiSuccess(cachedAnalysis);
@@ -114,11 +116,11 @@ Provide:
 
 Be thorough and specific. Use real data from tools.`;
 
-    const message = (mode && modePrompts[mode]) || prompt || defaultMessage;
+    const message = (normalizedMode && modePrompts[normalizedMode]) || prompt || defaultMessage;
 
     // Run agent with timeout
     const response = await withTimeout(
-      runAgent(message, walletAddress || address, [], mode),
+      runAgent(message, walletAddress || address, [], normalizedMode),
       60000 // 60 second timeout
     );
 

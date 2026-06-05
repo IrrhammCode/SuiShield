@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { address, depth = 2, maxNodes = 30 } = body;
+    const { address, depth = 2, maxNodes = 50 } = body;
 
     if (!address || typeof address !== "string") {
       return apiError("Address is required", 400);
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Run fund flow analysis and behavioral analysis in parallel with timeout
     const [flowGraph, txData] = await Promise.all([
       withTimeout(traceFundFlow(address, Math.min(depth, 3), Math.min(maxNodes, 50)), 45000),
-      withTimeout(getSuiTransactionBlocks(address, 20), 15000),
+      withTimeout(getSuiTransactionBlocks(address, 30), 15000),
     ]);
 
     // Run behavioral analysis on the transactions

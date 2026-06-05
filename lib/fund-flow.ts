@@ -2,7 +2,8 @@
 // This is SuiShield's killer feature: visual fund flow analysis
 // Detects mixer patterns, suspicious clusters, and money laundering
 
-import { getSuiTransactionBlocks } from "./tatum-sui";
+import { getSuiTransactionBlocks, getSuiObjects } from "./tatum-sui";
+import { SUI_PROTOCOLS, type SuiProtocol } from "./sui-protocols";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -18,6 +19,8 @@ export interface FlowNode {
   txCount: number;
   firstSeen?: string;
   lastActive?: string;
+  nodeType: "wallet" | "protocol" | "contract" | "exchange" | "unknown";
+  protocolInfo?: { name: string; type: SuiProtocol["type"]; verified: boolean };
 }
 
 export interface FlowEdge {
@@ -28,6 +31,7 @@ export interface FlowEdge {
   timestamp: string;
   txHash: string;
   isSuspicious: boolean;
+  edgeType: "transfer" | "contract_call" | "nft_transfer" | "stake" | "swap";
 }
 
 export interface FlowGraph {
@@ -46,7 +50,7 @@ export interface FlowGraph {
 }
 
 export interface SuspiciousPattern {
-  type: "mixer" | "funnel" | "scatter" | "circular" | "sybil" | "rapid_drain" | "dusting" | "peel_chain";
+  type: "mixer" | "funnel" | "scatter" | "circular" | "sybil" | "rapid_drain" | "dusting" | "peel_chain" | "unverified_contract" | "nft_wash_trade";
   severity: "low" | "medium" | "high" | "critical";
   description: string;
   addresses: string[];
@@ -59,17 +63,54 @@ export interface Transfer {
   amount: string;
   timestamp: string;
   txHash: string;
+  transferType: "transfer" | "contract_call" | "nft_transfer" | "stake" | "swap";
+  packageId?: string;
 }
 
-// ── Known Addresses Database ─────────────────────────────
+// ── Dynamic Protocol Registry ────────────────────────────
 
-const KNOWN_ADDRESSES: Record<string, { label: string; risk: number }> = {
-  // DEX addresses
-  "0x1eabed72c53feb3805120a081dc15963c204dc8d0981f3c20b65b2": { label: "Cetus Router", risk: 5 },
-  "0x0000000000000000000000000000000000000000000000000000000000000002": { label: "Sui System", risk: 0 },
-  // Known scam addresses (examples)
-  "0xdead000000000000000000000000000000000000000000000000000000000000": { label: "Known Scam", risk: 95 },
+// Build a lookup map from SUI_PROTOCOLS for O(1) matching
+// Includes primary packageId AND additionalPackages (router/aggregator addresses)
+const PROTOCOL_PACKAGE_MAP = new Map<string, SuiProtocol>();
+for (const protocol of SUI_PROTOCOLS) {
+  PROTOCOL_PACKAGE_MAP.set(protocol.packageId, protocol);
+  // Also register additional packages (upgraded/router contracts)
+  if (protocol.additionalPackages) {
+    for (const pkg of protocol.additionalPackages) {
+      PROTOCOL_PACKAGE_MAP.set(pkg, protocol);
+    }
+  }
+}
+
+// System / well-known addresses
+const SYSTEM_ADDRESSES: Record<string, { label: string; risk: number; nodeType: FlowNode["nodeType"] }> = {
+  "0x0000000000000000000000000000000000000000000000000000000000000002": { label: "Sui Framework", risk: 0, nodeType: "protocol" },
+  "0x0000000000000000000000000000000000000000000000000000000000000003": { label: "Sui System", risk: 0, nodeType: "protocol" },
+  "0x0000000000000000000000000000000000000000000000000000000000000005": { label: "Sui System", risk: 0, nodeType: "protocol" },
+  "0x0000000000000000000000000000000000000000000000000000000000000006": { label: "Sui Clock", risk: 0, nodeType: "protocol" },
+  "0x0000000000000000000000000000000000000000000000000000000000000009": { label: "Sui Bridge", risk: 5, nodeType: "protocol" },
 };
+
+/** Look up an address or package ID against known protocols and system addresses */
+function lookupAddress(address: string): { label?: string; risk: number; nodeType: FlowNode["nodeType"]; protocolInfo?: FlowNode["protocolInfo"] } {
+  // Check system addresses
+  const system = SYSTEM_ADDRESSES[address];
+  if (system) return { label: system.label, risk: system.risk, nodeType: system.nodeType };
+
+  // Check protocol registry
+  const protocol = PROTOCOL_PACKAGE_MAP.get(address);
+  if (protocol) {
+    const riskMap: Record<string, number> = { low: 10, medium: 30, high: 60 };
+    return {
+      label: protocol.name,
+      risk: riskMap[protocol.riskLevel] || 20,
+      nodeType: "protocol",
+      protocolInfo: { name: protocol.name, type: protocol.type, verified: protocol.verified },
+    };
+  }
+
+  return { risk: 50, nodeType: "wallet" };
+}
 
 // ── Fund Flow Tracer ─────────────────────────────────────
 
@@ -84,14 +125,18 @@ export async function traceFundFlow(
   const suspiciousPatterns: SuspiciousPattern[] = [];
 
   // Add origin node
+  const originInfo = lookupAddress(originAddress);
   nodes.set(originAddress, {
     id: originAddress,
     address: originAddress,
+    label: originInfo.label,
     isOrigin: true,
     isFlagged: false,
-    riskScore: 50,
-    riskLevel: "medium",
+    riskScore: originInfo.risk,
+    riskLevel: riskToLevel(originInfo.risk),
     txCount: 0,
+    nodeType: originInfo.nodeType,
+    protocolInfo: originInfo.protocolInfo,
   });
 
   // BFS traversal
@@ -106,13 +151,64 @@ export async function traceFundFlow(
     visited.add(address);
 
     try {
-      const txs = await getSuiTransactionBlocks(address, 20);
+      // Fetch transactions with higher limit for richer graph
+      const txs = await getSuiTransactionBlocks(address, 30);
       const transfers = extractTransfers(txs.data || [], address);
 
-      // Update node
+      // Also fetch objects to detect protocol interactions via owned objects
+      let objectProtocols: string[] = [];
+      try {
+        const objs = await getSuiObjects(address, 30);
+        for (const obj of (objs.data || [])) {
+          const objType = obj.data?.type || "";
+          // Extract packageId from type string (e.g. "0xABC::module::Type")
+          const pkgId = objType.split("::")[0];
+          if (pkgId && PROTOCOL_PACKAGE_MAP.has(pkgId)) {
+            objectProtocols.push(pkgId);
+          }
+        }
+        objectProtocols = [...new Set(objectProtocols)];
+      } catch {
+        // non-critical, continue
+      }
+
+      // Update node tx count
       const node = nodes.get(address);
       if (node) {
         node.txCount = (txs.data || []).length;
+      }
+
+      // Add protocol nodes discovered via owned objects (even if no direct transfer edge)
+      for (const pkgId of objectProtocols) {
+        if (!nodes.has(pkgId) && nodes.size < maxNodes) {
+          const info = lookupAddress(pkgId);
+          nodes.set(pkgId, {
+            id: pkgId,
+            address: pkgId,
+            label: info.label,
+            riskScore: info.risk,
+            riskLevel: riskToLevel(info.risk),
+            isOrigin: false,
+            isFlagged: false,
+            txCount: 0,
+            nodeType: "protocol",
+            protocolInfo: info.protocolInfo,
+          });
+        }
+        // Add implicit edge: wallet interacts with protocol
+        const edgeId = `obj-${address}-${pkgId}`;
+        if (!edges.find(e => e.id === edgeId)) {
+          edges.push({
+            id: edgeId,
+            from: address,
+            to: pkgId,
+            amount: "0",
+            timestamp: "",
+            txHash: "",
+            isSuspicious: false,
+            edgeType: "contract_call",
+          });
+        }
       }
 
       for (const transfer of transfers) {
@@ -127,24 +223,27 @@ export async function traceFundFlow(
           timestamp: transfer.timestamp,
           txHash: transfer.txHash,
           isSuspicious: false,
+          edgeType: transfer.transferType,
         });
 
         // Add counterpart node if not exists
-        if (!nodes.has(counterpart)) {
-          const known = KNOWN_ADDRESSES[counterpart];
+        if (!nodes.has(counterpart) && nodes.size < maxNodes) {
+          const info = lookupAddress(counterpart);
           nodes.set(counterpart, {
             id: counterpart,
             address: counterpart,
-            label: known?.label,
-            riskScore: known?.risk || 50,
-            riskLevel: riskToLevel(known?.risk || 50),
+            label: info.label,
+            riskScore: info.risk,
+            riskLevel: riskToLevel(info.risk),
             isOrigin: false,
-            isFlagged: (known?.risk || 0) > 70,
+            isFlagged: info.risk > 70,
             txCount: 0,
+            nodeType: info.nodeType,
+            protocolInfo: info.protocolInfo,
           });
 
-          // Queue for deeper analysis
-          if (depth < maxDepth) {
+          // Queue for deeper analysis (skip protocol nodes — they are endpoints)
+          if (depth < maxDepth && info.nodeType === "wallet") {
             queue.push({ address: counterpart, depth: depth + 1 });
           }
         }
@@ -193,44 +292,96 @@ export async function traceFundFlow(
 
 // ── Extract Transfers from Transactions ──────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RawTx = Record<string, any>;
+
+function classifyTransferType(tx: RawTx): Transfer["transferType"] {
+  const txStr = JSON.stringify(tx).toLowerCase();
+
+  // DeFi swap detection
+  const swapKeywords = ["swap", "amm", "cetus", "turbos", "deepbook", "aftermath"];
+  if (swapKeywords.some(kw => txStr.includes(kw))) return "swap";
+
+  // Staking detection
+  const stakeKeywords = ["stake", "unstake", "staking", "validator"];
+  if (stakeKeywords.some(kw => txStr.includes(kw))) return "stake";
+
+  // NFT detection
+  const nftKeywords = ["nft", "kiosk", "display", "collection", "bluemove", "clutchy", "souffl3"];
+  if (nftKeywords.some(kw => txStr.includes(kw))) return "nft_transfer";
+
+  // Smart contract call detection (Programmable Transaction Block with MoveCall)
+  const innerTxs = tx.transaction?.data?.transaction?.transactions || [];
+  for (const inner of innerTxs) {
+    if (inner.MoveCall) return "contract_call";
+  }
+
+  return "transfer";
+}
+
+function extractPackageIds(tx: RawTx): string[] {
+  const packages: string[] = [];
+  const innerTxs = tx.transaction?.data?.transaction?.transactions || [];
+  for (const inner of innerTxs) {
+    if (inner.MoveCall?.package) {
+      packages.push(inner.MoveCall.package);
+    }
+  }
+  return [...new Set(packages)];
+}
+
 function extractTransfers(
-  txs: Array<{
-    digest?: string;
-    timestampMs?: string;
-    balanceChanges?: Array<{
-      owner?: { AddressOwner?: string };
-      amount?: string;
-      coinType?: string;
-    }>;
-  }>,
+  txs: RawTx[],
   ownerAddress: string
 ): Transfer[] {
   const transfers: Transfer[] = [];
 
   for (const tx of txs) {
+    const transferType = classifyTransferType(tx);
+    const packageIds = extractPackageIds(tx);
+
+    // If tx is a contract call, create edges to the called packages
+    if (transferType === "contract_call" || transferType === "swap" || transferType === "stake") {
+      for (const pkgId of packageIds) {
+        // Skip Sui framework packages (0x1, 0x2, 0x3)
+        if (pkgId.length < 10) continue;
+        transfers.push({
+          from: ownerAddress,
+          to: pkgId,
+          amount: "0",
+          timestamp: tx.timestampMs ? new Date(Number(tx.timestampMs)).toISOString() : "",
+          txHash: tx.digest || "",
+          transferType,
+          packageId: pkgId,
+        });
+      }
+    }
+
+    // Balance-change based transfers (coin movements)
     if (!tx.balanceChanges) continue;
 
-    // Find transfers involving the owner
     const outgoing = tx.balanceChanges.filter(
-      (c) => c.owner?.AddressOwner === ownerAddress && parseInt(c.amount || "0") < 0
+      (c: { owner?: { AddressOwner?: string }; amount?: string }) =>
+        c.owner?.AddressOwner === ownerAddress && parseInt(c.amount || "0") < 0
     );
 
-    // Find counterparties
     for (const change of tx.balanceChanges) {
-      if (change.owner?.AddressOwner === ownerAddress) continue;
-      if (!change.owner?.AddressOwner) continue;
+      if ((change as { owner?: { AddressOwner?: string } }).owner?.AddressOwner === ownerAddress) continue;
+      if (!(change as { owner?: { AddressOwner?: string } }).owner?.AddressOwner) continue;
 
-      const amount = Math.abs(parseInt(change.amount || "0"));
+      const counterparty = (change as { owner?: { AddressOwner?: string } }).owner!.AddressOwner!;
+      const amount = Math.abs(parseInt((change as { amount?: string }).amount || "0"));
       if (amount === 0) continue;
 
       const isOutgoing = outgoing.length > 0;
 
       transfers.push({
-        from: isOutgoing ? ownerAddress : change.owner.AddressOwner,
-        to: isOutgoing ? change.owner.AddressOwner : ownerAddress,
-        amount: (amount / 1e9).toFixed(4), // Convert MIST to SUI
+        from: isOutgoing ? ownerAddress : counterparty,
+        to: isOutgoing ? counterparty : ownerAddress,
+        amount: (amount / 1e9).toFixed(4),
         timestamp: tx.timestampMs ? new Date(Number(tx.timestampMs)).toISOString() : "",
         txHash: tx.digest || "",
+        transferType,
       });
     }
   }
@@ -419,6 +570,49 @@ function detectSuspiciousPatterns(
         description: `Address ${source.slice(0, 10)}... funded ${recipients.size} different addresses — potential Sybil attack or airdrop farming`,
         addresses: [source, ...Array.from(recipients).slice(0, 3)],
         confidence: 65,
+      });
+    }
+  }
+
+  // Pattern 8: Unverified Contract Interaction — wallet interacts heavily with unverified contracts
+  const contractEdges = edges.filter(e => e.edgeType === "contract_call" || e.edgeType === "swap" || e.edgeType === "stake");
+  const unverifiedContracts = new Map<string, number>();
+  for (const edge of contractEdges) {
+    const targetNode = nodes.find(n => n.id === edge.to);
+    if (targetNode && targetNode.nodeType !== "protocol") {
+      // This is a contract call to a non-recognized protocol
+      unverifiedContracts.set(edge.to, (unverifiedContracts.get(edge.to) || 0) + 1);
+    }
+  }
+
+  for (const [contractAddr, count] of unverifiedContracts) {
+    if (count >= 2) {
+      patterns.push({
+        type: "unverified_contract",
+        severity: count >= 5 ? "high" : "medium",
+        description: `Address interacted ${count} times with unverified contract ${contractAddr.slice(0, 10)}... — exercise caution, contract is not in verified protocol registry`,
+        addresses: [contractAddr],
+        confidence: Math.min(50 + count * 10, 90),
+      });
+    }
+  }
+
+  // Pattern 9: NFT Wash Trading — same NFT transferred back and forth between limited addresses
+  const nftEdges = edges.filter(e => e.edgeType === "nft_transfer");
+  if (nftEdges.length >= 4) {
+    const nftCounterparties = new Set<string>();
+    for (const edge of nftEdges) {
+      nftCounterparties.add(edge.from);
+      nftCounterparties.add(edge.to);
+    }
+    // If many NFT transfers but few unique addresses → wash trading signal
+    if (nftEdges.length > nftCounterparties.size * 2) {
+      patterns.push({
+        type: "nft_wash_trade",
+        severity: "high",
+        description: `${nftEdges.length} NFT transfers among only ${nftCounterparties.size} addresses — strong wash trading signal to inflate volume/floor price`,
+        addresses: Array.from(nftCounterparties).slice(0, 5),
+        confidence: 75,
       });
     }
   }
