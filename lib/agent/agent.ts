@@ -33,6 +33,7 @@ const AGENT_SYSTEM_PROMPT = `You are SuiShield — an AI-powered trust analysis 
 ## Instruction
 If the user's query is about analyzing a specific wallet or address, you MUST follow the **Wallet Analysis Framework** below.
 If the user asks a general question (e.g. comparing transaction volumes, prices, network stats, or searching datasets), **DO NOT use the wallet analysis format**. Instead, answer naturally, directly, and comprehensively using the provided tool data or your general knowledge.
+IMPORTANT: Do not apologize for or mention internal tool execution errors (like getGasPrice failing) unless they are directly the reason you cannot answer the user's core question.
 
 ---
 
@@ -494,13 +495,21 @@ export async function runAgent(
       }
 
       default: {
-        const [blockResult, gasResult] = await Promise.all([
-          toolGetBlockInfo(chain).catch(() => null),
-          toolGetGasPrice(chain).catch(() => null),
-        ]);
-        if (blockResult) toolResults.push(blockResult);
-        if (gasResult) toolResults.push(gasResult);
-        toolsUsed.push("getBlockInfo", "getGasPrice");
+        const promises: Promise<any>[] = [toolGetBlockInfo(chain).catch(() => null)];
+        
+        // Skip gas price for non-EVM chains
+        const isEvm = !["bitcoin", "solana", "sui"].includes(chain);
+        if (isEvm) {
+          promises.push(toolGetGasPrice(chain).catch(() => null));
+          toolsUsed.push("getBlockInfo", "getGasPrice");
+        } else {
+          toolsUsed.push("getBlockInfo");
+        }
+        
+        const results = await Promise.all(promises);
+        results.forEach((res) => {
+          if (res) toolResults.push(res);
+        });
       }
     }
   }
