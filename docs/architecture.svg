@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#020617"/>
+  
+  <!-- Title -->
+  <rect x="0" y="0" width="800" height="60" fill="url(#headerGrad)" opacity="0.1"/>
+  <text x="400" y="38" text-anchor="middle" fill="white" font-size="20" font-weight="bold">🛡️ SuiShield Architecture</text>
+  
+  <!-- User Layer -->
+  <rect x="50" y="80" width="700" height="70" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+  <text x="70" y="105" fill="#94a3b8" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="1">USER LAYER</text>
+  <rect x="70" y="115" width="150" height="25" rx="6" fill="#0ea5e9" opacity="0.2" stroke="#0ea5e9" stroke-width="1"/>
+  <text x="145" y="132" text-anchor="middle" fill="#0ea5e9" font-size="12" font-weight="500">Next.js 16 Frontend</text>
+  <rect x="240" y="115" width="120" height="25" rx="6" fill="#8b5cf6" opacity="0.2" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="300" y="132" text-anchor="middle" fill="#8b5cf6" font-size="12" font-weight="500">React UI</text>
+  <rect x="380" y="115" width="140" height="25" rx="6" fill="#10b981" opacity="0.2" stroke="#10b981" stroke-width="1"/>
+  <text x="450" y="132" text-anchor="middle" fill="#10b981" font-size="12" font-weight="500">Sui Wallet Kit</text>
+  
+  <!-- Arrow -->
+  <line x1="400" y1="150" x2="400" y2="170" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+  </defs>
+  
+  <!-- API Layer -->
+  <rect x="50" y="170" width="700" height="70" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+  <text x="70" y="195" fill="#94a3b8" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="1">API LAYER</text>
+  <rect x="70" y="205" width="130" height="25" rx="6" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <text x="135" y="222" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="500">/api/analyze</text>
+  <rect x="220" y="205" width="110" height="25" rx="6" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <text x="275" y="222" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="500">/api/chat</text>
+  <rect x="350" y="205" width="130" height="25" rx="6" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <text x="415" y="222" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="500">/api/webhooks</text>
+  <rect x="500" y="205" width="120" height="25" rx="6" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <text x="560" y="222" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="500">/api/verify</text>
+  
+  <!-- Arrow -->
+  <line x1="400" y1="240" x2="400" y2="260" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- AI Layer -->
+  <rect x="50" y="260" width="340" height="90" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+  <text x="70" y="285" fill="#94a3b8" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="1">AI LAYER</text>
+  <rect x="70" y="295" width="140" height="25" rx="6" fill="#ec4899" opacity="0.2" stroke="#ec4899" stroke-width="1"/>
+  <text x="140" y="312" text-anchor="middle" fill="#ec4899" font-size="12" font-weight="500">Groq AI Agent</text>
+  <rect x="230" y="295" width="140" height="25" rx="6" fill="#ec4899" opacity="0.2" stroke="#ec4899" stroke-width="1"/>
+  <text x="300" y="312" text-anchor="middle" fill="#ec4899" font-size="12" font-weight="500">Tatum MCP (59)</text>
+  <rect x="70" y="325" width="300" height="18" rx="4" fill="#1e293b"/>
+  <text x="220" y="338" text-anchor="middle" fill="#64748b" font-size="10">check_malicious · get_portfolio · get_transactions · get_rate</text>
+  
+  <!-- Data Layer -->
+  <rect x="410" y="260" width="340" height="90" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+  <text x="430" y="285" fill="#94a3b8" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="1">DATA LAYER</text>
+  <rect x="430" y="295" width="140" height="25" rx="6" fill="#06b6d4" opacity="0.2" stroke="#06b6d4" stroke-width="1"/>
+  <text x="500" y="312" text-anchor="middle" fill="#06b6d4" font-size="12" font-weight="500">Tatum Sui RPC</text>
+  <rect x="590" y="295" width="140" height="25" rx="6" fill="#06b6d4" opacity="0.2" stroke="#06b6d4" stroke-width="1"/>
+  <text x="660" y="312" text-anchor="middle" fill="#06b6d4" font-size="12" font-weight="500">Walrus Storage</text>
+  <rect x="430" y="325" width="300" height="18" rx="4" fill="#1e293b"/>
+  <text x="580" y="338" text-anchor="middle" fill="#64748b" font-size="10">10 RPC methods · 11TB historical · On-chain proofs</text>
+  
+  <!-- Arrows -->
+  <line x1="220" y1="350" x2="220" y2="370" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="580" y1="350" x2="580" y2="370" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Blockchain Layer -->
+  <rect x="50" y="370" width="700" height="70" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+  <text x="70" y="395" fill="#94a3b8" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="1">BLOCKCHAIN LAYER</text>
+  <rect x="70" y="405" width="160" height="25" rx="6" fill="#22c55e" opacity="0.2" stroke="#22c55e" stroke-width="1"/>
+  <text x="150" y="422" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="500">Sui Move Contract</text>
+  <rect x="250" y="405" width="180" height="25" rx="6" fill="#22c55e" opacity="0.2" stroke="#22c55e" stroke-width="1"/>
+  <text x="340" y="422" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="500">Trust Layer Registry</text>
+  <rect x="450" y="405" width="160" height="25" rx="6" fill="#22c55e" opacity="0.2" stroke="#22c55e" stroke-width="1"/>
+  <text x="530" y="422" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="500">Scam Reports</text>
+  <rect x="630" y="405" width="100" height="25" rx="6" fill="#22c55e" opacity="0.2" stroke="#22c55e" stroke-width="1"/>
+  <text x="680" y="422" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="500">Verification</text>
+  
+  <!-- Trust Score Engine -->
+  <rect x="200" y="460" width="400" height="50" rx="12" fill="url(#cardGrad)" stroke="#0ea5e9" stroke-width="2"/>
+  <text x="400" y="485" text-anchor="middle" fill="#0ea5e9" font-size="14" font-weight="600">⚡ 6-Signal Trust Score Engine</text>
+  <text x="400" y="502" text-anchor="middle" fill="#64748b" font-size="10">Activity · Maturity · Balance · Trust · Protocol · Security</text>
+  
+  <!-- Footer -->
+  <text x="400" y="570" text-anchor="middle" fill="#475569" font-size="11">Built for Tatum x Walrus Hackathon</text>
+  <text x="400" y="588" text-anchor="middle" fill="#334155" font-size="10">github.com/IrrhammCode/SuiShield</text>
+</svg>

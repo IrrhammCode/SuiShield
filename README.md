@@ -15,7 +15,7 @@
 ---
 
 <p align="center">
-  <img src="public/og-image.png" width="900">
+  <em>🚀 SuiShield — AI-Powered Trust Analysis Dashboard</em>
 </p>
 
 ---
@@ -352,23 +352,55 @@ Here is exactly how we answer the challenge (**5W1H**):
 
 ## 🎨 Screenshots
 
+> 📸 **Screenshots needed!** Run the app locally and take screenshots of these pages:
+
 ### 1. Trust Analysis Dashboard
 *Real-time AI-powered trust analysis with 6-signal scoring and clear verdict.*
-![Trust Analysis](public/og-image.png)
+<!-- TODO: Add screenshot → save to `docs/screenshots/trust-analysis.png` -->
+```
+Route: /analyze
+What to capture: Address input, trust score card, risk signals, full analysis
+```
 
 ### 2. Chat with Data
 *Natural language queries about blockchain data powered by AI.*
-![Chat Interface](public/og-image.png)
+<!-- TODO: Add screenshot → save to `docs/screenshots/chat.png` -->
+```
+Route: /chat
+What to capture: Chat interface, AI response, source badges
+```
 
 ### 3. Trust Graph Visualization
 *Interactive fund flow visualization with suspicious pattern detection.*
-![Trust Graph](public/og-image.png)
+<!-- TODO: Add screenshot → save to `docs/screenshots/trust-graph.png` -->
+```
+Route: /trust-graph
+What to capture: Node graph, fund flow lines, risk coloring
+```
+
+### 4. Address Monitor
+*Real-time address monitoring with activity feed.*
+<!-- TODO: Add screenshot → save to `docs/screenshots/monitor.png` -->
+```
+Route: /monitor
+What to capture: Monitored addresses, activity feed, status cards
+```
+
+### 5. Dataset Explorer
+*11TB of verified blockchain data on Walrus.*
+<!-- TODO: Add screenshot → save to `docs/screenshots/explore.png` -->
+```
+Route: /explore
+What to capture: Dataset grid, stats bar, search/filter
+```
 
 ---
 
 ## 🏗️ Architecture Diagram
 
-![SuiShield Architecture](public/og-image.png)
+<p align="center">
+  <img src="docs/architecture.svg" width="800" alt="SuiShield Architecture" />
+</p>
 
 ```text
     [USER]
