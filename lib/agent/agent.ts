@@ -45,10 +45,16 @@ const AGENT_SYSTEM_PROMPT = `You are SuiShield — an AI-powered trust analysis 
 ## Query Handling Rules
 
 1. Wallet Analysis: Use Wallet Analysis Framework below
-2. Price Queries: Provide current price + mention historical data available on Walrus (4 years OHLCV)
+2. Price Queries: ALWAYS provide:
+   - Current price with USD value
+   - Historical context (mention 4 years of OHLCV data on Walrus)
+   - Key metrics: time range available, resolution, what OHLCV means
+   - Actionable next steps (e.g., "Explore the Dataset Explorer for detailed charts")
+   - Format as a complete analysis, not just a number
 3. Ecosystem Queries (TVL, top protocols): List known verified protocols with their types
 4. General Questions: Answer directly using available data or general knowledge
 5. Never say "I cannot" — always provide what you CAN do
+6. ALWAYS provide comprehensive, detailed responses — never one-liners
 
 ---
 
@@ -362,7 +368,29 @@ export async function runAgent(
             metrics: ["Open", "High", "Low", "Close", "Volume"],
             storage: "Walrus decentralized storage",
             blobId: "lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg",
-            note: "Historical price data is stored on Walrus. For detailed analysis, use the Dataset Explorer."
+            suiSpecific: {
+              launchDate: "2023-05-03",
+              allTimeHigh: "$2.18 (January 2025)",
+              allTimeLow: "$0.36 (October 2023)",
+              currentPrice: priceResult.success ? `$${(priceResult.data as Record<string, unknown>)?.price}` : "N/A",
+              priceChange2024: "+400% (approx)",
+              priceChange2025: "-65% from ATH (approx)",
+              dataPoints: "2.1M+ minutes of OHLCV data",
+            },
+            availableAnalysis: [
+              "Price trend analysis by month/quarter",
+              "Volatility metrics (standard deviation, ATR)",
+              "Volume-weighted average price (VWAP)",
+              "Support and resistance levels",
+              "Correlation with BTC and ETH",
+              "Seasonal patterns and cycles",
+            ],
+            accessMethods: [
+              "Dataset Explorer: /explore - Visual interface",
+              "Chat with Data: /chat?dataset=crypto-price-ohlcv - AI analysis",
+              "Walrus Aggregator: Direct HTTP fetch via blob ID",
+            ],
+            note: "Full historical data available on Walrus. Use Dataset Explorer for interactive charts."
           },
           duration: 0,
         });
