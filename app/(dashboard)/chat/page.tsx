@@ -57,21 +57,46 @@ function MessageBubble({ message }: { message: Message }) {
 
   const renderContent = (text: string) => {
     return text.split("\n").map((line, i) => {
-      if (line.startsWith("**") && line.endsWith("**")) {
-        return <div key={i} className="font-bold text-white mt-3 mb-1">{line.slice(2, -2)}</div>;
-      }
-      if (line.startsWith("- ")) {
+      // Empty line - add spacing
+      if (line.trim() === "") return <div key={i} className="h-3" />;
+      
+      // Lines starting with emoji (like ✅ ❌ ⚠️) - make them stand out
+      const emojiMatch = line.match(/^(✅|❌|⚠️|🔍|💰|📊|💡|🎯|🟢|🟡|🔴)\s*(.*)/);
+      if (emojiMatch) {
         return (
-          <div key={i} className="flex gap-2 text-white/50 text-sm">
-            <span className="text-white/80/60 mt-0.5">›</span>
-            <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>') }} />
+          <div key={i} className="text-white/90 text-[15px] font-medium leading-relaxed mt-2">
+            <span className="mr-1.5">{emojiMatch[1]}</span>
+            {emojiMatch[2]}
           </div>
         );
       }
-      if (line === "") return <div key={i} className="h-2" />;
+
+      // Lines starting with bullet (•) - elegant list
+      if (line.trim().startsWith("•")) {
+        return (
+          <div key={i} className="flex gap-3 text-white/60 text-sm leading-relaxed pl-1">
+            <span className="text-cyan-400/60 mt-0.5 flex-shrink-0">•</span>
+            <span>{line.trim().slice(1).trim()}</span>
+          </div>
+        );
+      }
+
+      // Lines that look like section headers (short, no period, ends with colon)
+      if (line.trim().length < 40 && line.trim().endsWith(":") && !line.includes("http")) {
+        return (
+          <div key={i} className="text-white/40 text-[11px] uppercase tracking-widest font-semibold mt-4 mb-1">
+            {line.trim().slice(0, -1)}
+          </div>
+        );
+      }
+
+      // Default: clean paragraph
       return (
-        <div key={i} className="text-white/40 text-sm leading-relaxed" dangerouslySetInnerHTML={{
-          __html: line.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-white">$1</span>').replace(/`(.*?)`/g, '<code class="font-mono text-xs bg-white/5 px-1.5 py-0.5 rounded text-white/70/70">$1</code>')
+        <div key={i} className="text-white/70 text-[14px] leading-[1.75]" dangerouslySetInnerHTML={{
+          __html: line
+            .replace(/`(.*?)`/g, '<code class="font-mono text-[12px] bg-white/5 px-1.5 py-0.5 rounded text-cyan-400/80">$1</code>')
+            .replace(/(0x[a-fA-F0-9]{8})[a-fA-F0-9]+([a-fA-F0-9]{6})/g, '<span class="font-mono text-cyan-400/70">$1...$2</span>')
+            .replace(/(\d{1,3}(,\d{3})*(\.\d+)?)\s*(SUI|USD|ETH|BTC|MIST)/g, '<span class="font-semibold text-white/90">$1 $4</span>')
         }} />
       );
     });
@@ -92,11 +117,12 @@ function MessageBubble({ message }: { message: Message }) {
 
   return (
     <div className="flex gap-3 animate-slide-up">
-      <div className="w-9 h-9 rounded-full bg-cyan-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500/20 to-magenta-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
         <img src="/logo.png" alt="SuiShield" className="w-5 h-5 object-contain" />
       </div>
       <div className="flex-1 max-w-[90%] space-y-3">
-        <div className="rounded-2xl rounded-bl-md px-5 py-4 space-y-1.5 bg-white/[0.03] border border-white/5">
+        <div className="rounded-2xl rounded-bl-md px-6 py-5 space-y-1 bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
           {renderContent(message.content)}
         </div>
         {message.metadata && (
