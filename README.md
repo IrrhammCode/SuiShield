@@ -150,6 +150,180 @@ SuiShield completely reimagines blockchain trust analysis by combining AI intell
 
 ---
 
+## ⚡ Tatum Integration — Deep Dive
+
+SuiShield leverages Tatum's infrastructure at **every layer** of the analysis pipeline. This section details exactly how we use Tatum's RPC endpoints, Data APIs, and MCP server to power our trust analysis engine.
+
+### 🔌 Tatum Sui RPC — Real-Time Blockchain Data
+
+We use Tatum's enterprise-grade Sui RPC gateway for all real-time blockchain queries. Every address analysis starts with direct JSON-RPC calls via Tatum.
+
+| RPC Method | Purpose | Code Location |
+|------------|---------|---------------|
+| `suix_getAllBalances` | Fetch all token balances (SUI + fungible tokens) | [`lib/tatum-sui.ts#L80`](./lib/tatum-sui.ts#L80) |
+| `suix_getBalance` | Get specific coin balance (e.g., SUI only) | [`lib/tatum-sui.ts#L93`](./lib/tatum-sui.ts#L93) |
+| `suix_getOwnedObjects` | List all owned objects (NFTs, contracts, LP tokens) | [`lib/tatum-sui.ts#L103`](./lib/tatum-sui.ts#L103) |
+| `suix_queryTransactionBlocks` | Query transaction history with filters | [`lib/tatum-sui.ts#L120`](./lib/tatum-sui.ts#L120) |
+| `sui_getTransactionBlock` | Fetch specific transaction details | [`lib/tatum-sui.ts#L145`](./lib/tatum-sui.ts#L145) |
+| `sui_getLatestCheckpointSequenceNumber` | Get latest checkpoint for network status | [`lib/tatum-sui.ts#L155`](./lib/tatum-sui.ts#L155) |
+| `sui_getProtocolConfig` | Fetch Sui protocol configuration | [`lib/tatum-sui.ts#L165`](./lib/tatum-sui.ts#L165) |
+| `suix_resolveNameServiceAddress` | Resolve Sui Name Service (e.g., name.sui) | [`lib/tatum-sui.ts#L172`](./lib/tatum-sui.ts#L172) |
+| `suix_getStakes` | Get staking positions for an address | [`lib/tatum-sui.ts#L230`](./lib/tatum-sui.ts#L230) |
+| `suix_getDynamicFields` | Get dynamic fields of an object | [`lib/tatum-sui.ts#L250`](./lib/tatum-sui.ts#L250) |
+
+**Example — Fetching Balance via Tatum Sui RPC:**
+
+```typescript
+// lib/tatum-sui.ts
+const TATUM_SUI_MAINNET = "https://sui-mainnet.gateway.tatum.io";
+const TATUM_API_KEY = process.env.TATUM_API_KEY;
+
+async function suiRpc<T>(method: string, params: unknown[]): Promise<T> {
+  const response = await fetch(TATUM_SUI_MAINNET, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": TATUM_API_KEY,
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  return (await response.json()).result;
+}
+
+// Usage
+const balances = await suiRpc("suix_getAllBalances", [address]);
+```
+
+### 🛡️ Tatum MCP — 59 Blockchain Tools
+
+SuiShield's AI agent has direct access to Tatum's MCP (Model Context Protocol) server, which provides 59 specialized blockchain analysis tools. We call these APIs directly for deep analysis.
+
+| MCP Tool | Purpose | Code Location |
+|----------|---------|---------------|
+| `check_malicious_address` | Security check — is address flagged as malicious? | [`lib/tatum-mcp.ts#L50`](./lib/tatum-mcp.ts#L50) |
+| `get_wallet_portfolio` | Full portfolio: native + tokens + NFTs | [`lib/tatum-mcp.ts#L90`](./lib/tatum-mcp.ts#L90) |
+| `get_transaction_history` | Transaction history across chains | [`lib/tatum-mcp.ts#L170`](./lib/tatum-mcp.ts#L170) |
+| `get_exchange_rate` | Real-time crypto/fiat exchange rates | [`lib/tatum-mcp.ts#L220`](./lib/tatum-mcp.ts#L220) |
+| `get_block_by_time` | Block info for specific timestamp | [`lib/tatum-mcp.ts#L260`](./lib/tatum-mcp.ts#L260) |
+| `gateway_execute_rpc` | Execute any JSON-RPC method on any chain | [`lib/tatum-mcp.ts#L300`](./lib/tatum-mcp.ts#L300) |
+| `get_tokens` | Token metadata (name, symbol, decimals) | [`lib/tatum-mcp.ts#L320`](./lib/tatum-mcp.ts#L320) |
+| `get_metadata` | NFT/multitoken metadata | [`lib/tatum-mcp.ts#L370`](./lib/tatum-mcp.ts#L370) |
+
+**Example — Malicious Address Check:**
+
+```typescript
+// lib/tatum-mcp.ts
+export async function mcpCheckMaliciousAddress(
+  address: string,
+  chain: TatumChain = "sui-testnet"
+): Promise<MaliciousCheckResult> {
+  const data = await tatumFetch(
+    `/v3/security/address/${address}?chain=${chain}`
+  );
+  return {
+    address,
+    chain,
+    isMalicious: data.isMalicious || false,
+    category: data.category,
+    riskScore: data.isMalicious ? 85 : 15,
+  };
+}
+```
+
+### 🤖 Tatum in AI Agent Pipeline
+
+The AI agent orchestrates Tatum tools in a specific order for comprehensive analysis:
+
+```typescript
+// lib/agent/sui-tools.ts — toolAnalyzeSuiWallet()
+
+// Step 1: Tatum Sui RPC — Get base data
+const [balance, objects, txs, fundFlow] = await Promise.all([
+  toolGetSuiBalance(address),      // suix_getAllBalances
+  toolGetSuiObjects(address),      // suix_getOwnedObjects
+  toolGetSuiTransactions(address), // suix_queryTransactionBlocks
+  toolGetSuiFundFlow(address),     // Custom fund flow analysis
+]);
+
+// Step 2: Tatum MCP — Security check
+const maliciousCheck = await mcpCheckMaliciousAddress(address);
+// Signal 6: Tatum MCP Security Check (0-100)
+if (maliciousCheck.isMalicious) {
+  riskScore += 40;
+  riskFactors.push(`Tatum MCP flagged: ${maliciousCheck.category}`);
+}
+
+// Step 3: Tatum Data API — Exchange rates
+const price = await mcpGetExchangeRate("SUI", "USD");
+const usdValue = (Number(balance) / 1e9) * price.rate;
+```
+
+### 📊 Tatum Data APIs — Cross-Chain Intelligence
+
+For cross-chain analysis and historical data, we use Tatum's Data APIs:
+
+| API Endpoint | Purpose | Usage |
+|-------------|---------|-------|
+| `/v3/data/wallet/portfolio/{address}` | Wallet portfolio across chains | Multi-chain wallet analysis |
+| `/v3/data/transactions/address/{address}` | Transaction history | Pattern detection |
+| `/v3/data/tokens/{contract}` | Token metadata | Token risk assessment |
+| `/v4/data/rate/symbol` | Exchange rates | USD value calculation |
+| `/v3/security/address/{address}` | Malicious address check | Security signal |
+| `/v3/{chain}/block/current` | Current block info | Network status |
+
+### 🔗 Tatum Webhook Integration
+
+For real-time address monitoring, we integrate Tatum webhooks:
+
+```typescript
+// lib/tatum-webhooks.ts
+export async function createWebhookSubscription(
+  address: string,
+  chain: string,
+  eventType: WebhookEventType,
+  callbackUrl: string
+): Promise<WebhookSubscription> {
+  const data = await tatumFetch("/v3/subscription", {
+    method: "POST",
+    body: JSON.stringify({
+      chain: chain.toUpperCase(),
+      address,
+      type: eventType,
+      url: callbackUrl,
+    }),
+  });
+  return { id: data.id, chain, address, eventType, url: callbackUrl, active: true };
+}
+```
+
+**Supported Webhook Events:**
+- `ADDRESS_TRANSACTION` — Any transaction on address
+- `ADDRESS_FUNDS_RECEIVED` — Funds received
+- `ADDRESS_FUNDS_SENT` — Funds sent
+- `NFT_RECEIVED` — NFT received
+- `TOKEN_TRANSFER` — Token transfer
+
+### 📈 Tatum Usage Summary
+
+| Category | Tools/APIs Used | Count |
+|----------|----------------|-------|
+| **Sui RPC Methods** | suix_getAllBalances, suix_getOwnedObjects, suix_queryTransactionBlocks, etc. | 10 |
+| **MCP Tools** | check_malicious_address, get_wallet_portfolio, get_exchange_rate, etc. | 8 |
+| **Data APIs** | Portfolio, Transactions, Tokens, Rates, Security | 6 |
+| **Webhook Events** | ADDRESS_TRANSACTION, FUNDS_RECEIVED, FUNDS_SENT, etc. | 5 |
+| **Total Tatum Integrations** | | **29** |
+
+### 🎯 Why Tatum?
+
+- **Enterprise-Grade Reliability**: 99.9% uptime SLA for production applications
+- **Multi-Chain Support**: Single API for Sui, Ethereum, Bitcoin, Polygon, and 40+ chains
+- **MCP Server**: 59 specialized blockchain tools accessible via standard protocol
+- **Real-Time Data**: Sub-second latency for balance and transaction queries
+- **Security Built-In**: Malicious address detection and fraud scoring
+- **Developer-Friendly**: Clean REST APIs with comprehensive documentation
+
+---
+
 ## 🏆 Hackathon Challenge Response: Tatum x Walrus
 
 SuiShield is engineered from the ground up to win the **Tatum x Walrus Hackathon**. We leverage both Tatum's enterprise infrastructure and Walrus decentralized storage to create a comprehensive trust analysis system.
