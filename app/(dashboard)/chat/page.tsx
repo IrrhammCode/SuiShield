@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Brain,
   Send,
@@ -40,7 +41,7 @@ function SourceBadge({ source }: { source: DataSource }) {
   return (
     <div className={`inline-flex items-center gap-1.5 text-[10px] border rounded-lg px-2 py-0.5 font-mono ${config.color}`}>
       {config.icon}
-      <span>{source.label}</span>
+      <span>{config.label}</span>
     </div>
   );
 }
@@ -146,6 +147,41 @@ const SUGGESTED_QUERIES = [
   { icon: <Search className="w-4 h-4" />, text: "Trace fund flow from suspicious address", color: "border-white/[0.08] hover:border-magenta-500/40" },
   { icon: <Globe className="w-4 h-4" />, text: "Bitcoin transaction volume in 2024 vs 2025", color: "border-white/[0.08] hover:border-magenta-500/40" },
 ];
+
+// ─── Dataset Quick Actions ────────────────────────────────
+const DATASET_ACTIONS: Record<string, { label: string; icon: React.ReactNode; prompt: string }[]> = {
+  "sui-transactions": [
+    { label: "Analyze Recent Txs", icon: <Activity className="w-3.5 h-3.5" />, prompt: "Analyze the latest Sui transactions from the Tatum dataset. Show me transaction types, gas usage patterns, and any suspicious activity. What are the most active protocols?" },
+    { label: "Whale Activity", icon: <TrendingUp className="w-3.5 h-3.5" />, prompt: "Using the Sui transactions dataset, identify whale movements — any transactions above 10,000 SUI. Who are the biggest movers and what protocols are they using?" },
+    { label: "Gas Analysis", icon: <Zap className="w-3.5 h-3.5" />, prompt: "Analyze gas costs from the Sui transactions dataset. What's the average gas price trend? Which transaction types cost the most gas?" },
+  ],
+  "btc-full-history": [
+    { label: "Volume Trends", icon: <BarChart2 className="w-3.5 h-3.5" />, prompt: "Analyze Bitcoin transaction volume trends from the historical dataset. Compare 2024 vs 2025 vs 2026. What patterns do you see?" },
+    { label: "Fee Market", icon: <Zap className="w-3.5 h-3.5" />, prompt: "Analyze Bitcoin transaction fees from the historical dataset. When were fees highest? What caused fee spikes?" },
+    { label: "Address Patterns", icon: <Search className="w-3.5 h-3.5" />, prompt: "From the Bitcoin transaction history, identify the most active addresses and any unusual patterns — mixers, exchanges, or suspicious flows." },
+  ],
+  "eth-full-history": [
+    { label: "DeFi Activity", icon: <Activity className="w-3.5 h-3.5" />, prompt: "Analyze Ethereum DeFi transaction patterns from the historical dataset. Which protocols had the most activity? Any notable trends in DEX volume?" },
+    { label: "Gas Trends", icon: <Zap className="w-3.5 h-3.5" />, prompt: "Analyze Ethereum gas prices from the historical dataset. Show me the trend over time and identify periods of network congestion." },
+    { label: "Whale Transfers", icon: <TrendingUp className="w-3.5 h-3.5" />, prompt: "Find the largest Ethereum transfers from the historical dataset. Any movements above 1000 ETH? Who are the biggest senders and receivers?" },
+  ],
+  "crypto-price-ohlcv": [
+    { label: "Price Analysis", icon: <TrendingUp className="w-3.5 h-3.5" />, prompt: "Analyze the crypto price OHLCV data. Show me BTC and ETH price trends for 2025-2026. What were the biggest price movements?" },
+    { label: "Volatility Report", icon: <Activity className="w-3.5 h-3.5" />, prompt: "Analyze crypto price volatility from the OHLCV dataset. Which periods had the highest volatility? Compare BTC vs ETH volatility." },
+    { label: "Correlation Study", icon: <Search className="w-3.5 h-3.5" />, prompt: "Using the price OHLCV dataset, analyze the correlation between BTC and ETH prices. Do they move together? Any divergences?" },
+  ],
+  "bnb-full-history": [
+    { label: "BSC Activity", icon: <Activity className="w-3.5 h-3.5" />, prompt: "Analyze BNB Chain transaction patterns from the historical dataset. What are the most active contracts and transaction types?" },
+    { label: "PancakeSwap Analysis", icon: <Search className="w-3.5 h-3.5" />, prompt: "From the BNB Chain dataset, analyze PancakeSwap DEX activity. Volume trends, popular pairs, and any unusual trading patterns." },
+  ],
+  "eth-token-transfers": [
+    { label: "Token Flows", icon: <Activity className="w-3.5 h-3.5" />, prompt: "Analyze ERC-20 token transfer patterns from the Ethereum dataset. Which tokens have the most transfer volume? Any suspicious token movements?" },
+    { label: "Stablecoin Activity", icon: <DollarSign className="w-3.5 h-3.5" />, prompt: "Analyze stablecoin transfers (USDT, USDC, DAI) from the Ethereum dataset. What are the volumes and patterns? Any large institutional moves?" },
+  ],
+};
+
+// Need BarChart2 import for the quick actions
+import { BarChart2, DollarSign } from "lucide-react";
 
 // ─── Right Info Panel ─────────────────────────────────────
 function InfoPanel() {
@@ -253,8 +289,9 @@ function InfoPanel() {
   );
 }
 
-// ─── Chat Page ─────────────────────────────────────────────
-export default function ChatPage() {
+// ─── Chat Content (Inner Component with Search Params) ────
+function ChatContent() {
+  const searchParams = useSearchParams();
   const { address: walletAddress } = useWalletAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -284,6 +321,7 @@ What would you like to know?`,
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [autoSent, setAutoSent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -291,13 +329,14 @@ What would you like to know?`,
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const handleSend = useCallback(async () => {
-    if (!input.trim() || isLoading) return;
+  // Send a message programmatically
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: text.trim(),
       timestamp: new Date(),
     };
 
@@ -314,7 +353,7 @@ What would you like to know?`,
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input.trim(), history, walletAddress }),
+        body: JSON.stringify({ message: text.trim(), history, walletAddress }),
       });
 
       if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -352,7 +391,24 @@ What would you like to know?`,
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, walletAddress]);
+  }, [isLoading, messages, walletAddress]);
+
+  // Auto-send from URL query params
+  useEffect(() => {
+    const q = searchParams.get("q");
+    const dataset = searchParams.get("dataset");
+    if (q && !autoSent) {
+      setAutoSent(true);
+      // Small delay to let the page render first
+      setTimeout(() => {
+        sendMessage(q);
+      }, 300);
+    }
+  }, [searchParams, autoSent, sendMessage]);
+
+  const handleSend = useCallback(() => {
+    sendMessage(input);
+  }, [input, sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -366,6 +422,10 @@ What would you like to know?`,
     inputRef.current?.focus();
   };
 
+  // Get current dataset context from URL
+  const currentDataset = searchParams.get("dataset");
+  const quickActions = currentDataset ? DATASET_ACTIONS[currentDataset] || [] : [];
+
   return (
     <>
       {/* Top bar */}
@@ -377,7 +437,14 @@ What would you like to know?`,
           </Link>
           <div className="w-px h-4 bg-white/10" />
           <div>
-            <div className="text-white font-semibold text-sm">SuiShield Chat</div>
+            <div className="text-white font-semibold text-sm">
+              SuiShield Chat
+              {currentDataset && (
+                <span className="text-white/30 font-normal ml-2">
+                  · {currentDataset.replace(/-/g, " ")}
+                </span>
+              )}
+            </div>
             <div className="text-white/20 text-xs">Powered by Tatum × Walrus</div>
           </div>
         </div>
@@ -406,8 +473,33 @@ What would you like to know?`,
             </div>
           </div>
 
-          {/* Suggested queries */}
-          {messages.length === 1 && (
+          {/* Quick Actions for Dataset */}
+          {messages.length <= 2 && quickActions.length > 0 && (
+            <div className="px-5 pb-3">
+              <div className="max-w-4xl mx-auto w-full">
+                <div className="text-xs text-white/20 mb-2 font-medium uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap className="w-3 h-3 text-cyan-400" />
+                  Quick Actions for {currentDataset?.replace(/-/g, " ")}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {quickActions.map(({ label, icon, prompt }) => (
+                    <button
+                      key={label}
+                      onClick={() => sendMessage(prompt)}
+                      disabled={isLoading}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 text-cyan-400/80 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all text-xs font-medium disabled:opacity-50"
+                    >
+                      {icon}
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Suggested queries (only show when no dataset context) */}
+          {messages.length === 1 && !currentDataset && (
             <div className="px-5 pb-4">
               <div className="max-w-4xl mx-auto w-full">
                 <div className="text-xs text-white/20 mb-3 font-medium uppercase tracking-wider">Try asking...</div>
@@ -435,7 +527,7 @@ What would you like to know?`,
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a message or command..."
+                placeholder={currentDataset ? `Ask about ${currentDataset.replace(/-/g, " ")}...` : "Type a message or command..."}
                 className="flex-1 bg-transparent border-none text-white text-sm pl-4 pr-4 py-3 focus:outline-none resize-none placeholder-white/20"
                 rows={1}
               />
@@ -468,5 +560,18 @@ What would you like to know?`,
         <InfoPanel />
       </div>
     </>
+  );
+}
+
+// ─── Chat Page (Wrapper with Suspense) ────────────────────
+export default function ChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex-1 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-white/50 animate-spin" />
+      </div>
+    }>
+      <ChatContent />
+    </Suspense>
   );
 }

@@ -367,11 +367,11 @@ function DatasetModal({ dataset, onClose }: { dataset: Dataset; onClose: () => v
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Link
-              href={`/chat?q=Tell me about the ${dataset.name} dataset on Walrus`}
+              href={`/chat?dataset=${dataset.id}&q=${encodeURIComponent(`Analyze the ${dataset.name} dataset (${dataset.chain}). Size: ${dataset.size}, Records: ${dataset.rowCount || 'N/A'}. Give me key insights, patterns, and notable findings from this blockchain data.`)}`}
               className="btn-primary flex items-center gap-2 text-sm flex-1 justify-center"
             >
               <Brain className="w-4 h-4" />
-              Query with AI
+              Chat with Data
             </Link>
             <button className="btn-ghost flex items-center gap-2 text-sm px-4">
               <Download className="w-4 h-4 text-white/80" />
