@@ -13,6 +13,11 @@ export interface MessageMetadata {
   riskScore?: number;
   executionTime?: number;
   toolsUsed?: string[];
+  onChainProof?: {
+    blobId: string;
+    verificationUrl: string;
+    storedAt: string;
+  };
 }
 
 export interface DataSource {

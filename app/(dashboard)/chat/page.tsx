@@ -102,6 +102,17 @@ function MessageBubble({ message }: { message: Message }) {
         {message.metadata && (
           <div className="flex flex-wrap items-center gap-2">
             {message.metadata.sources?.map((src, i) => <SourceBadge key={i} source={src} />)}
+            {message.metadata.onChainProof && (
+              <a
+                href={`/verify?blobId=${message.metadata.onChainProof.blobId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[10px] border rounded-lg px-2 py-0.5 font-mono text-cyan-400/80 border-cyan-500/20 bg-cyan-500/10 hover:bg-cyan-500/20 hover:text-cyan-400 transition-colors"
+              >
+                <Shield className="w-3 h-3" />
+                <span>Proof: {message.metadata.onChainProof.blobId.slice(0, 8)}...</span>
+              </a>
+            )}
             {message.metadata.executionTime && (
               <div className="text-[10px] text-white/20 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
@@ -372,6 +383,7 @@ What would you like to know?`,
           riskScore: data.riskScore,
           walletInfo: data.walletInfo,
           charts: data.charts,
+          onChainProof: data.onChainProof,
         },
       };
 
