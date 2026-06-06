@@ -250,7 +250,7 @@ export default function VerifyPage() {
                     {copied ? "Copied" : "Copy Link"}
                   </button>
                   <a
-                    href={`https://aggregator.walrus-testnet.walrus.space/v1/blobs/${blobId}`}
+                    href={`https://aggregator.walrus.space/v1/blobs/${blobId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"

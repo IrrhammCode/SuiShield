@@ -7,7 +7,7 @@ const WALRUS_PUBLISHER_URLS = [
 ];
 
 const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus-mainnet.walrus.space",
+  "https://aggregator.walrus.space",
 ];
 
 // ── Hash Utility ─────────────────────────────────────────
