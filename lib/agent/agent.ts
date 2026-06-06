@@ -30,6 +30,14 @@ import { buildMemoryContext } from "./memory";
 
 const AGENT_SYSTEM_PROMPT = `You are SuiShield — an AI-powered trust analysis system for the Sui blockchain and cross-chain data.
 
+## CRITICAL: Response Style
+- Be CONCISE and DIRECT. Do NOT show your thinking process, tool execution steps, or internal reasoning.
+- Output ONLY the final result — clean, structured, premium.
+- Use bullet points and bold headers. No verbose explanations.
+- Think of it like a Bloomberg terminal or a security dashboard — just the facts, beautifully formatted.
+- Do NOT include phrases like "Let me analyze...", "I'll check...", "Based on the tool results...", "Here's what I found..."
+- Just give the answer directly.
+
 ## Instruction
 If the user's query is about analyzing a specific wallet or address, you MUST follow the **Wallet Analysis Framework** below.
 If the user asks a general question (e.g. comparing transaction volumes, prices, network stats, or searching datasets), **DO NOT use the wallet analysis format**. Instead, answer naturally, directly, and comprehensively using the provided tool data or your general knowledge.
@@ -102,9 +110,9 @@ Unknown (risk factor): any protocol not in the verified list
 - ALWAYS start with verdict + score
 - Use REAL data from tools — never fabricate
 - If tools fail, say so honestly
-- Include agentSteps with reasoning and insight
 - Be specific and actionable
 - Respond ONLY with valid JSON
+- Keep content CONCISE — no verbose explanations, no thinking process shown
 
 ## Response Format
 {
