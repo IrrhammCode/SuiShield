@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -121,51 +121,222 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const nodePositions = new Map<string, { x: number; y: number }>();
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
-  const originNode = graph.nodes.find((n) => n.isOrigin);
-  if (originNode) {
-    nodePositions.set(originNode.id, { x: centerX, y: centerY });
-  }
-
-  // Separate protocol nodes from wallet nodes for layout
-  const protocolNodes = graph.nodes.filter((n) => !n.isOrigin && n.nodeType === "protocol");
-  const walletNodes = graph.nodes.filter((n) => !n.isOrigin && n.nodeType !== "protocol");
-
-  // Place protocol nodes in an inner ring
-  const protocolRadius = Math.min(width, height) * 0.22;
-  protocolNodes.forEach((node, i) => {
-    const angle = (2 * Math.PI * i) / (protocolNodes.length || 1) - Math.PI / 2;
-    nodePositions.set(node.id, {
-      x: centerX + protocolRadius * Math.cos(angle),
-      y: centerY + protocolRadius * Math.sin(angle),
+  // Initialize and run physics simulation
+  useEffect(() => {
+    const initial: Record<string, { x: number; y: number; vx: number; vy: number }> = {};
+    
+    // Assign initial positions: origin in center, others scattered randomly around
+    graph.nodes.forEach((node) => {
+      if (node.isOrigin) {
+        initial[node.id] = { x: centerX, y: centerY, vx: 0, vy: 0 };
+      } else {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 100 + Math.random() * 100;
+        initial[node.id] = {
+          x: centerX + Math.cos(angle) * radius,
+          y: centerY + Math.sin(angle) * radius,
+          vx: 0,
+          vy: 0,
+        };
+      }
     });
-  });
 
-  // Place wallet nodes in an outer ring
-  const walletRadius = Math.min(width, height) * 0.38;
-  walletNodes.forEach((node, i) => {
-    const angle = (2 * Math.PI * i) / (walletNodes.length || 1);
-    nodePositions.set(node.id, {
-      x: centerX + walletRadius * Math.cos(angle),
-      y: centerY + walletRadius * Math.sin(angle),
-    });
-  });
+    let animationId: number;
+    let ticks = 0;
+    
+    const runSimulation = () => {
+      const repelForce = 1200;
+      const linkForce = 0.04;
+      const centerForce = 0.015;
+      const damping = 0.85;
+
+      const keys = Object.keys(initial);
+      
+      // 1. Repulsion force between all nodes
+      for (let i = 0; i < keys.length; i++) {
+        const nodeA = initial[keys[i]];
+        for (let j = i + 1; j < keys.length; j++) {
+          const nodeB = initial[keys[j]];
+          const dx = nodeB.x - nodeA.x;
+          const dy = nodeB.y - nodeA.y;
+          const distSq = dx * dx + dy * dy + 0.1;
+          const dist = Math.sqrt(distSq);
+          
+          if (dist < 300) {
+            const force = repelForce / distSq;
+            const fx = (dx / dist) * force;
+            const fy = (dy / dist) * force;
+            
+            nodeA.vx -= fx;
+            nodeA.vy -= fy;
+            nodeB.vx += fx;
+            nodeB.vy += fy;
+          }
+        }
+      }
+
+      // 2. Attraction force along edges (links)
+      graph.edges.forEach((edge) => {
+        const nodeA = initial[edge.from];
+        const nodeB = initial[edge.to];
+        if (!nodeA || !nodeB) return;
+
+        const dx = nodeB.x - nodeA.x;
+        const dy = nodeB.y - nodeA.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.1;
+        
+        const targetLen = edge.edgeType === "contract_call" ? 90 : 130;
+        const force = (dist - targetLen) * linkForce;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+
+        nodeA.vx += fx;
+        nodeA.vy += fy;
+        nodeB.vx -= fx;
+        nodeB.vy -= fy;
+      });
+
+      // 3. Gravity/Center force
+      keys.forEach((key) => {
+        const node = initial[key];
+        
+        // Keep origin node fixed at center unless dragged
+        if (key === graph.origin && draggedNode !== key) {
+          node.x = centerX;
+          node.y = centerY;
+          node.vx = 0;
+          node.vy = 0;
+          return;
+        }
+
+        if (draggedNode === key) return;
+
+        const dx = centerX - node.x;
+        const dy = centerY - node.y;
+        node.vx += dx * centerForce;
+        node.vy += dy * centerForce;
+      });
+
+      // 4. Update coordinates with damping & speed limit
+      let maxVelocity = 0;
+      keys.forEach((key) => {
+        if (draggedNode === key) return;
+        
+        const node = initial[key];
+        // Speed limit to keep simulation stable
+        const speed = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
+        if (speed > 15) {
+          node.vx = (node.vx / speed) * 15;
+          node.vy = (node.vy / speed) * 15;
+        }
+
+        node.x += node.vx;
+        node.y += node.vy;
+        
+        node.vx *= damping;
+        node.vy *= damping;
+
+        // Keep inside bounds
+        const padding = 50;
+        if (node.x < padding) { node.x = padding; node.vx = 0; }
+        if (node.x > width - padding) { node.x = width - padding; node.vx = 0; }
+        if (node.y < padding) { node.y = padding; node.vy = 0; }
+        if (node.y > height - padding) { node.y = height - padding; node.vy = 0; }
+
+        maxVelocity = Math.max(maxVelocity, Math.abs(node.vx) + Math.abs(node.vy));
+      });
+
+      // Update state for rendering
+      const nextPositions: Record<string, { x: number; y: number }> = {};
+      keys.forEach((key) => {
+        nextPositions[key] = { x: initial[key].x, y: initial[key].y };
+      });
+      setPositions(nextPositions);
+
+      ticks++;
+      // Stop animating once velocities cool down (settled)
+      if (maxVelocity > 0.03 || ticks < 400 || draggedNode) {
+        animationId = requestAnimationFrame(runSimulation);
+      }
+    };
+
+    animationId = requestAnimationFrame(runSimulation);
+    return () => cancelAnimationFrame(animationId);
+  }, [graph, draggedNode]);
+
+  // Drag and drop event handlers
+  const handleMouseDown = (nodeId: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    setDraggedNode(nodeId);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!draggedNode) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * width;
+    const y = ((e.clientY - rect.top) / rect.height) * height;
+
+    setPositions((prev) => ({
+      ...prev,
+      [draggedNode]: { x, y },
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setDraggedNode(null);
+  };
 
   return (
-    <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden">
+    <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-4 backdrop-blur-xl overflow-hidden select-none">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-      <svg width="100%" height="500" viewBox={`0 0 ${width} ${height}`}>
+      
+      <svg 
+        width="100%" 
+        height="500" 
+        viewBox={`0 0 ${width} ${height}`}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes flow {
+            to {
+              stroke-dashoffset: -20;
+            }
+          }
+          .edge-flow {
+            stroke-dasharray: 6, 4;
+            animation: flow 1.5s linear infinite;
+          }
+          .edge-flow-suspicious {
+            stroke-dasharray: 4, 4;
+            animation: flow 0.75s linear infinite;
+          }
+          .node-hoverable {
+            transition: transform 0.2s ease, stroke-width 0.2s ease;
+          }
+          .node-hoverable:hover {
+            transform: scale(1.1);
+            cursor: grab;
+          }
+          .node-dragging {
+            cursor: grabbing !important;
+          }
+        `}} />
+        
         <defs>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           <filter id="protocolGlow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="5" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -175,11 +346,12 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
 
         {/* Edges */}
         {graph.edges.map((edge, i) => {
-          const fromPos = nodePositions.get(edge.from);
-          const toPos = nodePositions.get(edge.to);
+          const fromPos = positions[edge.from];
+          const toPos = positions[edge.to];
           if (!fromPos || !toPos) return null;
 
           const style = getEdgeStyle(edge.edgeType, edge.isSuspicious);
+          const className = edge.isSuspicious ? "edge-flow-suspicious" : "edge-flow";
 
           return (
             <g key={i}>
@@ -189,8 +361,8 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                 x2={toPos.x}
                 y2={toPos.y}
                 stroke={style.stroke}
-                strokeWidth={style.strokeWidth}
-                strokeDasharray={style.dashArray}
+                strokeWidth={style.strokeWidth + (edge.isSuspicious ? 1 : 0)}
+                className={className}
               />
               {/* Only show amount label for coin transfers */}
               {edge.edgeType === "transfer" && parseFloat(edge.amount) > 0 && (
@@ -201,6 +373,7 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                   fontSize="9"
                   textAnchor="middle"
                   fontFamily="JetBrains Mono, monospace"
+                  fontWeight="bold"
                 >
                   {edge.amount} SUI
                 </text>
@@ -214,7 +387,8 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                   fontSize="8"
                   textAnchor="middle"
                   fontFamily="JetBrains Mono, monospace"
-                  opacity={0.7}
+                  fontWeight="bold"
+                  opacity={0.8}
                 >
                   {edge.edgeType.replace("_", " ")}
                 </text>
@@ -225,7 +399,7 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
 
         {/* Nodes */}
         {graph.nodes.map((node) => {
-          const pos = nodePositions.get(node.id);
+          const pos = positions[node.id];
           if (!pos) return null;
 
           const isOrigin = node.isOrigin;
@@ -234,9 +408,15 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
           const shape = getNodeShape(node.nodeType);
 
           const nodeSize = isOrigin ? 20 : isProtocol ? 16 : 12;
+          const isDragging = draggedNode === node.id;
 
           return (
-            <g key={node.id}>
+            <g 
+              key={node.id}
+              onMouseDown={handleMouseDown(node.id)}
+              className={`node-hoverable ${isDragging ? "node-dragging" : ""}`}
+              style={{ transformOrigin: `${pos.x}px ${pos.y}px` }}
+            >
               {/* Origin glow ring */}
               {isOrigin && (
                 <circle
@@ -244,9 +424,10 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                   cy={pos.y}
                   r={28}
                   fill="none"
-                  stroke="rgba(0,229,255,0.3)"
-                  strokeWidth="2"
+                  stroke="rgba(0,229,255,0.4)"
+                  strokeWidth="2.5"
                   filter="url(#glow)"
+                  className="animate-pulse"
                 />
               )}
 
@@ -257,8 +438,8 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                   cy={pos.y}
                   r={nodeSize + 6}
                   fill="none"
-                  stroke={node.protocolInfo?.verified ? "rgba(0,229,255,0.15)" : "rgba(168,85,247,0.15)"}
-                  strokeWidth="1"
+                  stroke={node.protocolInfo?.verified ? "rgba(0,229,255,0.2)" : "rgba(168,85,247,0.2)"}
+                  strokeWidth="1.5"
                   filter="url(#protocolGlow)"
                 />
               )}
@@ -271,9 +452,9 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                   width={nodeSize * 1.4}
                   height={nodeSize * 1.4}
                   transform={`rotate(45 ${pos.x} ${pos.y})`}
-                  fill={isProtocol ? "rgba(0,229,255,0.08)" : "rgba(0,229,255,0.1)"}
+                  fill={isProtocol ? "rgba(0,229,255,0.12)" : "rgba(0,229,255,0.1)"}
                   stroke={color}
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   rx={2}
                 />
               ) : (
@@ -282,9 +463,9 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                     cx={pos.x}
                     cy={pos.y}
                     r={nodeSize}
-                    fill={node.isFlagged ? "rgba(255,51,102,0.2)" : "rgba(0,229,255,0.1)"}
+                    fill={node.isFlagged ? "rgba(255,51,102,0.25)" : "rgba(0,229,255,0.12)"}
                     stroke={color}
-                    strokeWidth={isOrigin ? 3 : 2}
+                    strokeWidth={isOrigin ? 3.5 : 2.5}
                   />
                   <circle
                     cx={pos.x}
@@ -308,7 +489,7 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
                 fontSize={isProtocol ? "10" : "9"}
                 textAnchor="middle"
                 fontFamily="JetBrains Mono, monospace"
-                fontWeight={isProtocol ? "bold" : "normal"}
+                fontWeight={isProtocol || isOrigin ? "bold" : "normal"}
               >
                 {node.label || `${node.address.slice(0, 6)}...${node.address.slice(-4)}`}
               </text>
@@ -317,7 +498,7 @@ function TrustGraphViz({ graph }: { graph: FlowGraph }) {
               <text
                 x={pos.x}
                 y={pos.y + nodeSize + 26}
-                fill={isProtocol ? "rgba(0,229,255,0.5)" : color}
+                fill={isProtocol ? "rgba(0,229,255,0.6)" : color}
                 fontSize="8"
                 textAnchor="middle"
                 fontFamily="JetBrains Mono, monospace"

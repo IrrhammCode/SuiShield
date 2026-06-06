@@ -152,7 +152,7 @@ export async function traceFundFlow(
 
     try {
       // Fetch transactions with higher limit for richer graph
-      const txs = await getSuiTransactionBlocks(address, 30);
+      const txs = await getSuiTransactionBlocks(address, 50);
       const transfers = extractTransfers(txs.data || [], address);
 
       // Also fetch objects to detect protocol interactions via owned objects
@@ -296,25 +296,43 @@ export async function traceFundFlow(
 type RawTx = Record<string, any>;
 
 function classifyTransferType(tx: RawTx): Transfer["transferType"] {
-  const txStr = JSON.stringify(tx).toLowerCase();
-
-  // DeFi swap detection
-  const swapKeywords = ["swap", "amm", "cetus", "turbos", "deepbook", "aftermath"];
-  if (swapKeywords.some(kw => txStr.includes(kw))) return "swap";
-
-  // Staking detection
-  const stakeKeywords = ["stake", "unstake", "staking", "validator"];
-  if (stakeKeywords.some(kw => txStr.includes(kw))) return "stake";
-
-  // NFT detection
-  const nftKeywords = ["nft", "kiosk", "display", "collection", "bluemove", "clutchy", "souffl3"];
-  if (nftKeywords.some(kw => txStr.includes(kw))) return "nft_transfer";
-
-  // Smart contract call detection (Programmable Transaction Block with MoveCall)
   const innerTxs = tx.transaction?.data?.transaction?.transactions || [];
+  if (innerTxs.length === 0) return "transfer";
+
+  let hasMoveCall = false;
+  let hasNftMoveCall = false;
+  let hasSwapMoveCall = false;
+  let hasStakeMoveCall = false;
+
+  const swapKeywords = ["swap", "cetus", "turbos", "deepbook", "aftermath", "clob", "liquidity", "pool", "swap_exact"];
+  const stakeKeywords = ["stake", "unstake", "staking", "validator"];
+  const nftKeywords = ["nft", "kiosk", "display", "collection", "bluemove", "clutchy", "souffl3", "mint"];
+
   for (const inner of innerTxs) {
-    if (inner.MoveCall) return "contract_call";
+    if (inner.MoveCall) {
+      hasMoveCall = true;
+      const pkg = String(inner.MoveCall.package || "").toLowerCase();
+      const mod = String(inner.MoveCall.module || "").toLowerCase();
+      const fun = String(inner.MoveCall.function || "").toLowerCase();
+      
+      const targetStr = `${pkg}::${mod}::${fun}`;
+      
+      if (swapKeywords.some(kw => targetStr.includes(kw))) {
+        hasSwapMoveCall = true;
+      }
+      if (stakeKeywords.some(kw => targetStr.includes(kw))) {
+        hasStakeMoveCall = true;
+      }
+      if (nftKeywords.some(kw => targetStr.includes(kw))) {
+        hasNftMoveCall = true;
+      }
+    }
   }
+
+  if (hasSwapMoveCall) return "swap";
+  if (hasStakeMoveCall) return "stake";
+  if (hasNftMoveCall) return "nft_transfer";
+  if (hasMoveCall) return "contract_call";
 
   return "transfer";
 }
