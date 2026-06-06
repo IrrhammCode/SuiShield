@@ -330,7 +330,7 @@ export async function toolAnalyzeSuiWallet(
     // Calculate multi-signal trust score
     interface BalanceData { totalBalance: string; formattedBalance: string }
     interface ObjectsData { objectCount: number; objectTypes: Record<string, number> }
-    interface TxsData { transactionCount: number; transactions: unknown[] }
+    interface TxsData { transactionCount: number; transactions: unknown[]; totalGasUsed?: string }
 
     const balance = balanceResult.success ? (balanceResult.data as BalanceData) : null;
     const objects = objectsResult.success ? (objectsResult.data as ObjectsData) : null;
@@ -667,6 +667,50 @@ export async function toolAnalyzeSuiWallet(
       analyzedBy,
     });
 
+      // Build detailed agent steps from tool results
+      const detailedAgentSteps = [
+        {
+          step: 1,
+          tool: "getSuiBalance",
+          status: balanceResult.success ? "success" : "error",
+          summary: balanceResult.success ? `Fetched balance: ${balance?.formattedBalance}` : `Failed: ${balanceResult.error}`,
+          reasoning: "Get all token balances for the address",
+          insight: balance ? `Total balance: ${balance.formattedBalance}` : undefined,
+        },
+        {
+          step: 2,
+          tool: "getSuiObjects",
+          status: objectsResult.success ? "success" : "error",
+          summary: objectsResult.success ? `Found ${objects?.objectCount} objects` : `Failed: ${objectsResult.error}`,
+          reasoning: "Identify owned objects, NFTs, LP tokens, contracts",
+          insight: objects ? `Object types: ${Object.keys(objects.objectTypes).slice(0, 3).join(", ")}` : undefined,
+        },
+        {
+          step: 3,
+          tool: "getSuiTransactions",
+          status: txResult.success ? "success" : "error",
+          summary: txResult.success ? `Analyzed ${txs?.transactionCount} transactions` : `Failed: ${txResult.error}`,
+          reasoning: "Analyze transaction history for patterns and activity",
+          insight: txs ? `Total gas used: ${txs.totalGasUsed}` : undefined,
+        },
+        {
+          step: 4,
+          tool: "riskAnalysis",
+          status: "success",
+          summary: `Calculated risk score: ${riskScore}/100 (${riskLevel})`,
+          reasoning: "Multi-signal scoring: on-chain, maturity, balance, community, protocol, security",
+          insight: riskFactors.slice(0, 2).join(". ") || "No significant risk factors",
+        },
+        {
+          step: 5,
+          tool: "storeOnWalrus",
+          status: stored.blobId ? "success" : "skipped",
+          summary: stored.blobId ? `Stored on Walrus: ${stored.blobId.slice(0, 12)}...` : "Storage skipped",
+          reasoning: "Store analysis proof on Walrus for verification",
+          insight: stored.blobId ? `Verification URL: /verify/${stored.blobId}` : undefined,
+        },
+      ];
+
       return {
         tool: "analyzeSuiWallet",
         success: true,
@@ -709,6 +753,7 @@ export async function toolAnalyzeSuiWallet(
           storedAt: stored.storedAt,
           verificationUrl: `/verify/${stored.blobId}`,
         },
+        agentSteps: detailedAgentSteps,
         previousAnalysis: previousAnalysis
           ? {
               blobId: previousAnalysis.blobId,
