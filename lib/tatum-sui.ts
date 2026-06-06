@@ -125,6 +125,11 @@ export interface SuiTransactionBlock {
   };
   checkpoint: string;
   timestampMs: string;
+  balanceChanges?: Array<{
+    owner: { AddressOwner?: string; ObjectOwner?: string };
+    coinType: string;
+    amount: string;
+  }>;
 }
 
 export interface SuiCheckpoint {

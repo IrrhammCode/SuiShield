@@ -222,29 +222,36 @@ export async function toolGetSuiPrice(): Promise<ToolResult> {
 export async function toolGetSuiFundFlow(address: string): Promise<ToolResult> {
   const start = Date.now();
   try {
-    // Get recent transactions to trace fund flow
-    const txResult = await toolGetSuiTransactions(address, 20);
-    if (!txResult.success) throw new Error(txResult.error || "Failed to fetch transactions");
+    // Get raw transactions directly — NOT via toolGetSuiTransactions which strips balanceChanges
+    const txResult = await getSuiTransactionBlocks(address, 50);
+    const rawTxs = txResult.data || [];
 
-    const txs = txResult.data as { transactions: Array<{ digest: string; effects?: { balanceChanges?: Array<{ owner?: { AddressOwner?: string }; coinType: string; amount: string }> } }> };
     const nodes: Array<{ id: string; label: string; type: "target" | "counterparty" | "self" }> = [
       { id: address, label: `${address.slice(0, 6)}...${address.slice(-4)}`, type: "target" },
     ];
-    const links: Array<{ source: string; target: string; value: number; type: string }> = [];
+    const links: Array<{ source: string; target: string; value: number; type: string; txHash?: string }> = [];
     const seen = new Set<string>();
 
-    for (const tx of txs.transactions || []) {
-      const changes = tx.effects?.balanceChanges || [];
+    for (const tx of rawTxs) {
+      // balanceChanges is at the ROOT level of the transaction block (not inside effects)
+      const changes = tx.balanceChanges || [];
+      if (changes.length === 0) continue;
+
+      // Identify outgoing changes (negative amounts from the owner)
+      const outgoing = changes.filter(
+        (c) => c.owner?.AddressOwner === address && parseInt(c.amount || "0") < 0
+      );
+
       for (const change of changes) {
         const counterparty = change.owner?.AddressOwner;
         if (!counterparty || counterparty === address) continue;
 
-        const amount = Math.abs(Number(change.amount)) / 1_000_000_000; // Convert MIST to SUI
-        if (amount < 0.01) continue; // Skip dust
+        const amount = Math.abs(Number(change.amount)) / 1_000_000_000; // MIST → SUI
+        if (amount < 0.001) continue; // Skip dust
 
-        const isIncoming = Number(change.amount) > 0;
-        const source = isIncoming ? counterparty : address;
-        const target = isIncoming ? address : counterparty;
+        const isOutgoing = outgoing.length > 0;
+        const source = isOutgoing ? address : counterparty;
+        const target = isOutgoing ? counterparty : address;
 
         if (!seen.has(counterparty)) {
           seen.add(counterparty);
@@ -258,14 +265,14 @@ export async function toolGetSuiFundFlow(address: string): Promise<ToolResult> {
         links.push({
           source,
           target,
-          value: Math.round(amount * 100) / 100,
-          type: isIncoming ? "incoming" : "outgoing",
+          value: Math.round(amount * 10000) / 10000,
+          type: isOutgoing ? "outgoing" : "incoming",
+          txHash: tx.digest,
         });
       }
     }
 
-    // If depth > 1, we could recursively trace (simplified for hackathon)
-    const summary = `Fund flow for ${address.slice(0, 10)}...: ${links.length} transfers found, ${links.filter(l => l.type === "incoming").length} incoming, ${links.filter(l => l.type === "outgoing").length} outgoing`;
+    const summary = `Fund flow for ${address.slice(0, 10)}...: ${links.length} transfers found, ${links.filter(l => l.type === "incoming").length} incoming, ${links.filter(l => l.type === "outgoing").length} outgoing, ${seen.size} unique counterparties`;
 
     return {
       tool: "getSuiFundFlow",
@@ -422,30 +429,35 @@ export async function toolAnalyzeSuiWallet(
       const fundFlowResult = await toolGetSuiFundFlow(address).catch(() => null);
       const flowData = fundFlowResult?.success ? fundFlowResult.data as Record<string, unknown> : null;
 
-      // Analyze transaction senders/recipients
-      const txList = txs ? (txs as { transactions: Array<{ sender?: string; digest?: string; timestamp?: string }> }).transactions : [];
+      // Extract counterparties from fund flow links (much more accurate than tx.sender)
       const counterparties = new Set<string>();
       const senderCounts: Record<string, number> = {};
+      const flowLinks = (flowData?.links as Array<{ source: string; target: string; value: number; type: string }>) || [];
 
-      txList.forEach(tx => {
-        if (tx.sender && tx.sender !== address) {
-          counterparties.add(tx.sender);
-          senderCounts[tx.sender] = (senderCounts[tx.sender] || 0) + 1;
+      for (const link of flowLinks) {
+        const counterparty = link.source === address ? link.target : link.source;
+        if (counterparty && counterparty !== address) {
+          counterparties.add(counterparty);
+          senderCounts[counterparty] = (senderCounts[counterparty] || 0) + 1;
         }
-      });
+      }
 
       // Detect suspicious patterns
       const repeatedSenders = Object.entries(senderCounts)
         .filter(([, count]) => count >= 3)
         .map(([addr, count]) => ({ address: addr.slice(0, 10) + "...", count }));
 
-      // Estimate wallet age from first transaction
-      const timestamps = txList
-        .map(tx => (tx as { timestamp?: string }).timestamp)
+      // Estimate wallet age from raw transaction timestamps
+      const rawTxData = await getSuiTransactionBlocks(address, 50).catch(() => null);
+      const rawTimestamps = (rawTxData?.data || [])
+        .map(tx => tx.timestampMs ? new Date(Number(tx.timestampMs)).toISOString() : null)
         .filter(Boolean)
-        .sort();
-      const firstTxDate = timestamps.length > 0 ? timestamps[0] : null;
-      const lastTxDate = timestamps.length > 0 ? timestamps[timestamps.length - 1] : null;
+        .sort() as string[];
+      const firstTxDate = rawTimestamps.length > 0 ? rawTimestamps[0] : null;
+      const lastTxDate = rawTimestamps.length > 0 ? rawTimestamps[rawTimestamps.length - 1] : null;
+
+      // Sort transfers by value for top transfers
+      const sortedLinks = [...flowLinks].sort((a, b) => b.value - a.value);
 
       modeSpecificData = {
         mode: "p2p",
@@ -454,7 +466,7 @@ export async function toolAnalyzeSuiWallet(
           incomingCount: flowData.incomingCount,
           outgoingCount: flowData.outgoingCount,
           nodes: (flowData.nodes as unknown[])?.length || 0,
-          topTransfers: (flowData.links as Array<{ source: string; target: string; value: number; type: string }>)?.slice(0, 10),
+          topTransfers: sortedLinks.slice(0, 10),
           summary: flowData.summary,
         } : null,
         uniqueCounterparties: counterparties.size,
