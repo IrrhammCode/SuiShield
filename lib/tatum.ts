@@ -74,27 +74,47 @@ export async function getCurrentRate(currency: string, basePair = "USD") {
 export async function getBlockNumber(chain: string) {
   const network = resolveChain(chain);
   const tatum = await getTatum(network);
-  const block = await tatum.rpc.blockNumber();
-  return block;
+  if (typeof tatum.rpc.blockNumber === 'function') {
+    return await tatum.rpc.blockNumber();
+  } else if (typeof tatum.rpc.getBlockCount === 'function') {
+    const res = await tatum.rpc.getBlockCount();
+    return res.result;
+  }
+  throw new Error(`Block number query not supported natively for ${chain}`);
 }
 
 export async function getGasPrice(chain: string) {
   const network = resolveChain(chain);
   const tatum = await getTatum(network);
-  const gas = await tatum.rpc.gasPrice();
-  return gas;
+  if (typeof tatum.rpc.gasPrice === 'function') {
+    return await tatum.rpc.gasPrice();
+  }
+  throw new Error(`Gas price query is only available for EVM-compatible chains (not ${chain}). For Bitcoin, please query network fee estimates instead.`);
 }
 
 export async function getTransactionByHash(chain: string, txHash: string) {
   const network = resolveChain(chain);
   const tatum = await getTatum(network);
-  const tx = await tatum.rpc.getTransactionByHash(txHash);
-  return tx;
+  if (typeof tatum.rpc.getTransactionByHash === 'function') {
+    return await tatum.rpc.getTransactionByHash(txHash);
+  } else if (typeof tatum.rpc.getRawTransaction === 'function') {
+    const res = await tatum.rpc.getRawTransaction(txHash, true);
+    return res.result;
+  }
+  throw new Error(`getTransactionByHash not supported directly for ${chain}`);
 }
 
 export async function getBlockByNumber(chain: string, blockNumber: string | number) {
   const network = resolveChain(chain);
   const tatum = await getTatum(network);
-  const block = await tatum.rpc.getBlockByNumber(blockNumber);
-  return block;
+  if (typeof tatum.rpc.getBlockByNumber === 'function') {
+    return await tatum.rpc.getBlockByNumber(blockNumber);
+  } else if (typeof tatum.rpc.getBlockHash === 'function' && typeof tatum.rpc.getBlock === 'function') {
+    const hashRes = await tatum.rpc.getBlockHash(Number(blockNumber));
+    if (hashRes.result) {
+      const blockRes = await tatum.rpc.getBlock(hashRes.result, 2);
+      return blockRes.result;
+    }
+  }
+  throw new Error(`getBlockByNumber not supported directly for ${chain}`);
 }
