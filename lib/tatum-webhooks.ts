@@ -1,9 +1,67 @@
-// Tatum Webhooks — Real-time blockchain notifications
+// Tatum Webhooks — Real-time blockchain notifications + local monitoring
 // Docs: https://docs.tatum.io/reference/subscriptions
-// This enables monitoring addresses for suspicious activity after analysis.
+// Uses Tatum RPC to poll for new transactions on monitored addresses.
+
+import { getSuiTransactionBlocks, getSuiBalances, formatSuiBalance, isValidSuiAddress } from "./tatum-sui";
 
 const TATUM_API_BASE = "https://api.tatum.io";
 const TATUM_API_KEY = process.env.TATUM_API_KEY;
+
+// ── Types ────────────────────────────────────────────────
+
+export type WebhookEventType =
+  | "ADDRESS_TRANSACTION"
+  | "ADDRESS_FUNDS_RECEIVED"
+  | "ADDRESS_FUNDS_SENT"
+  | "NFT_RECEIVED"
+  | "TOKEN_TRANSFER"
+  | "BLOCK_MINED";
+
+export interface WebhookSubscription {
+  id: string;
+  chain: string;
+  address: string;
+  eventType: WebhookEventType;
+  url: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface MonitoredActivity {
+  digest: string;
+  timestamp: string;
+  type: string;
+  amount?: string;
+  from?: string;
+  to?: string;
+  status: "success" | "failure";
+  gasUsed?: string;
+}
+
+export interface MonitoredAddress {
+  address: string;
+  chain: string;
+  riskScore: number;
+  monitoredAt: string;
+  alerts: MonitoredActivity[];
+  lastCheckedTx?: string;
+  balance?: string;
+  label?: string;
+}
+
+// ── Persistent Store (global singleton for serverless) ──
+
+const globalStore = globalThis as unknown as {
+  __suiShieldMonitored?: Map<string, MonitoredAddress>;
+};
+
+if (!globalStore.__suiShieldMonitored) {
+  globalStore.__suiShieldMonitored = new Map();
+}
+
+const monitoredAddresses: Map<string, MonitoredAddress> = globalStore.__suiShieldMonitored!;
+
+// ── Tatum Webhook API ───────────────────────────────────
 
 async function tatumFetch<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
@@ -24,51 +82,181 @@ async function tatumFetch<T = unknown>(endpoint: string, options?: RequestInit):
   return response.json();
 }
 
-// ── Types ────────────────────────────────────────────────
+// ── Monitor Address ─────────────────────────────────────
 
-export type WebhookEventType =
-  | "ADDRESS_TRANSACTION"      // Any transaction on address
-  | "ADDRESS_FUNDS_RECEIVED"   // Funds received
-  | "ADDRESS_FUNDS_SENT"       // Funds sent
-  | "NFT_RECEIVED"             // NFT received
-  | "TOKEN_TRANSFER"           // Token transfer
-  | "BLOCK_MINED";             // New block mined
+export function monitorAddress(
+  address: string,
+  chain: string,
+  riskScore: number,
+  label?: string
+): void {
+  if (!isValidSuiAddress(address)) {
+    throw new Error("Invalid Sui address format");
+  }
 
-export interface WebhookSubscription {
-  id: string;
-  chain: string;
-  address: string;
-  eventType: WebhookEventType;
-  url: string;
-  active: boolean;
-  createdAt: string;
+  const existing = monitoredAddresses.get(address);
+  monitoredAddresses.set(address, {
+    address,
+    chain,
+    riskScore,
+    monitoredAt: existing?.monitoredAt || new Date().toISOString(),
+    alerts: existing?.alerts || [],
+    lastCheckedTx: existing?.lastCheckedTx,
+    balance: existing?.balance,
+    label: label || existing?.label,
+  });
 }
 
-export interface WebhookPayload {
-  subscriptionId: string;
-  chain: string;
-  address: string;
-  eventType: WebhookEventType;
-  txHash: string;
-  blockNumber: number;
-  timestamp: string;
-  amount?: string;
-  tokenAddress?: string;
-  from?: string;
-  to?: string;
+// ── Remove Address from Monitor ─────────────────────────
+
+export function unmonitorAddress(address: string): boolean {
+  return monitoredAddresses.delete(address);
 }
 
-// ── In-Memory Store (for demo — production would use DB) ─
+// ── Get Monitored Addresses ─────────────────────────────
 
-const monitoredAddresses = new Map<string, {
+export function getMonitoredAddresses(): Array<{
   address: string;
   chain: string;
   riskScore: number;
   monitoredAt: string;
-  alerts: WebhookPayload[];
-}>();
+  alertCount: number;
+  lastAlert?: string;
+  balance?: string;
+  label?: string;
+}> {
+  return Array.from(monitoredAddresses.values()).map((m) => ({
+    address: m.address,
+    chain: m.chain,
+    riskScore: m.riskScore,
+    monitoredAt: m.monitoredAt,
+    alertCount: m.alerts.length,
+    lastAlert: m.alerts.length > 0 ? m.alerts[m.alerts.length - 1].timestamp : undefined,
+    balance: m.balance,
+    label: m.label,
+  }));
+}
 
-// ── Create Webhook Subscription ──────────────────────────
+// ── Check for New Activity ──────────────────────────────
+
+export async function checkAddressActivity(
+  address: string
+): Promise<{ newTxs: MonitoredActivity[]; balance: string }> {
+  const monitored = monitoredAddresses.get(address);
+  if (!monitored) {
+    throw new Error("Address not monitored");
+  }
+
+  try {
+    // Fetch recent transactions
+    const txResult = await getSuiTransactionBlocks(address, 10);
+    const txs = txResult.data || [];
+
+    // Fetch balance
+    const balances = await getSuiBalances(address);
+    const suiBalance = balances.find((b) => b.coinType.includes("sui::SUI"));
+    const balance = suiBalance ? formatSuiBalance(suiBalance.totalBalance) : "0 SUI";
+
+    // Find new transactions (not seen before)
+    const lastChecked = monitored.lastCheckedTx;
+    const newTxs: MonitoredActivity[] = [];
+
+    for (const tx of txs) {
+      // Stop if we've seen this tx before
+      if (tx.digest === lastChecked) break;
+
+      const effects = tx.effects;
+      const isSuccess = effects?.status?.status === "success";
+      const timestamp = tx.timestampMs
+        ? new Date(parseInt(tx.timestampMs)).toISOString()
+        : new Date().toISOString();
+
+      // Determine transaction type from balance changes
+      let txType = "Transaction";
+      let amount: string | undefined;
+
+      if (tx.balanceChanges) {
+        const suiChange = tx.balanceChanges.find(
+          (c) => c.coinType?.includes("sui::SUI") && c.owner?.AddressOwner === address
+        );
+        if (suiChange) {
+          const changeAmount = BigInt(suiChange.amount);
+          if (changeAmount < BigInt(0)) {
+            txType = "Sent";
+            amount = formatSuiBalance((-changeAmount).toString());
+          } else if (changeAmount > BigInt(0)) {
+            txType = "Received";
+            amount = formatSuiBalance(changeAmount.toString());
+          }
+        }
+      }
+
+      newTxs.push({
+        digest: tx.digest,
+        timestamp,
+        type: txType,
+        amount,
+        status: isSuccess ? "success" : "failure",
+        gasUsed: effects?.gasUsed
+          ? formatSuiBalance(
+              (BigInt(effects.gasUsed.computationCost) +
+                BigInt(effects.gasUsed.storageCost) -
+                BigInt(effects.gasUsed.storageRebate)).toString()
+            )
+          : undefined,
+      });
+    }
+
+    // Update monitored state
+    if (txs.length > 0) {
+      monitored.lastCheckedTx = txs[0].digest;
+    }
+    monitored.balance = balance;
+    monitored.alerts = [...newTxs, ...monitored.alerts].slice(0, 50); // Keep last 50
+
+    return { newTxs, balance };
+  } catch (error) {
+    console.error(`Failed to check activity for ${address}:`, error);
+    return { newTxs: [], balance: monitored.balance || "Unknown" };
+  }
+}
+
+// ── Check All Monitored Addresses ───────────────────────
+
+export async function checkAllAddresses(): Promise<
+  Array<{ address: string; newTxs: MonitoredActivity[]; balance: string }>
+> {
+  const results = [];
+  for (const [address] of monitoredAddresses) {
+    const result = await checkAddressActivity(address);
+    results.push({ address, ...result });
+    // Small delay to avoid rate limiting
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return results;
+}
+
+// ── Update Risk Score ───────────────────────────────────
+
+export function updateRiskScore(address: string, riskScore: number): boolean {
+  const monitored = monitoredAddresses.get(address);
+  if (!monitored) return false;
+  monitored.riskScore = Math.max(0, Math.min(100, riskScore));
+  return true;
+}
+
+// ── Get Activity for Address ────────────────────────────
+
+export function getAddressActivity(
+  address: string,
+  limit = 20
+): MonitoredActivity[] {
+  const monitored = monitoredAddresses.get(address);
+  if (!monitored) return [];
+  return monitored.alerts.slice(0, limit);
+}
+
+// ── Tatum Webhook (optional — for production) ───────────
 
 export async function createWebhookSubscription(
   address: string,
@@ -104,18 +292,11 @@ export async function createWebhookSubscription(
       createdAt: new Date().toISOString(),
     };
   } catch (error) {
-    // If Tatum webhook API not available, store locally
-    console.warn("Tatum webhook creation failed, storing locally:", error);
-    const id = `local_${Date.now()}`;
-    monitoredAddresses.set(address, {
-      address,
-      chain,
-      riskScore: 50,
-      monitoredAt: new Date().toISOString(),
-      alerts: [],
-    });
+    console.warn("Tatum webhook creation failed:", error);
+    // Fallback: just track locally
+    monitorAddress(address, chain, 50);
     return {
-      id,
+      id: `local_${Date.now()}`,
       chain,
       address,
       eventType,
@@ -126,93 +307,32 @@ export async function createWebhookSubscription(
   }
 }
 
-// ── Get Active Subscriptions ─────────────────────────────
-
-export async function getActiveSubscriptions(): Promise<WebhookSubscription[]> {
-  try {
-    const data = await tatumFetch<{ subscriptions: WebhookSubscription[] }>("/v3/subscription");
-    return data.subscriptions || [];
-  } catch {
-    // Return local subscriptions
-    return Array.from(monitoredAddresses.values()).map((m) => ({
-      id: `local_${m.address}`,
-      chain: m.chain,
-      address: m.address,
-      eventType: "ADDRESS_TRANSACTION" as WebhookEventType,
-      url: "",
-      active: true,
-      createdAt: m.monitoredAt,
-    }));
-  }
-}
-
-// ── Delete Webhook Subscription ──────────────────────────
-
 export async function deleteWebhookSubscription(subscriptionId: string): Promise<boolean> {
+  if (subscriptionId.startsWith("local_")) {
+    const address = subscriptionId.replace("local_", "");
+    monitoredAddresses.delete(address);
+    return true;
+  }
   try {
     await tatumFetch(`/v3/subscription/${subscriptionId}`, { method: "DELETE" });
     return true;
   } catch {
-    monitoredAddresses.delete(subscriptionId.replace("local_", ""));
-    return true;
+    return false;
   }
 }
 
-// ── Monitor Address (local tracking) ─────────────────────
-
-export function monitorAddress(
-  address: string,
-  chain: string,
-  riskScore: number
-): void {
-  monitoredAddresses.set(address, {
-    address,
-    chain,
-    riskScore,
-    monitoredAt: new Date().toISOString(),
-    alerts: [],
-  });
-}
-
-// ── Get Monitored Addresses ──────────────────────────────
-
-export function getMonitoredAddresses(): Array<{
+export function processWebhookCallback(payload: {
   address: string;
-  chain: string;
-  riskScore: number;
-  monitoredAt: string;
-  alertCount: number;
-  lastAlert?: string;
-}> {
-  return Array.from(monitoredAddresses.values()).map((m) => ({
-    address: m.address,
-    chain: m.chain,
-    riskScore: m.riskScore,
-    monitoredAt: m.monitoredAt,
-    alertCount: m.alerts.length,
-    lastAlert: m.alerts.length > 0 ? m.alerts[m.alerts.length - 1].timestamp : undefined,
-  }));
-}
-
-// ── Record Alert ─────────────────────────────────────────
-
-export function recordAlert(address: string, alert: WebhookPayload): void {
-  const monitored = monitoredAddresses.get(address);
-  if (monitored) {
-    monitored.alerts.push(alert);
-  }
-}
-
-// ── Process Webhook Callback ─────────────────────────────
-
-export function processWebhookCallback(payload: WebhookPayload): {
+  eventType: string;
+  txHash?: string;
+  amount?: string;
+}): {
   address: string;
   alert: boolean;
   riskLevel: "low" | "medium" | "high";
   message: string;
 } {
   const monitored = monitoredAddresses.get(payload.address);
-
   if (!monitored) {
     return {
       address: payload.address,
@@ -222,24 +342,17 @@ export function processWebhookCallback(payload: WebhookPayload): {
     };
   }
 
-  // Record the alert
-  recordAlert(payload.address, payload);
-
-  // Determine risk level based on event type and existing risk score
   let riskLevel: "low" | "medium" | "high" = "low";
   let message = "";
 
-  if (payload.eventType === "ADDRESS_FUNDS_RECEIVED" && monitored.riskScore > 60) {
-    riskLevel = "medium";
-    message = `Monitored high-risk address received funds: ${payload.amount || "unknown"}`;
-  } else if (payload.eventType === "ADDRESS_FUNDS_SENT" && monitored.riskScore > 70) {
+  if (payload.eventType === "ADDRESS_FUNDS_SENT" && monitored.riskScore > 60) {
     riskLevel = "high";
-    message = `Flagged address sent funds — potential movement detected`;
-  } else if (payload.eventType === "TOKEN_TRANSFER") {
+    message = `High-risk address sent funds${payload.amount ? `: ${payload.amount}` : ""}`;
+  } else if (payload.eventType === "ADDRESS_FUNDS_RECEIVED" && monitored.riskScore > 50) {
     riskLevel = "medium";
-    message = `Token transfer detected on monitored address`;
+    message = `Monitored address received funds${payload.amount ? `: ${payload.amount}` : ""}`;
   } else {
-    message = `Activity detected on monitored address`;
+    message = `Activity on monitored address`;
   }
 
   return {
