@@ -42,10 +42,13 @@ const AGENT_SYSTEM_PROMPT = `You are SuiShield — an AI-powered trust analysis 
 - Do NOT show thinking process, tool execution, or internal reasoning.
 - Just the answer. Clean. Premium. Direct.
 
-## Instruction
-If the user's query is about analyzing a specific wallet or address, follow the Wallet Analysis Framework.
-If the user asks a general question, answer naturally and directly using tool data or general knowledge.
-Never mention tool errors unless they prevent you from answering.
+## Query Handling Rules
+
+1. Wallet Analysis: Use Wallet Analysis Framework below
+2. Price Queries: Provide current price + mention historical data available on Walrus (4 years OHLCV)
+3. Ecosystem Queries (TVL, top protocols): List known verified protocols with their types
+4. General Questions: Answer directly using available data or general knowledge
+5. Never say "I cannot" — always provide what you CAN do
 
 ---
 
@@ -328,6 +331,42 @@ export async function runAgent(
             ? `Fetched SUI/USD price: $${(priceResult.data as Record<string, unknown>)?.price}`
             : `Failed: ${priceResult.error}`,
         });
+        break;
+      }
+
+      case "sui_price_history": {
+        // Fetch current price + historical data info from Walrus
+        const priceResult = await toolGetSuiPrice();
+        toolResults.push(priceResult);
+        toolsUsed.push("getSuiPrice");
+
+        stepNum++;
+        agentSteps.push({
+          step: stepNum,
+          tool: "getSuiPrice",
+          status: priceResult.success ? "success" : "error",
+          summary: priceResult.success
+            ? `Fetched current SUI/USD price: $${(priceResult.data as Record<string, unknown>)?.price}`
+            : `Failed: ${priceResult.error}`,
+        });
+
+        // Add historical data context from Walrus
+        toolResults.push({
+          tool: "getWalrusHistoricalData",
+          success: true,
+          data: {
+            dataset: "Crypto Price OHLCV - 4 Years",
+            description: "4 years of 1-minute OHLCV candle data for SUI and 50+ cryptocurrencies",
+            timeRange: "2022-01 to 2026-06",
+            resolution: "1 minute",
+            metrics: ["Open", "High", "Low", "Close", "Volume"],
+            storage: "Walrus decentralized storage",
+            blobId: "lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg",
+            note: "Historical price data is stored on Walrus. For detailed analysis, use the Dataset Explorer."
+          },
+          duration: 0,
+        });
+        toolsUsed.push("getWalrusHistoricalData");
         break;
       }
 

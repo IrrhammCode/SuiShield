@@ -784,6 +784,7 @@ export type SuiIntent =
   | "sui_wallet_analysis"
   | "sui_network"
   | "sui_price"
+  | "sui_price_history"
   | "sui_fund_flow"
   | "sui_protocol_check"
   | "sui_ecosystem"
@@ -794,6 +795,11 @@ export function detectSuiIntent(message: string): SuiIntent {
 
   // Check for Sui address (0x prefix, typically 64 hex chars)
   const hasSuiAddress = /0x[a-fA-F0-9]{40,64}/.test(message);
+
+  // Price history queries (must check before general price)
+  if (lower.includes("sui") && (lower.includes("history") || lower.includes("historical") || lower.includes("past") || lower.includes("previous") || lower.includes("trend") || lower.includes("chart") || lower.includes("ohlcv") || lower.includes("candle"))) {
+    return "sui_price_history";
+  }
 
   // General ecosystem queries (no address needed)
   const ecosystemKeywords = ["tvl", "top defi", "top protocol", "ecosystem", "overview", "list", "ranking", "compare", "best", "most active", "largest", "biggest"];
