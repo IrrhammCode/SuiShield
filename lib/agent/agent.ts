@@ -62,7 +62,7 @@ Launched May 2023. ATH $2.18 (Jan 2025). Current -68% from peak.
 
 Walrus Blob ID: lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg
 
-Verify: https://aggregator.walrus.space/v1/blobs/lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg
+Verify: https://aggregator.walrus-mainnet.walrus.space/v1/blobs/lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg
 
 
 🔗 Next Steps
@@ -77,7 +77,7 @@ Explore the Dataset Explorer for interactive charts.
    - Historical context (mention 4 years of OHLCV data on Walrus)
    - Key metrics: time range available, resolution, what OHLCV means
    - Walrus Blob ID — MUST include when available (this is the proof of data integrity)
-   - Walrus verification URL: https://aggregator.walrus.space/v1/blobs/{blobId}
+   - Walrus verification URL: https://aggregator.walrus-mainnet.walrus.space/v1/blobs/{blobId}
    - Actionable next steps (e.g., "Explore the Dataset Explorer for detailed charts")
    - Format as a complete analysis, not just a number
 3. Ecosystem Queries (TVL, top protocols): List known verified protocols with their types

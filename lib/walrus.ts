@@ -4,7 +4,7 @@ import type { Dataset } from "@/types";
 
 // Walrus mainnet aggregator (Tatum publishes here)
 export const WALRUS_AGGREGATOR_URLS = [
-  "https://aggregator.walrus.space",
+  "https://aggregator.walrus-mainnet.walrus.space",
 ];
 
 // Working Walrus mainnet blob IDs (regular blobs, not quilts)
