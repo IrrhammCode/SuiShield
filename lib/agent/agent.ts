@@ -24,6 +24,7 @@ import {
   toolCheckSuiProtocols,
   toolAnalyzeSuiWallet,
 } from "./sui-tools";
+import { getVerifiedProtocols, getProtocolsByType } from "@/lib/sui-protocols";
 import { buildMemoryContext } from "./memory";
 
 // Groq client initialized lazily
@@ -373,6 +374,60 @@ export async function runAgent(
             ? `Interacted with: ${((protocolData?.interactions as Array<{ protocolName: string }>) || []).map((i) => i.protocolName).join(", ") || "no known protocols"}`
             : undefined,
         });
+        break;
+      }
+
+      case "sui_ecosystem": {
+        // General ecosystem queries — no address needed
+        // Fetch network status and price for context
+        const [networkResult, priceResult] = await Promise.all([
+          toolGetSuiNetworkStatus().catch(() => null),
+          toolGetSuiPrice().catch(() => null),
+        ]);
+
+        if (networkResult) {
+          toolResults.push(networkResult);
+          toolsUsed.push("getSuiNetworkStatus");
+          stepNum++;
+          agentSteps.push({
+            step: stepNum,
+            tool: "getSuiNetworkStatus",
+            status: networkResult.success ? "success" : "error",
+            summary: networkResult.success ? "Fetched Sui network status" : `Failed: ${networkResult.error}`,
+          });
+        }
+
+        if (priceResult) {
+          toolResults.push(priceResult);
+          toolsUsed.push("getSuiPrice");
+          stepNum++;
+          agentSteps.push({
+            step: stepNum,
+            tool: "getSuiPrice",
+            status: priceResult.success ? "success" : "error",
+            summary: priceResult.success ? "Fetched SUI price" : `Failed: ${priceResult.error}`,
+          });
+        }
+
+        // Add known protocols info
+        const knownProtocols = getVerifiedProtocols();
+        const dexProtocols = getProtocolsByType("dex");
+        const lendingProtocols = getProtocolsByType("lending");
+        const nftProtocols = getProtocolsByType("nft");
+
+        toolResults.push({
+          tool: "getSuiEcosystemInfo",
+          success: true,
+          data: {
+            knownProtocols: knownProtocols.map(p => ({ name: p.name, type: p.type, verified: p.verified })),
+            dexProtocols: dexProtocols.map(p => p.name),
+            lendingProtocols: lendingProtocols.map(p => p.name),
+            nftProtocols: nftProtocols.map(p => p.name),
+            totalKnown: knownProtocols.length,
+          },
+          duration: 0,
+        });
+        toolsUsed.push("getSuiEcosystemInfo");
         break;
       }
 

@@ -786,6 +786,7 @@ export type SuiIntent =
   | "sui_price"
   | "sui_fund_flow"
   | "sui_protocol_check"
+  | "sui_ecosystem"
   | "general";
 
 export function detectSuiIntent(message: string): SuiIntent {
@@ -793,6 +794,12 @@ export function detectSuiIntent(message: string): SuiIntent {
 
   // Check for Sui address (0x prefix, typically 64 hex chars)
   const hasSuiAddress = /0x[a-fA-F0-9]{40,64}/.test(message);
+
+  // General ecosystem queries (no address needed)
+  const ecosystemKeywords = ["tvl", "top defi", "top protocol", "ecosystem", "overview", "list", "ranking", "compare", "best", "most active", "largest", "biggest"];
+  if (ecosystemKeywords.some(kw => lower.includes(kw))) {
+    return "sui_ecosystem";
+  }
 
   if (hasSuiAddress && (lower.includes("analyz") || lower.includes("check") || lower.includes("safe") || lower.includes("risk") || lower.includes("scan"))) {
     return "sui_wallet_analysis";
