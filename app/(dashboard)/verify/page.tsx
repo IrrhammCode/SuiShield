@@ -13,11 +13,15 @@ import {
   Copy,
   Check,
   ChevronLeft,
+  Database,
+  FileText,
+  HardDrive,
 } from "lucide-react";
 
 interface VerificationResult {
   blobId: string;
   found: boolean;
+  type: "suiShieldAnalysis" | "jsonBlob" | "binaryBlob";
   record?: {
     type: string;
     address: string;
@@ -30,6 +34,11 @@ interface VerificationResult {
     model: string;
     proofVersion: string;
   };
+  contentType?: string;
+  size?: number;
+  sizeFormatted?: string;
+  preview?: string;
+  aggregatorUrl?: string;
   verifiedAt: string;
 }
 
@@ -48,7 +57,10 @@ export default function VerifyPage() {
 
     try {
       const res = await fetch(`/api/verify?blobId=${encodeURIComponent(blobId.trim())}`);
-      if (!res.ok) throw new Error(`Verification failed: ${res.status}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Verification failed: ${res.status}`);
+      }
       const data = await res.json();
       setResult(data);
     } catch (e: unknown) {
@@ -65,17 +77,28 @@ export default function VerifyPage() {
   };
 
   const getRiskColor = (score: number) => {
-    if (score < 25) return "text-white/80";
-    if (score < 50) return "text-white/80";
-    if (score < 75) return "text-white/50";
-    return "text-white/50";
+    if (score < 25) return "text-green-400";
+    if (score < 50) return "text-yellow-400";
+    if (score < 75) return "text-orange-400";
+    return "text-red-400";
   };
 
-  const getRiskGradient = (score: number) => {
-    if (score < 25) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
-    if (score < 50) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
-    if (score < 75) return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
-    return "from-white/[0.06] to-white/[0.02] border-white/[0.08]";
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "suiShieldAnalysis": return <Shield className="w-6 h-6 text-green-400" />;
+      case "jsonBlob": return <FileText className="w-6 h-6 text-cyan-400" />;
+      case "binaryBlob": return <HardDrive className="w-6 h-6 text-purple-400" />;
+      default: return <Database className="w-6 h-6 text-white/50" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "suiShieldAnalysis": return "SuiShield Analysis Proof";
+      case "jsonBlob": return "JSON Data Blob";
+      case "binaryBlob": return "Binary Data Blob";
+      default: return "Unknown Blob";
+    }
   };
 
   return (
@@ -117,10 +140,10 @@ export default function VerifyPage() {
             <span className="text-white/50 font-bold uppercase tracking-widest">On-Chain Verification</span>
           </div>
           <h1 className="font-display font-black text-3xl text-white tracking-tight">
-            Verify Analysis <span className="text-white/50">Proof</span>
+            Verify <span className="text-white/50">Walrus Blob</span>
           </h1>
           <p className="text-white/30 text-sm max-w-md">
-            Enter a Walrus blob ID to verify an analysis proof stored on-chain.
+            Enter a Walrus blob ID to verify any stored data — analysis proofs, datasets, or binary blobs.
           </p>
         </div>
 
@@ -149,6 +172,23 @@ export default function VerifyPage() {
               Verify
             </button>
           </div>
+
+          {/* Quick test buttons */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="text-white/20 text-[10px]">Try:</span>
+            <button
+              onClick={() => setBlobId("lOkowvjr-tKj1N8oiQiBSbkNZjQkScrXKircwEW0DCg")}
+              className="text-[10px] text-cyan-400/60 hover:text-cyan-400 font-mono transition-colors"
+            >
+              OHLCV Price Data
+            </button>
+            <button
+              onClick={() => setBlobId("fCM9Oo6QcoakdF7h81pK22KA_1l2pRb5eC7h8exxKFk")}
+              className="text-[10px] text-cyan-400/60 hover:text-cyan-400 font-mono transition-colors"
+            >
+              Sui Transactions
+            </button>
+          </div>
         </div>
 
         {/* Loading */}
@@ -157,50 +197,39 @@ export default function VerifyPage() {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-white/[0.04] border border-white/[0.08] flex items-center justify-center">
               <Loader2 className="w-6 h-6 text-white/80 animate-spin" />
             </div>
-            <p className="text-white text-sm">Verifying proof...</p>
+            <p className="text-white text-sm">Verifying blob on Walrus...</p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-5 text-center backdrop-blur-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-            <XCircle className="w-8 h-8 text-white/50 mx-auto mb-2" />
-            <p className="text-white/50 text-sm font-medium">{error}</p>
+          <div className="relative rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/10 to-red-500/5 p-5 text-center backdrop-blur-xl overflow-hidden">
+            <XCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+            <p className="text-red-400 text-sm font-medium">{error}</p>
           </div>
         )}
 
         {/* Result */}
-        {result && (
+        {result && result.found && (
           <div className="space-y-4 animate-slide-up">
             {/* Status */}
-            <div className={`relative rounded-2xl border p-5 backdrop-blur-xl overflow-hidden ${
-              result.found 
-                ? "border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.02]" 
-                : "border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.02]"
-            }`}>
-              <div className={`absolute top-0 left-0 right-0 h-px ${
-                result.found ? "bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" : "bg-gradient-to-r from-transparent via-white/[0.12] to-transparent"
-              }`} />
-              <div className="flex items-center gap-3 mb-3">
-                {result.found ? (
-                  <CheckCircle className="w-6 h-6 text-white/80" />
-                ) : (
-                  <XCircle className="w-6 h-6 text-white/50" />
-                )}
+            <div className="relative rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-500/5 p-5 backdrop-blur-xl overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/30 to-transparent" />
+              <div className="flex items-center gap-3">
+                {getTypeIcon(result.type)}
                 <div>
-                  <div className={`font-display font-bold text-lg ${result.found ? "text-white/80" : "text-white/50"}`}>
-                    {result.found ? "Proof Verified" : "Proof Not Found"}
+                  <div className="font-display font-bold text-lg text-green-400">
+                    Blob Verified ✓
                   </div>
                   <div className="text-white/30 text-xs">
-                    {result.found ? "This analysis was stored on Walrus" : "No analysis found for this blob ID"}
+                    {getTypeLabel(result.type)} • {result.sizeFormatted}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Details */}
-            {result.found && result.record && (
+            {/* SuiShield Analysis Details */}
+            {result.type === "suiShieldAnalysis" && result.record && (
               <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-cyan-500/[0.02] p-5 space-y-4 backdrop-blur-xl overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
                 <div className="flex items-center justify-between">
@@ -219,48 +248,82 @@ export default function VerifyPage() {
                     { label: "Analyzed By", value: `${result.record.analyzedBy.slice(0, 10)}...` },
                     { label: "Proof Version", value: result.record.proofVersion },
                   ].map(({ label, value }) => (
-                    <div key={label} className={`rounded-xl p-3 bg-gradient-to-br ${getRiskGradient(result.record!.riskScore)}`}>
+                    <div key={label} className="rounded-xl p-3 bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.06]">
                       <div className="text-white/20 text-[10px] mb-1">{label}</div>
                       <div className="text-white text-xs font-mono">{value}</div>
                     </div>
                   ))}
                 </div>
 
-                {/* Timestamp */}
-                <div className="flex items-center gap-2 text-xs text-white/20">
-                  <Clock className="w-3 h-3" />
-                  <span>Analyzed: {new Date(result.record.timestamp).toLocaleString()}</span>
-                </div>
+                {result.record.timestamp && (
+                  <div className="flex items-center gap-2 text-xs text-white/20">
+                    <Clock className="w-3 h-3" />
+                    <span>Analyzed: {new Date(result.record.timestamp).toLocaleString()}</span>
+                  </div>
+                )}
 
-                {/* Analysis Text */}
                 {result.record.analysis && (
                   <div className="rounded-xl p-4 bg-black/40 border border-white/[0.06]">
                     <div className="text-white/20 text-[10px] mb-2 font-bold uppercase">Analysis</div>
                     <p className="text-white/40 text-sm leading-relaxed">{result.record.analysis}</p>
                   </div>
                 )}
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={copyLink}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-white/80" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? "Copied" : "Copy Link"}
-                  </button>
-                  <a
-                    href={`https://aggregator.walrus-mainnet.walrus.space/v1/blobs/${blobId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    View on Walrus
-                  </a>
-                </div>
               </div>
             )}
+
+            {/* Binary/JSON Blob Details */}
+            {(result.type === "binaryBlob" || result.type === "jsonBlob") && (
+              <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.03] to-purple-500/[0.02] p-5 space-y-4 backdrop-blur-xl overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl p-3 bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.06]">
+                    <div className="text-white/20 text-[10px] mb-1">Content Type</div>
+                    <div className="text-white text-xs font-mono uppercase">{result.contentType}</div>
+                  </div>
+                  <div className="rounded-xl p-3 bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.06]">
+                    <div className="text-white/20 text-[10px] mb-1">Size</div>
+                    <div className="text-white text-xs font-mono">{result.sizeFormatted}</div>
+                  </div>
+                </div>
+
+                {result.preview && (
+                  <div className="rounded-xl p-4 bg-black/40 border border-white/[0.06]">
+                    <div className="text-white/20 text-[10px] mb-2 font-bold uppercase">Preview</div>
+                    <p className="text-white/40 text-xs font-mono leading-relaxed break-all">{result.preview}...</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={copyLink}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "Copied" : "Copy Link"}
+              </button>
+              <a
+                href={`https://aggregator.walrus-mainnet.walrus.space/v1/blobs/${blobId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Download Raw
+              </a>
+              <a
+                href={`https://walruscan.com/mainnet/blob/${blobId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50 text-xs font-medium hover:bg-white/[0.06] hover:border-white/[0.1] transition-all"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Walruscan
+              </a>
+            </div>
           </div>
         )}
       </div>
